@@ -15,6 +15,11 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
+## Credits
+Mongolian Flutter Apps are made possible by the following projects:
+
+- [suragch/mongol](https://github.com/suragch/mongol) - Mongolian vertical script widgets for Flutter apps 
+
 ## Run Example
 1. Install the `clj` command.
 2. Init the example `clj -M:cljd init`
