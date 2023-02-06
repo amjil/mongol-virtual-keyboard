@@ -5,4 +5,4 @@
          :sha "aa1964b8e9ea3d797f5098a3d5cc47982e886e4a"}}
  :aliases {:cljd {:main-opts ["-m" "cljd.build"]}}
  :cljd/opts {:kind :flutter
-             :main search-bar.main}}
+             :main virtual-keyboard.main}}

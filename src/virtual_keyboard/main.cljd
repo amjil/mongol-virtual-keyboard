@@ -1,8 +1,7 @@
-(ns search-bar.main
+(ns virtual-keyboard.main
   (:require
    ["package:flutter/material.dart" :as m]
-   ["package:mongol/mongol.dart" :as mgl]
-   [cljd.flutter.alpha2 :as f]))
+   ["package:mongol/mongol.dart" :as mgl]))
 
 (defn main []
   (m/runApp
