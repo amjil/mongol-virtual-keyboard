@@ -1,6 +1,8 @@
 (ns virtual-keyboard.keyboard-key
   (:require
    ["package:flutter/material.dart" :as m]
+   [virtual-keyboard.popup-key :as popup-key]
+   [virtual-keyboard.candidates :as candidates]
    [cljd.flutter.alpha2 :as f]))
 
 (declare 
@@ -73,6 +75,40 @@
                                                     .color (.white m/Colors)
                                                     .fontFamily "MongolianBaiZheng")
                                        (:text-style info)))))])))
+
+(defn popup-view [^m/Size size additional-keys]
+  (f/widget
+   :get [:info :state]
+   (m/GestureDetector)
+   .child
+   (m/Card
+    .color (or (:long-press-overlay-container-color info)
+               (:key-container-color info))
+    .elevation 10)
+   .child
+   (m/ConstrainedBox
+    .constraints
+    (m/BoxConstraints
+     .minWidth (.-width size)
+     .maxWidth (* (.-width size) 1.8)))
+   .child
+   (m/Wrap
+    .runSpacing 4
+    .spacing 4
+    .direction (.horizontal m/Axis)
+    .alignment (if (> (.length additional-keys) 1)
+                 (.start m/WrapAlignment)
+                 (.spaceEvenly m/WrapAlignment))
+    .children
+    (->
+     additional-keys
+     (.map (fn [virtual-key]
+             (m/DragTarget
+              .builder (fn [context _ _]
+                         (popup-key/key-view info state))
+              .onAccept (fn [_]
+                          (candidates/popup-candidates (:current-key @state))))))
+     (.toList)))))
 
 (defn build-entry [^m/BuildContext ctx]
   (let [^m/RenderBox box (.findRenderObject ctx)

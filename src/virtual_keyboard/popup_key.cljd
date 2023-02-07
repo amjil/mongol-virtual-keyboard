@@ -18,69 +18,72 @@
            .style
            (:text-style info))))
 
-(def english-popup-keys
-  [{:a [{:text "ª" :caps-text "ª"}
-        {:text "æ" :caps-text "Æ"}
-        {:text "à" :caps-text "À"}
-        {:text "á" :caps-text "Á"}
-        {:text "â" :caps-text "Â"}
-        {:text "ä" :caps-text "Â"}
-        {:text "ā" :caps-text "Ā"}
-        {:text "å" :caps-text "Å"}]
-    :b []
-    :c [{:text "ć" :caps-text "Ć"}
-        {:text "č" :caps-text "Č"}
-        {:text "ĉ" :caps-text "Ĉ"}
-        {:text "ċ" :caps-text "Ċ"}
-        {:text "ç" :caps-text "Ç"}]
-    :d []
-    :e [{:text "ë" :caps-text "Ë"}
-        {:text "é" :caps-text "É"}
-        {:text "è" :caps-text "È"}
-        {:text "ê" :caps-text "Ê"}
-        {:text "ę" :caps-text "Ȩ"}
-        {:text "ē" :caps-text "Ē"}
-        {:text "ė" :caps-text "Ė"}]
-    :f []
-    :g []
-    :h []
-    :i [{:text "į" :caps-text "Į"}
-        {:text "ī" :caps-text "Ī"}
-        {:text "ï" :caps-text "Ï"}
-        {:text "ì" :caps-text "Ì"}
-        {:text "î" :caps-text "Î"}
-        {:text "í" :caps-text "Í"}]
-    :j []
-    :k []
-    :l []
-    :m []
-    :n [{:text "ñ" :caps-text "Ñ"}
-        {:text "ń" :caps-text "Ń"}
-        {:text "ǹ" :caps-text "Ǹ"}
-        {:text "ň" :caps-text "Ň"}]
-    :o [{:text "œ" :caps-text "Œ"}
-        {:text "ø" :caps-text "Ø"}
-        {:text "º" :caps-text "ᴼ"}
-        {:text "ō" :caps-text "Ō"}
-        {:text "ö" :caps-text "Ö"}
-        {:text "ò" :caps-text "Ò"}
-        {:text "ô" :caps-text "Ô"}
-        {:text "õ" :caps-text "Õ"}
-        {:text "ó" :caps-text "Ó"}]
-    :p []
-    :q []
-    :r []
-    :s [{:text "ŝ" :caps-text "Š"}
-        {:text "ś" :caps-text "Ś"}
-        {:text "ß" :caps-text "ß"}]
-    :t []
-    :u [{:text "ū" :caps-text "Ū"}
-        {:text "ù" :caps-text "Ù"}
-        {:text "ú" :caps-text "Ú"}
-        {:text "û" :caps-text "Û"}
-        {:text "ü" :caps-text "Ü"}]
-    :v []
-    :w []
-    :x []
-    :y []
-    :z []}])
+(def en-popup-keys
+  {:a [{:text "ª" :caps-text "ª"}
+       {:text "æ" :caps-text "Æ"}
+       {:text "à" :caps-text "À"}
+       {:text "á" :caps-text "Á"}
+       {:text "â" :caps-text "Â"}
+       {:text "ä" :caps-text "Â"}
+       {:text "ā" :caps-text "Ā"}
+       {:text "å" :caps-text "Å"}]
+   :b []
+   :c [{:text "ć" :caps-text "Ć"}
+       {:text "č" :caps-text "Č"}
+       {:text "ĉ" :caps-text "Ĉ"}
+       {:text "ċ" :caps-text "Ċ"}
+       {:text "ç" :caps-text "Ç"}]
+   :d []
+   :e [{:text "ë" :caps-text "Ë"}
+       {:text "é" :caps-text "É"}
+       {:text "è" :caps-text "È"}
+       {:text "ê" :caps-text "Ê"}
+       {:text "ę" :caps-text "Ȩ"}
+       {:text "ē" :caps-text "Ē"}
+       {:text "ė" :caps-text "Ė"}]
+   :f []
+   :g []
+   :h []
+   :i [{:text "į" :caps-text "Į"}
+       {:text "ī" :caps-text "Ī"}
+       {:text "ï" :caps-text "Ï"}
+       {:text "ì" :caps-text "Ì"}
+       {:text "î" :caps-text "Î"}
+       {:text "í" :caps-text "Í"}]
+   :j []
+   :k []
+   :l []
+   :m []
+   :n [{:text "ñ" :caps-text "Ñ"}
+       {:text "ń" :caps-text "Ń"}
+       {:text "ǹ" :caps-text "Ǹ"}
+       {:text "ň" :caps-text "Ň"}]
+   :o [{:text "œ" :caps-text "Œ"}
+       {:text "ø" :caps-text "Ø"}
+       {:text "º" :caps-text "ᴼ"}
+       {:text "ō" :caps-text "Ō"}
+       {:text "ö" :caps-text "Ö"}
+       {:text "ò" :caps-text "Ò"}
+       {:text "ô" :caps-text "Ô"}
+       {:text "õ" :caps-text "Õ"}
+       {:text "ó" :caps-text "Ó"}]
+   :p []
+   :q []
+   :r []
+   :s [{:text "ŝ" :caps-text "Š"}
+       {:text "ś" :caps-text "Ś"}
+       {:text "ß" :caps-text "ß"}]
+   :t []
+   :u [{:text "ū" :caps-text "Ū"}
+       {:text "ù" :caps-text "Ù"}
+       {:text "ú" :caps-text "Ú"}
+       {:text "û" :caps-text "Û"}
+       {:text "ü" :caps-text "Ü"}]
+   :v []
+   :w []
+   :x []
+   :y []
+   :z []})
+
+(def mn-popup-keys
+  {:a [{:text "" :caps-text ""}]})

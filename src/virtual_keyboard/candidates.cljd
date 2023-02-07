@@ -1,4 +1,4 @@
-(ns virtual-keyboard.candicates
+(ns virtual-keyboard.candidates
   (:require
    ["package:mongol_code/mongol_code.dart" :as code]
    ["package:flutter/material.dart" :as m]))
