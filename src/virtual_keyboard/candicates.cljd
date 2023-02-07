@@ -33,8 +33,7 @@
            (not= previous-char (str code.Unicode/GA)))
       (concat
        [{:unicode (str code.Unicode/MVS code.Unicode/E)
-         :display (str code.Unicode/ZWJ previous-char
-                       code.Unicode/MVS code.Unicode/E)}])
+         :display (str code.Unicode/ZWJ previous-char code.Unicode/MVS code.Unicode/E)}])
 
       (not (is-initial controller))
       (concat
@@ -46,17 +45,14 @@
   (cond-> []
     (not (is-initial controller))
     (concat [{:unicode (str code.Unicode/TA code.Unicode/FVS1)
-              :display (str code.Unicode/MONGOLIAN_NIRUGU
-                            code.Unicode/TA code.Unicode/FVS1
-                            code.Unicode/ZWJ)}])))
+              :display (str code.Unicode/MONGOLIAN_NIRUGU code.Unicode/TA code.Unicode/FVS1 code.Unicode/ZWJ)}])))
 
 (defn- popup-candidates-for-y
   [^m/TextEditingController controller]
   (cond-> []
     (is-initial controller)
     (concat [{:unicode (str code.Unicode/YA code.Unicode/FVS1)
-              :display (str code.Unicode/YA code.Unicode/FVS1
-                            code.Unicode/ZWJ)}])))
+              :display (str code.Unicode/YA code.Unicode/FVS1 code.Unicode/ZWJ)}])))
 
 (defn- popup-candidates-for-u
   [^m/TextEditingController controller]
@@ -75,14 +71,14 @@
   (cond-> []
     (not (is-initial controller))
     (concat [{:unicode (str code.Unicode/I code.Unicode/FVS1)
-              :display (str code.Unicode/ZWJ code.Unicode/I
-                            code.Unicode/FVS1 code.Unicode/ZWJ)}])
+              :display (str code.Unicode/ZWJ code.Unicode/I code.Unicode/FVS1 code.Unicode/ZWJ)}])
 
     (and (not (is-initial controller))
          (.isVowel code/MongolCode (get-previous-char controller)))
-    (concat [])))
+    (concat [{:unicode (str code.Unicode/I code.Unicode/FVS2)
+              :display (str code.Unicode/ZWJ code.Unicode/I code.Unicode/ZWJ)}])))
 
-(defn- popup-candidates-for-i
+(defn- popup-candidates-for-o
   [^m/TextEditingController controller]
   (if (is-initial controller)
     []
@@ -180,6 +176,7 @@
      "y" (popup-candidates-for-y controller)
      "u" (popup-candidates-for-u controller)
      "i" (popup-candidates-for-i controller)
+     "o" (popup-candidates-for-o controller)
      "p" []
      "a" (popup-candidates-for-a controller)
      "s" (popup-candidates-for-s controller)

@@ -1,0 +1,107 @@
+(ns virtual-keyboard.keyboard-key
+  (:require
+   ["package:flutter/material.dart" :as m]
+   [cljd.flutter.alpha2 :as f]))
+
+(declare 
+ calculate-offset-adjustment)
+
+(defn key-view [virtual-key on-key-press]
+  (f/widget
+   :context ctx
+   :get [:info :state]
+   :let [^m/OverlayEntry entry (.of m/Overlay ctx)]
+   (m/Expanded)
+   .child
+   (m/Padding
+    .padding
+    (.symmetric
+     m/EdgeInsets
+     .horizontal
+     (:horizontal-key-padding info)
+     .vertical 0))
+   .child
+   (m/Material .color (:key-container-color info))
+   .child
+   (m/InkWell .splashColor m.Colors/white
+              .onTap #(on-key-press virtual-key))
+   .child
+   (m/LongPressDraggable
+    .delay (Duration .milliseconds 300)
+    .dragAnchorStrategy (fn [_ _ _] (m/Offset 10 10))
+    .data (:data virtual-key)
+    .onDragStarted
+    (fn []
+      (let [overlay (.of m/Overlay ctx)]))
+    .onDragEnd
+    (fn []
+      nil)
+    .feedback
+    (m/Card
+     .elevation 12
+     .child
+     (m/Container
+      .width 20
+      .height 20
+      .decoration
+      (m/BoxDecoration
+       .color (.white70 m/Colors)
+       .shape (.circle m/BoxShape)))))
+   .child
+   (m/Container
+    .height (/ (:height info) (:layout-length state))
+    .decoration (m/BoxDecoration
+                 .borderRadius
+                 (.all m/BorderRadius
+                       (.circular m/Radius (:key-border-radius info)))))
+   .child
+   (m/Stack
+    .children
+    [(m/Align .alignment (.center m/Alignment)
+              .child (m/RotatedBox
+                      .quarterTurns (if (:is-rotated state) 1 0)
+                      .child (m/Text (if (:always-caps state)
+                                       (or (:caps-text virtual-key)
+                                           "")
+                                       (or (if (.is-shift-enabled state)
+                                             (:caps-text virtual-key)
+                                             (:text virtual-key))
+                                           ""))
+                                     .style
+                                     (if (.is-rotated state)
+                                       (m/TextStyle .fontSize 24
+                                                    .color (.white m/Colors)
+                                                    .fontFamily "MongolianBaiZheng")
+                                       (:text-style info)))))])))
+
+(defn build-entry [^m/BuildContext ctx]
+  (let [^m/RenderBox box (.findRenderObject ctx)
+        size (.size box)
+        offset (.localToGlobal box (.zero m/Offset))]
+    )
+)
+
+(defn remove-overlay
+  [state]
+  (let [^m/OverlayEntry entry (:entry @state)]
+    (if (some? entry)
+      (.remove entry))
+    (swap! state assoc :entry nil)))
+
+;;   _insertOverlay() {
+;;     final overlay = Overlay.of(context)!;
+;;     // important to nullify entry and rebuild the overlay because the global positions won't get reset when changing languages
+;;     entry = null;
+;;     _buildOverlay();
+;;     overlay.insert(entry!);
+;;   }
+
+
+(defn- calculate-offset-adjustment
+  [length]
+  (cond
+    (> length 9) 3.9
+    (> length 7) 2.9
+    (> length 6) 2
+    (> length 4) 2
+    :else 1))
