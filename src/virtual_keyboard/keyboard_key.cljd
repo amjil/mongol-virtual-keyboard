@@ -5,13 +5,15 @@
    [virtual-keyboard.candidates :as candidates]
    [cljd.flutter.alpha2 :as f]))
 
-(declare 
- calculate-offset-adjustment)
+(declare
+ calculate-offset-adjustment
+ insert-overlay
+ remove-overlay)
 
 (defn key-view [virtual-key on-key-press]
   (f/widget
    :context ctx
-   :get [:info :state]
+   :get [:info :state :editing-controller]
    :let [^m/OverlayEntry entry (.of m/Overlay ctx)]
    (m/Expanded)
    .child
@@ -29,15 +31,15 @@
               .onTap #(on-key-press virtual-key))
    .child
    (m/LongPressDraggable
-    .delay (Duration .milliseconds 300)
+    .delay (Duration .milliseconds 200)
     .dragAnchorStrategy (fn [_ _ _] (m/Offset 10 10))
     .data (:data virtual-key)
     .onDragStarted
     (fn []
-      (let [overlay (.of m/Overlay ctx)]))
+      (insert-overlay state ctx editing-controller (:id virtual-key)))
     .onDragEnd
     (fn []
-      nil)
+      (remove-overlay state))
     .feedback
     (m/Card
      .elevation 12
@@ -65,18 +67,18 @@
                       .child (m/Text (if (:always-caps state)
                                        (or (:caps-text virtual-key)
                                            "")
-                                       (or (if (.is-shift-enabled state)
+                                       (or (if (:is-shift-enabled state)
                                              (:caps-text virtual-key)
                                              (:text virtual-key))
                                            ""))
                                      .style
-                                     (if (.is-rotated state)
+                                     (if (:is-rotated state)
                                        (m/TextStyle .fontSize 24
                                                     .color (.white m/Colors)
                                                     .fontFamily "MongolianBaiZheng")
                                        (:text-style info)))))])))
 
-(defn popup-view [^m/Size size additional-keys]
+(defn popup-view [^m/Size size current-key additional-keys]
   (f/widget
    :get [:info :state]
    (m/GestureDetector)
@@ -96,42 +98,51 @@
     .runSpacing 4
     .spacing 4
     .direction (.horizontal m/Axis)
-    .alignment (if (> (.length additional-keys) 1)
+    .alignment (if (> (size additional-keys) 1)
                  (.start m/WrapAlignment)
                  (.spaceEvenly m/WrapAlignment))
     .children
-    (->
-     additional-keys
-     (.map (fn [virtual-key]
-             (m/DragTarget
-              .builder (fn [context _ _]
-                         (popup-key/key-view info state))
-              .onAccept (fn [_]
-                          (candidates/popup-candidates (:current-key @state))))))
-     (.toList)))))
+    (map (fn [virtual-key]
+           (m/DragTarget
+            .builder (fn [_ _ _]
+                       (popup-key/key-view virtual-key state))
+            .onAccept (fn [_]
+                          ;; (candidates/popup-candidates current-key)
+                        (dart:core/print "onAccept"))))))))
 
-(defn build-entry [^m/BuildContext ctx]
+(defn build-entry [^m/BuildContext ctx
+                   ^m/TextEditingController controller
+                   current-key]
   (let [^m/RenderBox box (.findRenderObject ctx)
-        size (.size box)
-        offset (.localToGlobal box (.zero m/Offset))]
-    )
-)
+        size (.-size box)
+        offset (.localToGlobal box (.zero m/Offset))
+        additional-keys (candidates/popup-candidates controller current-key)
+        top-offset-adjustment (calculate-offset-adjustment (count additional-keys))]
+    (m/OverlayEntry
+     .builder (fn [_]
+                (m/Positioned
+                 .top (- (.-dy offset) (* top-offset-adjustment (.-height size)))
+                 .left (if (> (count additional-keys) 1)
+                         (- (.-dx offset) 24)
+                         (.-dx offset))
+                 .child (popup-view size current-key controller))))))
 
 (defn remove-overlay
   [state]
   (let [^m/OverlayEntry entry (:entry @state)]
-    (if (some? entry)
+    (if-not (nil? entry)
       (.remove entry))
     (swap! state assoc :entry nil)))
 
-;;   _insertOverlay() {
-;;     final overlay = Overlay.of(context)!;
-;;     // important to nullify entry and rebuild the overlay because the global positions won't get reset when changing languages
-;;     entry = null;
-;;     _buildOverlay();
-;;     overlay.insert(entry!);
-;;   }
-
+(defn insert-overlay 
+  [state 
+   ^m/BuildContext ctx 
+   ^m/TextEditingController controller
+   current-key]
+  (let [^m/OverlayEntry entry (build-entry ctx controller current-key)]
+    (swap! state assoc :entry nil)
+    (.insert (.of m/Overlay ctx) entry)
+    (swap! state assoc :entry entry)))
 
 (defn- calculate-offset-adjustment
   [length]
