@@ -107,7 +107,6 @@
             .builder (fn [_ _ _]
                        (popup-key/key-view virtual-key state))
             .onAccept (fn [_]
-                          ;; (candidates/popup-candidates current-key)
                         (dart:core/print "onAccept"))))))))
 
 (defn build-entry [^m/BuildContext ctx

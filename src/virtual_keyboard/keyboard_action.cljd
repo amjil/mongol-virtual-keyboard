@@ -1,0 +1,186 @@
+(ns virtual-keyboard.keyboard-action
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["dart:async" :as a]
+   [virtual-keyboard.options :as options]
+   [cljd.flutter.alpha2 :as f]))
+
+(declare on-key-press
+         backspace-action-key
+         action-key-container)
+
+(defn action-key [vkey row-length rows-count]
+  (f/widget
+   :context ctx
+   :get [:info :text-controller :state]
+   :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
+         height (-> m/MediaQuery (.of ctx) .-size .-height)
+         key-height (/ height rows-count)
+         key-base-width (/ width rows-count)]
+   (m/InkWell)
+
+   .child
+   (m/Padding
+    .padding
+    (.symmetric
+     m/EdgeInsets
+     .horizontal (:horizontal-key-padding info)
+     .vertical 0))
+
+   .child
+   (m/Container
+    .alignment (.center m/Alignment)
+    .height key-height)
+
+   .child
+   (condp = (:action vkey)
+     :backspace
+     (m/GestureDetector
+      .onLongPress
+      (fn []
+        (swap! state assoc :long-press true)
+        (.periodic
+         a/Timer
+         (Duration .milliseconds options/back-space-event-period)
+         (fn [^a/Timer timer] (if (true? (:long-press @state))
+                                (on-key-press text-controller vkey state)
+                                (.cancel timer)))))
+      .onLongPressUp
+      (fn [] (swap! state assoc :long-press false))
+      .child
+      (action-key-container
+       {:width (if (<= row-length 9) (* 0.5 key-base-width) (* 1 key-base-width))
+        :height key-height
+        :child (m/Icon (.backspace m/Icons) .color (:text-color info))} info))
+
+     :shift
+     (action-key-container
+      {:width (if (<= row-length 9) (* 0.5 key-base-width) (* 1 key-base-width))
+       :height key-height
+       :child (m/Icon (.arrow_upward m/Icons) .color (:text-color info))} info)
+
+     :return
+     (action-key-container
+      {:width (* 0.6 key-base-width)
+       :height key-height
+       :child (m/Icon (.keyboard_return m/Icons) .color (:text-color info))} info)
+
+     :space
+     (action-key-container
+      {:width double/infinity
+       :height key-height
+       :child (m/Icon (.space_bar m/Icons) .color (:text-color info))} info)
+
+     :special-characters
+     (action-key-container
+      {:width double/infinity
+       :height key-height
+       :child (m/Center
+               .child
+               (m/Text
+                "?123"
+                .textAlign (.center m/TextAlign)
+                .style (m/TextStyle
+                        .color (:shift-click-text-color info)
+                        .fontWeight (.w600 m/FontWeight)
+                        .fontSize (:shift-click-font-size info))))} info)
+
+     :spacer-block
+     (action-key-container
+      {:width double/infinity
+       :height key-height
+       :child (m/Text "")} info)
+
+     :small-spacer-block
+     (action-key-container
+      {:width (/ key-base-width 1.5)
+       :height key-height
+       :child (m/Text "")} info)
+
+     :extra-small-spacer-block
+     (action-key-container
+      {:width (/ key-base-width 2)
+       :height key-height
+       :child (m/Text "")} info)
+
+     :other-special-characters
+     (action-key-container
+      {:width (if (<= row-length 9) (* 0.48 key-base-width) (* 0.6 key-base-width))
+       :height key-height
+       :child (m/Center
+               .child
+               (m/Text
+                "=\\\\<"
+                .style
+                (m/TextStyle .color (:shift-click-text-color info)
+                             .fontWeight (.w600 m/FontWeight)
+                             .fontSize (:shift-click-font-size info))))} info)
+
+     :abc
+     (action-key-container
+      {:width (* 0.6 key-base-width)
+       :height key-height
+       :child (m/Center
+               .child
+               (m/Text
+                "ABC"
+                .style
+                (m/TextStyle .color (:shift-click-text-color info)
+                             .fontWeight (.w600 m/FontWeight)
+                             .fontSize (:shift-click-font-size info))))} info)
+
+     :empty
+     (m/Container))))
+
+(defn- key-box-decoration
+  [info]
+  (m/BoxDecoration
+   .color (:action-keys-container-color info)
+   .borderRadius
+   (.all m/BorderRadius
+         (.circular m/Radius
+                    (:key-cap-border-radius info)))))
+
+(defn action-key-container 
+  [{width :widht height :height child :child}
+   info]
+  (m/Container
+     .height height
+     .width width
+     .decoration (key-box-decoration info)
+     .child child))
+
+
+(defn on-key-press 
+  [^m/TextEditingController controller
+   vkey
+   state]
+   (let [text (.-text controller)
+         cursor (-> controller .-selection .-baseOffset)]
+
+     (condp = (:key-type vkey)
+       :string
+       (set! (.-text controller)
+             (str (subs text 0 cursor)
+                  (if (:is-shift @state)
+                    (:caps-text vkey) (:text vkey))
+                  (subs text cursor)))
+
+       :action
+       (condp = (:action vkey)
+         :backspace
+         (set! (.-text controller)
+               (str (subs text 0 (dec cursor))
+                    (subs text cursor)))
+
+         :return
+         (set! (.-text controller)
+               (str text "\n"))
+
+         :space
+         (set! (.-text controller)
+               (str text " "))
+
+         :shift
+         (swap! state :is-shift true)))))
+

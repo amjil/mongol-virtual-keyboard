@@ -165,7 +165,7 @@
               :display (str code.Unicode/ZWJ code.Unicode/U code.Unicode/FVS2 code.Unicode/ZWJ)}])))
 
 (defn popup-candidates 
-  [char ^m/TextEditingController controller]
+  [^m/TextEditingController controller char]
   (str
    (condp = char
      "q" [{:unicode (str code.Unicode/CHI)}]

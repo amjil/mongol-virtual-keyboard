@@ -1,0 +1,31 @@
+(ns virtual-keyboard.options
+  (:require 
+   ["package:flutter/material.dart" :as m]))
+
+(def font-name "MongolianBaiZheng")
+
+(def keyboard-default-height 300)
+(def back-space-event-period 250)
+
+(def keyboard-key-type [:action :normal])
+
+(def keyboard-option 
+  {:padding 0
+   :reverse-layout false
+   :text-controller nil
+   :width 0
+   :height keyboard-default-height
+   :key-border-radius 0
+   :row-vertical-padding 0
+   :horizontal-key-padding 4
+   :font-size 14
+   :shift-click-text-color m.Colors/black
+   :shift-click-font-size 10
+   :key-container-color m.Colors/transparent
+   :long-press-container-color nil
+   :long-press-key-color nil
+   :action-keys-container-color m.Colors/transparent
+   :key-cap-bordr-radius 0
+   :shift-click-key-padding 6
+   :always-caps false
+   :include-secondary-key-in-popup true})
