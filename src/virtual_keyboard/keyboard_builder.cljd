@@ -1,0 +1,62 @@
+(ns virtual-keyboard.keyboard-builder
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:mongol_code/mongol_code.dart" :as code]
+   ["package:mongol/mongol.dart" :as mgl]
+   [virtual-keyboard.keyboard-key :as keyboard-key]
+   [virtual-keyboard.keyboard-action :as keyboard-action]
+   [clojure.string :as str]
+   [cljd.flutter.alpha2 :as f]))
+
+(def mn-index-layout
+  [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]
+   ["a" "s" "d" "f" "g" "h" "j" "k" "l" "ng"]
+   ["_" "z" "x" "c" "v" "b" "n" "m" "_"]])
+
+(defn is-basic-mongolian-alphabet [x]
+  ;; code.MongolCode/_isBasicMongolianAlphabet just can't use now
+  (and (>= x code.Unicode/A)
+       (<= x code.Unicode/CHI)))
+
+(defn key-map-builder
+  [{m :row-index n :item-index
+    items-count :items-count
+    rows-count :rows-count}
+   item]
+  (cond
+    (and
+     (string? item)
+     (some? (filter #(code.MongolCode/isMongolian (int %)) item)))
+    (keyboard-key/key-widget
+     {:text (->> item
+                 (filter #(code.MongolCode/isMongolian (int %)))
+                 (filter #(is-basic-mongolian-alphabet (int %)))
+                 str)
+      :id (get-in mn-index-layout [m n])
+      :is-rotated true
+      :display item})
+
+    (string? item)
+    (keyboard-key/key-widget
+     {:key-type :string
+      :caps-text (str/upper-case item)
+      :text item})
+
+    :else
+    (keyboard-action/action-widget
+     {:key-type :action
+      :action item}
+     items-count rows-count)))
+
+(defn keyboard-layout-builder [layout]
+  (map-indexed
+   (fn [m row]
+     (map-indexed
+      (fn [n itm]
+        (key-map-builder
+         {:row-index m :item-index n
+          :items-count (count (nth layout m))
+          :rows-count (count layout)}
+         (get-in layout [m n])))
+      row))
+   layout))

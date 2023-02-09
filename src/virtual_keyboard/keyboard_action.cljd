@@ -2,23 +2,21 @@
   (:require
    ["package:flutter/material.dart" :as m]
    ["dart:async" :as a]
-   [virtual-keyboard.options :as options]
    [cljd.flutter.alpha2 :as f]))
 
 (declare on-key-press
          backspace-action-key
          action-key-container)
 
-(defn action-key [vkey row-length rows-count]
+(defn action-widget [vkey items-count rows-count]
   (f/widget
-   :context ctx
    :get [:info :text-controller :state]
-   :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-         height (-> m/MediaQuery (.of ctx) .-size .-height)
+   :let [width (:width info) 
+         height (:height info)
          key-height (/ height rows-count)
-         key-base-width (/ width rows-count)]
-   (m/InkWell)
+         key-base-width (/ width items-count)]
 
+   (m/InkWell)
    .child
    (m/Padding
     .padding
@@ -36,26 +34,28 @@
    (condp = (:action vkey)
      :backspace
      (m/GestureDetector
-      .onLongPress
-      (fn []
-        (swap! state assoc :long-press true)
-        (.periodic
-         a/Timer
-         (Duration .milliseconds options/back-space-event-period)
-         (fn [^a/Timer timer] (if (true? (:long-press @state))
-                                (on-key-press text-controller vkey state)
-                                (.cancel timer)))))
+      ;; .onLongPress
+      ;; (fn []
+      ;;   (swap! state assoc :long-press true)
+      ;;   (.periodic
+      ;;    a/Timer
+      ;;    (Duration .milliseconds 300);options/back-space-event-period)
+      ;;    (fn [^a/Timer timer] (if (true? (:long-press @state))
+      ;;                           (on-key-press text-controller vkey state)
+      ;;                           (.cancel timer))
+      ;;      nil))
+      ;;   nil)
       .onLongPressUp
       (fn [] (swap! state assoc :long-press false))
       .child
       (action-key-container
-       {:width (if (<= row-length 9) (* 0.5 key-base-width) (* 1 key-base-width))
+       {:width (if (<= items-count 9) (* 0.5 key-base-width) (* 1 key-base-width))
         :height key-height
         :child (m/Icon (.backspace m/Icons) .color (:text-color info))} info))
 
      :shift
      (action-key-container
-      {:width (if (<= row-length 9) (* 0.5 key-base-width) (* 1 key-base-width))
+      {:width (if (<= items-count 9) (* 0.5 key-base-width) (* 1 key-base-width))
        :height key-height
        :child (m/Icon (.arrow_upward m/Icons) .color (:text-color info))} info)
 
@@ -105,7 +105,7 @@
 
      :other-special-characters
      (action-key-container
-      {:width (if (<= row-length 9) (* 0.48 key-base-width) (* 0.6 key-base-width))
+      {:width (if (<= items-count 9) (* 0.48 key-base-width) (* 0.6 key-base-width))
        :height key-height
        :child (m/Center
                .child
@@ -139,7 +139,8 @@
    .borderRadius
    (.all m/BorderRadius
          (.circular m/Radius
-                    (:key-cap-border-radius info)))))
+                    0))))
+                    ;; (:key-cap-border-radius info)))))
 
 (defn action-key-container 
   [{width :widht height :height child :child}
@@ -151,36 +152,42 @@
      .child child))
 
 
-(defn on-key-press 
+(defn on-key-press
   [^m/TextEditingController controller
    vkey
    state]
-   (let [text (.-text controller)
-         cursor (-> controller .-selection .-baseOffset)]
+  (let [text (.-text controller)
+        cursor (-> controller .-selection .-baseOffset)]
 
-     (condp = (:key-type vkey)
-       :string
-       (set! (.-text controller)
-             (str (subs text 0 cursor)
-                  (if (:is-shift @state)
-                    (:caps-text vkey) (:text vkey))
-                  (subs text cursor)))
+    (condp = (:key-type vkey)
+      :string
+      (let [new-str (cond
+                      (and (:is-shift-enabled state)
+                           (some? (:caps-text vkey)))
+                      (:caps-text vkey)
 
-       :action
-       (condp = (:action vkey)
-         :backspace
-         (set! (.-text controller)
-               (str (subs text 0 (dec cursor))
-                    (subs text cursor)))
+                      :else
+                      (:text vkey))]
+        (set! (.-text controller)
+              (str (subs text 0 cursor)
+                   new-str
+                   (subs text cursor))))
 
-         :return
-         (set! (.-text controller)
-               (str text "\n"))
+      :action
+      (condp = (:action vkey)
+        :backspace
+        (set! (.-text controller)
+              (str (subs text 0 (dec cursor))
+                   (subs text cursor)))
 
-         :space
-         (set! (.-text controller)
-               (str text " "))
+        :return
+        (set! (.-text controller)
+              (str text "\n"))
 
-         :shift
-         (swap! state :is-shift true)))))
+        :space
+        (set! (.-text controller)
+              (str text " "))
+
+        :shift
+        (swap! state :is-shift-enabled true)))))
 

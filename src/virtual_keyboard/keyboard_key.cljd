@@ -2,7 +2,9 @@
   (:require
    ["package:flutter/material.dart" :as m]
    [virtual-keyboard.popup-key :as popup-key]
+   [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.candidates :as candidates]
+   [virtual-keyboard.utils :as utils]
    [cljd.flutter.alpha2 :as f]))
 
 (declare
@@ -10,11 +12,11 @@
  insert-overlay
  remove-overlay)
 
-(defn key-view [virtual-key on-key-press]
+(defn key-widget [virtual-key]
   (f/widget
    :context ctx
    :get [:info :state :editing-controller]
-   :let [^m/OverlayEntry entry (.of m/Overlay ctx)]
+   :let [^m/OverlayState overlay (.of m/Overlay ctx)]
    (m/Expanded)
    .child
    (m/Padding
@@ -27,18 +29,19 @@
    .child
    (m/Material .color (:key-container-color info))
    .child
-   (m/InkWell .splashColor m.Colors/white
-              .onTap #(on-key-press virtual-key))
+   (m/InkWell
+    .splashColor m.Colors/white
+    .onTap #(keyboard-action/on-key-press editing-controller virtual-key state))
    .child
    (m/LongPressDraggable
     .delay (Duration .milliseconds 200)
     .dragAnchorStrategy (fn [_ _ _] (m/Offset 10 10))
-    .data (:data virtual-key)
+    .data (:text virtual-key)
     .onDragStarted
     (fn []
       (insert-overlay state ctx editing-controller (:id virtual-key)))
     .onDragEnd
-    (fn []
+    (fn [_]
       (remove-overlay state))
     .feedback
     (m/Card
@@ -53,7 +56,8 @@
        .shape (.circle m/BoxShape)))))
    .child
    (m/Container
-    .height (/ (:height info) (:layout-length state))
+    ;; .height (/ (:height info) (:layout-length state))
+    .height (/ (:height info) 4)
     .decoration (m/BoxDecoration
                  .borderRadius
                  (.all m/BorderRadius
@@ -63,24 +67,18 @@
     .children
     [(m/Align .alignment (.center m/Alignment)
               .child (m/RotatedBox
-                      .quarterTurns (if (:is-rotated state) 1 0)
-                      .child (m/Text (if (:always-caps state)
-                                       (or (:caps-text virtual-key)
-                                           "")
-                                       (or (if (:is-shift-enabled state)
-                                             (:caps-text virtual-key)
-                                             (:text virtual-key))
-                                           ""))
+                      .quarterTurns (if (:is-rotated virtual-key) 1 0)
+                      .child (m/Text (utils/key-text state virtual-key)
                                      .style
-                                     (if (:is-rotated state)
+                                     (if (:is-rotated virtual-key)
                                        (m/TextStyle .fontSize 24
                                                     .color (.white m/Colors)
                                                     .fontFamily "MongolianBaiZheng")
                                        (:text-style info)))))])))
 
-(defn popup-view [^m/Size size current-key additional-keys]
+(defn overlay-popup-widget [^m/Size size additional-keys]
   (f/widget
-   :get [:info :state]
+   :get [:info :state :text-controller]
    (m/GestureDetector)
    .child
    (m/Card
@@ -98,16 +96,17 @@
     .runSpacing 4
     .spacing 4
     .direction (.horizontal m/Axis)
-    .alignment (if (> (size additional-keys) 1)
+    .alignment (if (> (count additional-keys) 1)
                  (.start m/WrapAlignment)
                  (.spaceEvenly m/WrapAlignment))
     .children
-    (map (fn [virtual-key]
+    (map (fn [vkey]
            (m/DragTarget
             .builder (fn [_ _ _]
-                       (popup-key/key-view virtual-key state))
+                       (popup-key/key-widget info state vkey text-controller))
             .onAccept (fn [_]
-                        (dart:core/print "onAccept"))))))))
+                        (dart:core/print "onAccept")))) 
+         additional-keys))))
 
 (defn build-entry [^m/BuildContext ctx
                    ^m/TextEditingController controller
@@ -124,7 +123,7 @@
                  .left (if (> (count additional-keys) 1)
                          (- (.-dx offset) 24)
                          (.-dx offset))
-                 .child (popup-view size current-key controller))))))
+                 .child (overlay-popup-widget size additional-keys))))))
 
 (defn remove-overlay
   [state]

@@ -1,0 +1,33 @@
+(ns virtual-keyboard.keyboard-layouts
+  (:require
+   ["package:flutter/material.dart" :as m]
+   [virtual-keyboard.keyboard-key :as keyboard-key]
+   [cljd.flutter.alpha2 :as f]
+   ))
+
+(def mn-layout 
+  [["ᠴ᠊" "ᠸ᠊" "ᠡ" "ᠷ᠊" "ᠲ᠊" "ᠶ᠊" "ᠦ᠊" "ᠢ" "ᠥ" "ᠫ᠊"]
+   ["ᠠ" "ᠰ᠊" "ᠳ" "ᠹ᠊" "ᠭ᠊" "ᠬ᠊" "ᠵ᠊" "ᠺ᠊" "ᠯ᠊" " ᠩ"]
+   [:shift "ᠽ᠊" "ᠱ᠊" "ᠣ" "ᠤ᠊" "ᠪ᠊" "ᠨ᠊" "ᠮ᠊" :backspace]])
+  ;;  [:special-characters "᠂" :space "᠃" :return]])
+  ;;  [:special-characters :switch-layout "᠂" :space "᠃" :return]])
+
+;; Todo ......
+(def mn-special-layout
+  [["1" "2" "3" "4" "5" "6" "7" "8" "9" "0"]
+   [:empty "@" "#" "€" "_" "&" "-" "+" "(" ")" "/"]
+   [:other-special-characters "*" "\\"" """ ":" ";" "!" "?" :backspace]
+   [:abc " " :space "." :return]])
+
+(def mn-other-special-layout
+  ;;
+  [["~" "\"" "|" "•" "√" "∏" "÷" "×" "¶" "△"]
+   ["£" "¥" "$" "¢" "ˆ" "˚" "=" "❴" "❵" "\\"]
+   [:special-characters "%" "©" "®" "™" "✓" "[" "]" :backspace]
+   [:abc, "<" :space ">" :return]])
+
+
+(def layouts 
+  {:mn {:abc mn-layout
+        :special mn-special-layout
+        :other-special mn-other-special-layout}})

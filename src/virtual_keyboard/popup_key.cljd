@@ -1,20 +1,21 @@
 (ns virtual-keyboard.popup-key
   (:require
    ["package:flutter/material.dart" :as m]
+   [virtual-keyboard.keyboard-action :as keyboard-action]
+   [virtual-keyboard.utils :as utils]
    [cljd.flutter.alpha2 :as f]))
 
-(defn key-view [info state]
+(defn key-widget [info state vkey 
+                ^m/TextEditingController controller]
   (f/widget
-   (m/InkWell .onTap (fn [] (:on-key-press info)))
+   (m/InkWell .onTap #(keyboard-action/on-key-press controller vkey state))
    .child
    (m/Container .color (:key-container-color info))
    .child
    (m/Padding .padding
               (.symmetric m/EdgeInsets .vertical 16 .horizontal 24))
    .child
-   (m/Text (if (:is-shift-enabled state)
-             (:caps-text info)
-             (:text info))
+   (m/Text (utils/key-text state vkey)
            .style
            (:text-style info))))
 

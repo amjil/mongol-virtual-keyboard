@@ -4,7 +4,7 @@
 
 (def font-name "MongolianBaiZheng")
 
-(def keyboard-default-height 300)
+(def keyboard-default-height 240)
 (def back-space-event-period 250)
 
 (def keyboard-key-type [:action :normal])
@@ -12,20 +12,25 @@
 (def keyboard-option 
   {:padding 0
    :reverse-layout false
-   :text-controller nil
-   :width 0
+  ;;  :width nil
    :height keyboard-default-height
    :key-border-radius 0
-   :row-vertical-padding 0
-   :horizontal-key-padding 4
-   :font-size 14
-   :shift-click-text-color m.Colors/black
-   :shift-click-font-size 10
-   :key-container-color m.Colors/transparent
-   :long-press-container-color nil
-   :long-press-key-color nil
-   :action-keys-container-color m.Colors/transparent
-   :key-cap-bordr-radius 0
-   :shift-click-key-padding 6
+   :row-vertical-padding 4.0
+   :horizontal-key-padding 4.0
+   :font-size 26
+   :shift-click-text-color m.Colors/white
+   :shift-click-font-size 14
+   :key-container-color m.Colors/lightBlue ;;m.Colors/transparent
+   :long-press-container-color m.Colors/black
+   :long-press-key-color m.Colors/orange
+   :action-keys-container-color (-> m/Colors .-lightBlue .-shade900);m.Colors/transparent
+   :key-cap-border-radius 0
+   :shift-click-key-padding 4.0
    :always-caps false
+   :text-color m.Colors/white
    :include-secondary-key-in-popup true})
+
+(def keyboard-state 
+  {:long-press false
+   :is-shift-enabled false
+   :entry nil})
