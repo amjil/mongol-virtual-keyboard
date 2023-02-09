@@ -9,7 +9,7 @@
 (declare keyboard-rows
          keyboard-row-keys)
 
-(defn keyboard [info]
+(defn keyboard [info controller]
   (f/widget
    :context ctx
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
@@ -17,7 +17,7 @@
          info (merge options/keyboard-option info {:width width})
          state (atom options/keyboard-state)
          mn-keys (builder/keyboard-layout-builder layouts/mn-layout)]
-   :bind {:info info :state state}
+   :bind {:info info :state state :text-controller controller}
    (keyboard-rows info mn-keys)))
 
 (defn keyboard-rows [info rows]
@@ -31,22 +31,22 @@
 
 (defn keyboard-row-keys [info items]
   (doall
-  (map
-   (fn [x]
-     (f/widget
-      (m/Material
-       .color m.Colors/transparent)
-      .child
-      (m/Padding
-       .padding
-       (.symmetric
-        m/EdgeInsets
-        .vertical (:row-vertical-padding info)
-        .horizontal 1))
-      .child
-      (m/Row
-       .mainAxisAlignment (.spaceAround m/MainAxisAlignment)
-       .crossAxisAlignment (.center m/CrossAxisAlignment)
-       .children x)))
+   (map
+    (fn [x]
+      (f/widget
+       (m/Material
+        .color m.Colors/transparent)
+       .child
+       (m/Padding
+        .padding
+        (.symmetric
+         m/EdgeInsets
+         .vertical (:row-vertical-padding info)
+         .horizontal 1))
+       .child
+       (m/Row
+        .mainAxisAlignment (.spaceAround m/MainAxisAlignment)
+        .crossAxisAlignment (.center m/CrossAxisAlignment)
+        .children x)))
 
-   items)))
+    items)))

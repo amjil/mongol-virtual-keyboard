@@ -1,0 +1,14 @@
+(ns virtual-keyboard.example.basic
+  (:require
+   ["package:flutter/material.dart" :as m]
+   [cljd.flutter.alpha2 :as f]
+   [virtual-keyboard.keyboard :as keyboard]))
+
+(defn basic []
+  ;; (keyboard/keyboard
+  ;;  {:key-cap-border-radius 0} nil)
+  (m/Scaffold
+   .appBar (m/AppBar
+            .title (m/Text "Mongolian Search Bar"))
+   .body
+   (m/Text "abc")))

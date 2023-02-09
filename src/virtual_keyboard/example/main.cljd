@@ -1,8 +1,8 @@
-(ns virtual-keyboard.main
+(ns virtual-keyboard.example.main
   (:require
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
-   [virtual-keyboard.keyboard :as keyboard]))
+   [virtual-keyboard.example.basic :as example-basic]))
 
 (defn main []
   (m/runApp
@@ -11,16 +11,17 @@
     .theme (m/ThemeData .primarySwatch m.Colors/blue
                         .fontFamily "MongolianBaiZheng")
     .home
-    (m/Scaffold
-     .appBar (m/AppBar
-              .title (m/Text "Mongolian Search Bar"))
-     .body
+    (example-basic/basic)
+    ;; (m/Scaffold
+    ;;  .appBar (m/AppBar
+    ;;           .title (m/Text "Mongolian Search Bar"))
+    ;;  .body
     ;;  (m/Center
     ;;   .child (mgl/MongolText
     ;;           " ᠳᠠᠶᠠᠭᠠᠷ ᠰᠠᠶ᠋ᠢᠨ ᠪᠠᠶ᠋ᠢᠨ᠎ᠠ ᠊ᠤᠤ?"
     ;;           .style (m/TextStyle
     ;;                   .color m.Colors/blue
     ;;                   ;; .fontFamily "MongolianBaiZheng"
-    ;;                   .fontSize 32.0)))
-     (keyboard/keyboard {:key-cap-border-radius 6}))
+    ;;                   .fontSize 32.0))))
+    ;;  (example-basic/basic))
     .debugShowCheckedModeBanner false)))
