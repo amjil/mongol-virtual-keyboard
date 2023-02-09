@@ -22,5 +22,5 @@
     ;;                   .color m.Colors/blue
     ;;                   ;; .fontFamily "MongolianBaiZheng"
     ;;                   .fontSize 32.0)))
-     (keyboard/keyboard {}))
+     (keyboard/keyboard {:key-cap-border-radius 6}))
     .debugShowCheckedModeBanner false)))

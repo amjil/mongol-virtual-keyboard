@@ -25,12 +25,19 @@
      .horizontal (:horizontal-key-padding info)
      .vertical 0))
 
-   .child
-   (m/Container
-    .alignment (.center m/Alignment)
-    .height key-height
-    ;; .width double/infinity
-    )
+  ;;  .child
+  ;;  (m/Container
+  ;;   .alignment (.center m/Alignment)
+  ;;   .height key-height
+  ;;   .decoration
+  ;;   (m/BoxDecoration
+  ;;    .color (:action-keys-container-color info)
+  ;;    .borderRadius
+  ;;    (.all m/BorderRadius
+  ;;          (.circular m/Radius
+  ;;                     (:key-cap-border-radius info))))
+  ;;   ;; .width double/infinity
+  ;;   )
 
    .child
    (condp = (:action vkey)
@@ -50,25 +57,25 @@
       (fn [] (swap! state assoc :long-press false))
       .child
       (action-key-container
-       {:width (* 1.5 key-base-width)
+       {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
         :height key-height
         :child (m/Icon (.backspace m/Icons) .color (:text-color info))} info))
 
      :shift
      (action-key-container
-      {:width (* 1.5 key-base-width)
+      {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Icon (.arrow_upward m/Icons) .color (:text-color info))} info)
 
      :return
      (action-key-container
-      {:width (* 1.5 key-base-width)
+      {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Icon (.keyboard_return m/Icons) .color (:text-color info))} info)
 
      :space
      (action-key-container
-      {:width (* 4.5 key-base-width)
+      {:width (- (* 5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -83,7 +90,7 @@
 
      :special-characters
      (action-key-container
-      {:width (* 1.5 key-base-width)
+      {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -150,8 +157,7 @@
    .borderRadius
    (.all m/BorderRadius
          (.circular m/Radius
-                    0))))
-                    ;; (:key-cap-border-radius info)))))
+                    (:key-cap-border-radius info)))))
 
 (defn action-key-container 
   [{width :width height :height child :child}

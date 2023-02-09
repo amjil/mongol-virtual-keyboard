@@ -14,7 +14,6 @@
    :reverse-layout false
   ;;  :width nil
    :height keyboard-default-height
-   :key-border-radius 0
    :row-vertical-padding 4.0
    :horizontal-key-padding 4.0
    :font-size 26

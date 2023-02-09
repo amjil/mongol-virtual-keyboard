@@ -27,6 +27,14 @@
      (:horizontal-key-padding info)
      .vertical 0))
    .child
+   (m/Container
+    .clipBehavior (.hardEdge m/Clip)
+    .height (/ (:height info) rows-count)
+    .decoration (m/BoxDecoration
+                 .borderRadius
+                 (.all m/BorderRadius
+                       (.circular m/Radius (:key-cap-border-radius info)))))
+   .child
    (m/Material .color (:key-container-color info))
    .child
    (m/InkWell
@@ -54,13 +62,6 @@
       (m/BoxDecoration
        .color (.white70 m/Colors)
        .shape (.circle m/BoxShape)))))
-   .child
-   (m/Container
-    .height (/ (:height info) rows-count)
-    .decoration (m/BoxDecoration
-                 .borderRadius
-                 (.all m/BorderRadius
-                       (.circular m/Radius (:key-border-radius info)))))
    .child
    (m/Stack
     .children
