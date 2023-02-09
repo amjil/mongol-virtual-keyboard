@@ -15,7 +15,7 @@
 (defn key-widget [virtual-key items-count rows-count]
   (f/widget
    :context ctx
-   :get [:info :state :editing-controller]
+   :get [:info :state :text-controller]
    :let [^m/OverlayState overlay (.of m/Overlay ctx)]
    (m/Expanded)
    .child
@@ -39,8 +39,9 @@
    .child
    (m/InkWell
     .splashColor m.Colors/white
-    .onTap ;#(keyboard-action/on-key-press editing-controller virtual-key state)
-    #(dart:core/print "xxx"))
+    .onTap #(keyboard-action/on-key-press text-controller virtual-key state)
+    ;; #(dart:core/print "xxx")
+    )
    .child
    (m/LongPressDraggable
     .delay (Duration .milliseconds 200)
@@ -48,7 +49,7 @@
     .data (:text virtual-key)
     .onDragStarted
     (fn []
-      (insert-overlay state ctx editing-controller (:id virtual-key)))
+      (insert-overlay state ctx text-controller (:id virtual-key)))
     .onDragEnd
     (fn [_]
       (remove-overlay state))

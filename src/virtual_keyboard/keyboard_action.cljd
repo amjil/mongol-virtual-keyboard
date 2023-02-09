@@ -57,19 +57,19 @@
       (action-key-container
        {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
         :height key-height
-        :child (m/Icon (.backspace m/Icons) .color (:text-color info))} info))
+        :child (m/Icon (.backspace m/Icons) .color (:text-color info))} vkey))
 
      :shift
      (action-key-container
       {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
-       :child (m/Icon (.arrow_upward m/Icons) .color (:text-color info))} info)
+       :child (m/Icon (.arrow_upward m/Icons) .color (:text-color info))} vkey)
 
      :return
      (action-key-container
       {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
-       :child (m/Icon (.keyboard_return m/Icons) .color (:text-color info))} info)
+       :child (m/Icon (.keyboard_return m/Icons) .color (:text-color info))} vkey)
 
      :space
      (action-key-container
@@ -83,7 +83,7 @@
                 .style (m/TextStyle
                         .color (:shift-click-text-color info)
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:shift-click-font-size info))))} info)
+                        .fontSize (:shift-click-font-size info))))} vkey)
       ;;  :child (m/Icon (.space_bar m/Icons) .color (:text-color info))} info)
 
      :special-characters
@@ -99,25 +99,25 @@
                         .color (:shift-click-text-color info)
                         .fontFamily "Courier"
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:shift-click-font-size info))))} info)
+                        .fontSize (:shift-click-font-size info))))} vkey)
 
      :spacer-block
      (action-key-container
       {:width (* 3 key-base-width)
        :height key-height
-       :child (m/Text "")} info)
+       :child (m/Text "")} vkey)
 
      :small-spacer-block
      (action-key-container
       {:width (* 2 key-base-width)
        :height key-height
-       :child (m/Text "")} info)
+       :child (m/Text "")} vkey)
 
      :extra-small-spacer-block
      (action-key-container
       {:width (* key-base-width 1.5)
        :height key-height
-       :child (m/Text "")} info)
+       :child (m/Text "")} vkey)
 
      :other-special-characters
      (action-key-container
@@ -130,7 +130,7 @@
                 .style
                 (m/TextStyle .color (:shift-click-text-color info)
                              .fontWeight (.w600 m/FontWeight)
-                             .fontSize (:shift-click-font-size info))))} info)
+                             .fontSize (:shift-click-font-size info))))} vkey)
 
      :abc
      (action-key-container
@@ -143,7 +143,7 @@
                 .style
                 (m/TextStyle .color (:shift-click-text-color info)
                              .fontWeight (.w600 m/FontWeight)
-                             .fontSize (:shift-click-font-size info))))} info)
+                             .fontSize (:shift-click-font-size info))))} vkey)
 
      :empty
      (m/Container))))
@@ -157,22 +157,23 @@
          (.circular m/Radius
                     (:key-cap-border-radius info)))))
 
-(defn action-key-container 
+(defn action-key-container
   [{width :width height :height child :child}
-   info]
-   
-  (m/Container
-   .clipBehavior (.hardEdge m/Clip)
-   .height height
-   .width width
-   .decoration (key-box-decoration info)
-   .child
-   (m/Material
-    .color (:action-keys-container-color info)
+   vkey]
+  (f/widget
+   :get [:text-controller :info :state]
+   (m/Container
+    .clipBehavior (.hardEdge m/Clip)
+    .height height
+    .width width
+    .decoration (key-box-decoration info)
     .child
-    (m/InkWell ;.splashColor m.Colors/white
-     .onTap #(dart:core/print "xxx action")
-     .child child))))
+    (m/Material
+     .color (:action-keys-container-color info)
+     .child
+     (m/InkWell ;.splashColor m.Colors/white
+      .onTap #(on-key-press text-controller vkey state)
+      .child child)))))
 
 
 (defn on-key-press
@@ -180,36 +181,71 @@
    vkey
    state]
   (let [text (.-text controller)
-        cursor (-> controller .-selection .-baseOffset)]
+        selection (-> controller .-selection)]
 
+    (dart:core/print (str "text = " text))
+    (dart:core/print (str "aaaa = " (:text vkey) " cursor = " selection))
     (condp = (:key-type vkey)
       :string
+      ;; (set! (.-text controller) (str text (:text vkey)))
       (let [new-str (cond
                       (and (:is-shift-enabled state)
                            (some? (:caps-text vkey)))
                       (:caps-text vkey)
 
                       :else
-                      (:text vkey))]
-        (set! (.-text controller)
-              (str (subs text 0 cursor)
-                   new-str
-                   (subs text cursor))))
+                      (:text vkey))
+            new-text (.replaceRange text (.-start selection) (.-end selection) new-str)
+            new-str-length (count new-str)]
+
+        (set! (.-text controller) new-text)
+        (set! (.-selection controller) 
+              (.copyWith selection 
+                          .baseOffset (+ (.-start selection) new-str-length)
+                          .extentOffset (+ (.-start selection) new-str-length))))
 
       :action
       (condp = (:action vkey)
         :backspace
-        (set! (.-text controller)
-              (str (subs text 0 (dec cursor))
-                   (subs text cursor)))
+        (let [selection-length (- (.-end selection) (.-start selection))]
+          (cond
+            (> selection-length 0)
+            (let [new-text (.replaceRange text (.-start selection) (.-end selection) "")]
+              (set! (.-text controller) new-text)
+              (set! (.-selection controller)
+                    (.copyWith selection
+                               .baseOffset (.-start selection)
+                               .extentOffset (.-start selection))))
+
+            (zero? (.-start selection))
+            nil
+
+            :else
+            (let [new-start (dec (.-start selection))
+                  new-end (.-start selection)
+                  new-text (.replaceRange text new-start new-end "")]
+
+              (set! (.-text controller) new-text)
+              (set! (.-selection controller)
+                    (.copyWith selection
+                               .baseOffset new-start
+                               .extentOffset new-start)))))
 
         :return
-        (set! (.-text controller)
-              (str text "\n"))
+        (let [new-text (.replaceRange text (.-start selection) (.-end selection) "\n")]
+          (set! (.-text controller) new-text)
+          (set! (.-selection controller)
+                (.copyWith selection
+                           .baseOffset (+ (.-start selection) 1)
+                           .extentOffset (+ (.-start selection) 1))))
 
         :space
-        (set! (.-text controller)
-              (str text " "))
+        (let [new-text (.replaceRange text (.-start selection) (.-end selection) " ")]
+          (set! (.-text controller) new-text)
+          (set! (.-selection controller)
+                (.copyWith selection
+                           .baseOffset (+ (.-start selection) 1)
+                           .extentOffset (+ (.-start selection) 1))))
 
         :shift
         (swap! state :is-shift-enabled true)))))

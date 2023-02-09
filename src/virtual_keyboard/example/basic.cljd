@@ -1,14 +1,48 @@
 (ns virtual-keyboard.example.basic
   (:require
    ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
    [cljd.flutter.alpha2 :as f]
    [virtual-keyboard.keyboard :as keyboard]))
 
+(defn basic-body []
+  (f/widget
+   :context ctx
+   :get [:text-controller]
+   :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
+         height (-> m/MediaQuery (.of ctx) .-size .-height)]
+   (m/SafeArea)
+   .child
+   (m/Center)
+   .child
+   (m/Column
+    .children
+    [(m/Text "abc")
+    ;;  (m/Text (.-text text-controller)
+    ;;          .style (m/TextStyle .color m.Colors/red .fontSize 22))
+     (m/Container 
+      .height 200 
+      .width 200
+      .child
+      (mgl/MongolTextField 
+        .controller text-controller
+        .autofocus true))
+     (m/Text "abc")
+     (m/Expanded .child (m/Container))
+     (m/Container
+      .color m.Colors/black87
+      .child
+      (keyboard/keyboard
+       {:key-cap-border-radius 0} text-controller))])))
+
 (defn basic []
-  ;; (keyboard/keyboard
-  ;;  {:key-cap-border-radius 0} nil)
-  (m/Scaffold
-   .appBar (m/AppBar
-            .title (m/Text "Mongolian Search Bar"))
-   .body
-   (m/Text "abc")))
+  (f/widget
+   :context ctx
+   :managed [^m/TextEditingController text-controller (m/TextEditingController)]
+   :bind {:text-controller text-controller}
+   (m/Scaffold
+    .resizeToAvoidBottomInset true
+    .appBar (m/AppBar
+             .title (m/Text "Virtual Keyboard"))
+    .body
+    (basic-body))))
