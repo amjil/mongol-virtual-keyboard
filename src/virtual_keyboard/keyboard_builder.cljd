@@ -24,6 +24,9 @@
     rows-count :rows-count}
    item]
   (cond
+    (= :empty item)
+    nil
+    
     (and
      (string? item)
      (some? (filter #(code.MongolCode/isMongolian (int %)) item)))
@@ -34,13 +37,17 @@
                  str)
       :id (get-in mn-index-layout [m n])
       :is-rotated true
-      :display item})
+      :display item}
+     items-count
+     rows-count)
 
     (string? item)
     (keyboard-key/key-widget
      {:key-type :string
       :caps-text (str/upper-case item)
-      :text item})
+      :text item}
+     items-count
+     rows-count)
 
     :else
     (keyboard-action/action-widget

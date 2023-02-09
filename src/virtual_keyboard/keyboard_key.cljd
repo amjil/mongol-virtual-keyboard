@@ -12,7 +12,7 @@
  insert-overlay
  remove-overlay)
 
-(defn key-widget [virtual-key]
+(defn key-widget [virtual-key items-count rows-count]
   (f/widget
    :context ctx
    :get [:info :state :editing-controller]
@@ -56,8 +56,7 @@
        .shape (.circle m/BoxShape)))))
    .child
    (m/Container
-    ;; .height (/ (:height info) (:layout-length state))
-    .height (/ (:height info) 4)
+    .height (/ (:height info) rows-count)
     .decoration (m/BoxDecoration
                  .borderRadius
                  (.all m/BorderRadius

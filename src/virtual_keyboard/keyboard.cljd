@@ -22,7 +22,7 @@
 
 (defn keyboard-rows [info rows]
    (m/Container
-    .height (:height info)
+    .height ( + (:height info) (* (count rows) (+ 4 (:row-vertical-padding info))))
     .width (:width info) 
     .child (m/Column
             .mainAxisAlignment (.spaceBetween m/MainAxisAlignment)

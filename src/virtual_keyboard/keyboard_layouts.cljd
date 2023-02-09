@@ -8,8 +8,8 @@
 (def mn-layout 
   [["ᠴ᠊" "ᠸ᠊" "ᠡ" "ᠷ᠊" "ᠲ᠊" "ᠶ᠊" "ᠦ᠊" "ᠢ" "ᠥ" "ᠫ᠊"]
    ["ᠠ" "ᠰ᠊" "ᠳ" "ᠹ᠊" "ᠭ᠊" "ᠬ᠊" "ᠵ᠊" "ᠺ᠊" "ᠯ᠊" " ᠩ"]
-   [:shift "ᠽ᠊" "ᠱ᠊" "ᠣ" "ᠤ᠊" "ᠪ᠊" "ᠨ᠊" "ᠮ᠊" :backspace]])
-  ;;  [:special-characters "᠂" :space "᠃" :return]])
+   [:shift "ᠽ᠊" "ᠱ᠊" "ᠣ" "ᠤ᠊" "ᠪ᠊" "ᠨ᠊" "ᠮ᠊" :backspace]
+   [:special-characters "᠂" :space "᠃" :return]])
   ;;  [:special-characters :switch-layout "᠂" :space "᠃" :return]])
 
 ;; Todo ......
