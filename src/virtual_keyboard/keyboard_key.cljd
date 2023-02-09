@@ -39,7 +39,8 @@
    .child
    (m/InkWell
     .splashColor m.Colors/white
-    .onTap #(keyboard-action/on-key-press editing-controller virtual-key state))
+    .onTap ;#(keyboard-action/on-key-press editing-controller virtual-key state)
+    #(dart:core/print "xxx"))
    .child
    (m/LongPressDraggable
     .delay (Duration .milliseconds 200)

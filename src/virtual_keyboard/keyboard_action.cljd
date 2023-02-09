@@ -16,15 +16,12 @@
          key-base-width (/ width 10)]
   ;;  (m/Flexible)
   ;;  .child
-   (m/InkWell .splashColor m.Colors/white)
-   .child
    (m/Padding
     .padding
     (.symmetric
      m/EdgeInsets
      .horizontal (:horizontal-key-padding info)
      .vertical 0))
-
   ;;  .child
   ;;  (m/Container
   ;;   .alignment (.center m/Alignment)
@@ -45,13 +42,14 @@
      (m/GestureDetector
       .onLongPress
       (fn []
-        (swap! state assoc :long-press true)
-        (.periodic
-         a/Timer
-         (Duration .milliseconds 300);options/back-space-event-period)
-         (fn [^a/Timer timer] (if (true? (:long-press @state))
-                                (on-key-press text-controller vkey state)
-                                (.cancel timer))))
+        ;; (swap! state assoc :long-press true)
+        ;; (.periodic
+        ;;  a/Timer
+        ;;  (Duration .milliseconds 300);options/back-space-event-period)
+        ;;  (fn [^a/Timer timer] (if (true? (:long-press @state))
+        ;;                         (on-key-press text-controller vkey state)
+        ;;                         (.cancel timer))))
+        (dart:core/print "long press")
         nil)
       .onLongPressUp
       (fn [] (swap! state assoc :long-press false))
@@ -162,11 +160,19 @@
 (defn action-key-container 
   [{width :width height :height child :child}
    info]
+   
   (m/Container
-     .height height
-     .width width
-     .decoration (key-box-decoration info)
-     .child child))
+   .clipBehavior (.hardEdge m/Clip)
+   .height height
+   .width width
+   .decoration (key-box-decoration info)
+   .child
+   (m/Material
+    .color (:action-keys-container-color info)
+    .child
+    (m/InkWell ;.splashColor m.Colors/white
+     .onTap #(dart:core/print "xxx action")
+     .child child))))
 
 
 (defn on-key-press
