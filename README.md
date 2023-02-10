@@ -3,10 +3,13 @@
 A new Flutter project.
 
 Basic 
+<br/>
 ![image](mongol-virtual-keyboard.gif)
 
 Styled
+<br/>
 ![image](mongol-virtual-keyboard-styled.png | width=430)
+<img src="https://github.com/amjil/mongol-virtual-keyboard/blob/master/mongol-virtual-keyboard-styled.png" width="430" alt="virtual keyboard"/><br/>
 
 ## Getting Started
 
