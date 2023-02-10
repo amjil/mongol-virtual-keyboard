@@ -17,17 +17,15 @@
    .child
    (m/Column
     .children
-    [(m/Text "abc")
-    ;;  (m/Text (.-text text-controller)
-    ;;          .style (m/TextStyle .color m.Colors/red .fontSize 22))
-     (m/Container 
-      .height 200 
+    [(m/Container
+      .height 200
       .width 200
       .child
-      (mgl/MongolTextField 
-        .controller text-controller
-        .autofocus true))
-     (m/Text "abc")
+      (mgl/MongolTextField
+       .controller text-controller
+       .maxLines nil
+       .autofocus true
+       .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
      (m/Expanded .child (m/Container))
      (m/Container
       .color m.Colors/black87
