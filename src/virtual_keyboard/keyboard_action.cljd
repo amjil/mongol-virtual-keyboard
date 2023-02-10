@@ -1,6 +1,7 @@
 (ns virtual-keyboard.keyboard-action
   (:require
    ["package:flutter/material.dart" :as m]
+   ["package:mongol_code/mongol_code.dart" :as code]
    ["dart:async" :as a]
    [cljd.flutter.alpha2 :as f]))
 
@@ -175,19 +176,15 @@
       .onTap #(on-key-press text-controller vkey state)
       .child child)))))
 
-
 (defn on-key-press
   [^m/TextEditingController controller
    vkey
    state]
   (let [text (.-text controller)
-        selection (-> controller .-selection)]
-
-    (dart:core/print (str "text = " text))
-    (dart:core/print (str "aaaa = " (:text vkey) " cursor = " selection))
+        selection (-> controller .-selection)] 
+    (dart:core/print (str "on-key-press selection = " selection))
     (condp = (:key-type vkey)
       :string
-      ;; (set! (.-text controller) (str text (:text vkey)))
       (let [new-str (cond
                       (and (:is-shift-enabled state)
                            (some? (:caps-text vkey)))

@@ -20,7 +20,7 @@
    :shift-click-text-color m.Colors/white
    :shift-click-font-size 14
    :key-container-color m.Colors/lightBlue ;;m.Colors/transparent
-   :long-press-container-color m.Colors/black
+   :long-press-container-color m.Colors/lightBlue
    :long-press-key-color m.Colors/orange
    :action-keys-container-color (-> m/Colors .-lightBlue .-shade900);m.Colors/transparent
    :key-cap-border-radius 0

@@ -49,7 +49,7 @@
     .data (:text virtual-key)
     .onDragStarted
     (fn []
-      (insert-overlay state ctx text-controller (:id virtual-key)))
+      (insert-overlay state ctx text-controller info (:id virtual-key)))
     .onDragEnd
     (fn [_]
       (remove-overlay state))
@@ -58,8 +58,8 @@
      .elevation 12
      .child
      (m/Container
-      .width 20
-      .height 20
+      .width 10
+      .height 10
       .decoration
       (m/BoxDecoration
        .color (.white70 m/Colors)
@@ -78,41 +78,45 @@
                                                     .fontFamily "MongolianBaiZheng")
                                        (:text-style info)))))])))
 
-(defn overlay-popup-widget [^m/Size size additional-keys]
-  (f/widget
-   :get [:info :state :text-controller]
-   (m/GestureDetector)
+(defn overlay-popup-widget [^m/Size size info state controller additional-keys]
+  (m/GestureDetector
    .child
    (m/Card
     .color (or (:long-press-overlay-container-color info)
                (:key-container-color info))
-    .elevation 10)
-   .child
-   (m/ConstrainedBox
-    .constraints
-    (m/BoxConstraints
-     .minWidth (.-width size)
-     .maxWidth (* (.-width size) 1.8)))
-   .child
-   (m/Wrap
-    .runSpacing 4
-    .spacing 4
-    .direction (.horizontal m/Axis)
-    .alignment (if (> (count additional-keys) 1)
-                 (.start m/WrapAlignment)
-                 (.spaceEvenly m/WrapAlignment))
-    .children
-    (map (fn [vkey]
-           (m/DragTarget
-            .builder (fn [_ _ _]
-                       (popup-key/key-widget info state vkey text-controller))
-            .onAccept (fn [_]
-                        (dart:core/print "onAccept")))) 
-         additional-keys))))
+    .elevation 10
+    .child
+    (m/ConstrainedBox
+     .constraints
+     (m/BoxConstraints
+      .minHeight (.-height size)
+      .maxHeight (* (.-height size) 1.8))
+     .child
+     (m/Wrap
+      .runSpacing 4
+      .spacing 4
+      .direction (.horizontal m/Axis)
+      .alignment (if (> (count additional-keys) 1)
+                   (.start m/WrapAlignment)
+                   (.spaceEvenly m/WrapAlignment))
+      .children
+      (map (fn [vkey]
+             (m/DragTarget
+              .builder (fn [_ _ _]
+                         (dart:core/print (str "DragTarget ..." vkey))
+                         (popup-key/key-widget info state vkey controller))
+              .onAccept (fn [_]
+                          (dart:core/print "onAccept")
+                          (keyboard-action/on-key-press 
+                           controller (assoc vkey :key-type :string) state))))
+           additional-keys))))))
 
 (defn build-entry [^m/BuildContext ctx
                    ^m/TextEditingController controller
+                   info
+                   state
                    current-key]
+  (dart:core/print (str "current-key " current-key))
   (let [^m/RenderBox box (.findRenderObject ctx)
         size (.-size box)
         offset (.localToGlobal box (.zero m/Offset))
@@ -120,12 +124,14 @@
         top-offset-adjustment (calculate-offset-adjustment (count additional-keys))]
     (m/OverlayEntry
      .builder (fn [_]
+                (dart:core/print (str "over-popup-widget add count = " additional-keys))
                 (m/Positioned
                  .top (- (.-dy offset) (* top-offset-adjustment (.-height size)))
                  .left (if (> (count additional-keys) 1)
                          (- (.-dx offset) 24)
                          (.-dx offset))
-                 .child (overlay-popup-widget size additional-keys))))))
+                 .child
+                 (overlay-popup-widget size info state controller additional-keys))))))
 
 (defn remove-overlay
   [state]
@@ -138,8 +144,10 @@
   [state 
    ^m/BuildContext ctx 
    ^m/TextEditingController controller
+   info
    current-key]
-  (let [^m/OverlayEntry entry (build-entry ctx controller current-key)]
+  (let [^m/OverlayEntry entry (build-entry ctx controller info state current-key)]
+    (dart:core/print "insert-overlay ...")
     (swap! state assoc :entry nil)
     (.insert (.of m/Overlay ctx) entry)
     (swap! state assoc :entry entry)))
