@@ -8,8 +8,7 @@ Basic
 
 Styled
 <br/>
-![image](mongol-virtual-keyboard-styled.png | width=430)
-<img src="https://github.com/amjil/mongol-virtual-keyboard/blob/master/mongol-virtual-keyboard-styled.png" width="430" alt="virtual keyboard"/><br/>
+![image](mongol-virtual-keyboard-styled.png)
 
 ## Getting Started
 
