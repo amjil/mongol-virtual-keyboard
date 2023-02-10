@@ -2,7 +2,7 @@
 
 A new Flutter project.
 
-![image](mongolian-virtual-keyboard.gif)
+![image](mongol-virtual-keyboard.gif)
 
 ## Getting Started
 
