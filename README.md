@@ -8,7 +8,7 @@ Basic
 
 Styled
 <br/>
-![image](mongol-virtual-keyboard-styled.png)
+<img src="mongol-virtual-keyboard-styled.png" width="300">
 
 ## Getting Started
 
