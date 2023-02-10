@@ -25,3 +25,7 @@
     :else 
     (:text vkey)))
 
+(defn get-last-word [text]
+  (-> text
+      (str/split #" ")
+      last))
