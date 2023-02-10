@@ -8,7 +8,8 @@
 (declare body)
 
 (def keyboard-style 
-  {:key-cap-border-radius 6})
+  {:key-cap-border-radius 6
+   :key-container-color (-> m/Colors .blueGrey .shade400)})
 
 (defn styled []
   (f/widget
@@ -46,7 +47,7 @@
        .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
      (m/Expanded .child (m/Container))
      (m/Container
-    ;;   .color m.Colors/black87
+      .color (-> m/Colors .grey .shade300)
       .child
       (keyboard/keyboard
        keyboard-style text-controller))])))

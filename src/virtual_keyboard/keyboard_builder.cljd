@@ -31,10 +31,9 @@
      (string? item)
      (some? (filter #(code.MongolCode/isMongolian (int %)) item)))
     (keyboard-key/key-widget
-     {:text (->> item
-                 (filter #(code.MongolCode/isMongolian (int %)))
-                 first
-                 str)
+     {:text (as-> item m
+                ;;  (filter #(code.MongolCode/isMongolian (int %)) m)
+              (subs m 0 1))
       :key-type :string
       :id (get-in mn-index-layout [m n])
       :is-rotated true
