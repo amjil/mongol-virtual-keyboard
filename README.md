@@ -2,7 +2,11 @@
 
 A new Flutter project.
 
+Basic 
 ![image](mongol-virtual-keyboard.gif)
+
+Styled
+![image](mongol-virtual-keyboard-styled.png)
 
 ## Getting Started
 
