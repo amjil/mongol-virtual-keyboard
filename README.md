@@ -2,6 +2,8 @@
 
 A new Flutter project.
 
+![image](mongolian-virtual-keyboard.gif)
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
