@@ -1,0 +1,52 @@
+(ns virtual-keyboard.example.styled
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
+   [cljd.flutter.alpha2 :as f]
+   [virtual-keyboard.keyboard :as keyboard]))
+
+(declare body)
+
+(def keyboard-style 
+  {:key-cap-border-radius 6})
+
+(defn styled []
+  (f/widget
+   :context ctx
+   :managed [^m/TextEditingController text-controller (m/TextEditingController)]
+   :bind {:text-controller text-controller}
+   (m/Scaffold
+    .resizeToAvoidBottomInset true
+    .appBar (m/AppBar
+             .title (m/Text "Virtual Keyboard"))
+    .body
+    (body))))
+
+;; 
+(defn body []
+  (f/widget
+   :context ctx
+   :get [:text-controller]
+   :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
+         height (-> m/MediaQuery (.of ctx) .-size .-height)]
+   (m/SafeArea)
+   .child
+   (m/Center)
+   .child
+   (m/Column
+    .children
+    [(m/Container
+      .height 200
+      .width 200
+      .child
+      (mgl/MongolTextField
+       .controller text-controller
+       .maxLines 500
+       .autofocus true
+       .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
+     (m/Expanded .child (m/Container))
+     (m/Container
+    ;;   .color m.Colors/black87
+      .child
+      (keyboard/keyboard
+       keyboard-style text-controller))])))
