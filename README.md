@@ -6,7 +6,7 @@ Basic
 ![image](mongol-virtual-keyboard.gif)
 
 Styled
-![image](mongol-virtual-keyboard-styled.png)
+![image](mongol-virtual-keyboard-styled.png | width=430)
 
 ## Getting Started
 
