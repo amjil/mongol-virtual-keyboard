@@ -17,7 +17,7 @@
          info (merge options/keyboard-option info {:width width})
          state (atom options/keyboard-state)
          mn-keys (builder/keyboard-layout-builder layouts/mn-layout)]
-   :bind {:info info :state state :text-controller controller}
+   :bind {:info info :state state :text-controller controller :context ctx}
    (keyboard-rows info mn-keys)))
 
 (defn keyboard-rows [info rows]

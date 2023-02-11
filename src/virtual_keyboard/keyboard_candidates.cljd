@@ -1,0 +1,48 @@
+(ns virtual-keyboard.keyboard-candidates
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
+   [virtual-keyboard.utils :as utils]
+   [cljd.flutter.alpha2 :as f]))
+
+(declare build-entry)
+
+(defn remove-overlay
+  [state]
+  (let [^m/OverlayEntry entry (:entry @state)]
+    (if-not (nil? entry)
+      (.remove entry))
+    (swap! state assoc :entry nil)))
+
+(defn insert-overlay
+  [^m/BuildContext ctx
+   state]
+  (let [^m/OverlayEntry entry (build-entry ctx)]
+    (dart:core/print "insert-overlay ...")
+    (swap! state assoc :entry nil)
+    (.insert (.of m/Overlay ctx) entry)
+    (swap! state assoc :entry entry)))
+
+;; Todo Candidates Widget's Position & Style
+(defn build-entry
+  [^m/BuildContext ctx]
+  (let [^m/RenderBox box (.findRenderObject ctx)
+        size (.-size box)
+        offset (.localToGlobal box (.zero m/Offset))]
+    (m/OverlayEntry
+     .builder
+     (fn [_]
+       (m/Positioned
+        .top (.-dy offset)
+        .left (.-dx offset)
+        .child
+        (m/Card
+        ;;  .color (:key-container-color info)
+         .elevation 10
+         .child
+         (m/Row
+          .children 
+          [(mgl/MongolText "Football")
+           (mgl/MongolText "Basketball")
+           (mgl/MongolText "Handball")
+           (mgl/MongolText "Bowling ball")])))))))

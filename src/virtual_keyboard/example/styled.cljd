@@ -3,7 +3,8 @@
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
    [cljd.flutter.alpha2 :as f]
-   [virtual-keyboard.keyboard :as keyboard]))
+   [virtual-keyboard.keyboard :as keyboard]
+   [virtual-keyboard.keyboard-candidates :as candidates]))
 
 (declare body)
 
@@ -29,7 +30,8 @@
    :context ctx
    :get [:text-controller]
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-         height (-> m/MediaQuery (.of ctx) .-size .-height)]
+         height (-> m/MediaQuery (.of ctx) .-size .-height)
+         state (atom {})]
    (m/SafeArea)
    .child
    (m/Center)
@@ -45,6 +47,12 @@
        .maxLines 500
        .autofocus true
        .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
+     (m/ElevatedButton
+      .child (m/Text "Open")
+      .onPressed #(candidates/insert-overlay ctx state))
+     (m/ElevatedButton
+      .child (m/Text "Close")
+      .onPressed #(candidates/remove-overlay state))
      (m/Expanded .child (m/Container))
      (m/Container
       .color (-> m/Colors .grey .shade300)
