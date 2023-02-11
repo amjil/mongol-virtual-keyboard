@@ -3,7 +3,7 @@
    ["package:flutter/material.dart" :as m]
    [virtual-keyboard.popup-key :as popup-key]
    [virtual-keyboard.keyboard-action :as keyboard-action]
-   [virtual-keyboard.candidates :as candidates]
+   [virtual-keyboard.popup-key-candidates :as candidates]
    [virtual-keyboard.utils :as utils]
    [cljd.flutter.alpha2 :as f]))
 
