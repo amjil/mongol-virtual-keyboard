@@ -1,7 +1,9 @@
 (ns virtual-keyboard.keyboard-candidates
   (:require
    ["package:flutter/material.dart" :as m]
+   ["package:flutter/services.dart" :as services]
    ["package:mongol/mongol.dart" :as mgl]
+   ["package:mongol_code/mongol_code.dart" :as code]
    [virtual-keyboard.utils :as utils]
    [cljd.flutter.alpha2 :as f]))
 
@@ -47,3 +49,35 @@
            (mgl/MongolText "Basketball")
            (mgl/MongolText "Handball")
            (mgl/MongolText "Bowling ball")])))))))
+
+(def suffix-candidatges-for-full
+  [code.Suffix/YIN code.Suffix/UN
+   code.Suffix/U code.Suffix/I code.Suffix/DU code.Suffix/TU
+   code.Suffix/DUR code.Suffix/TUR code.Suffix/DAQI code.Suffix/TAQI
+   code.Suffix/ACHA code.Suffix/ECHE code.Suffix/BAR code.Suffix/IYAR
+   code.Suffix/TAI code.Suffix/LUGA code.Suffix/LUEGE code.Suffix/BAN
+   code.Suffix/IYEN code.Suffix/YUGAN code.Suffix/YUEGEN code.Suffix/DAGAN
+   code.Suffix/DEGEN code.Suffix/TAGAN code.Suffix/TEGEN code.Suffix/ACHAGAN
+   code.Suffix/ECHEGEN code.Suffix/UD code.Suffix/NUGUD code.Suffix/NUEGUED
+   code.Suffix/NAR code.Suffix/UU code.Suffix/DA code.Suffix/CHU])
+
+;; Todo
+(defn suffix-candidates 
+  [^dart:core/String text 
+   ^services/TextSelection selection]
+  (let [back-count 30
+        substr (subs text (max 0 (- (.-start selection) back-count)) (.-start selection))
+        last-word (utils/get-last-word substr)
+        gender (.getWordGender code/MongolCode last-word)]
+    (cond
+      (empty? last-word)
+      (suffix-candidatges-for-full)
+
+      (= gender code.Gender/MASCULINE)
+      :masculine
+
+      (= gender code.Gender/FEMININE)
+      :feminine
+
+      :else
+      :neuter)))

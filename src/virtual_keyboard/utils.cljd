@@ -26,6 +26,8 @@
     (:text vkey)))
 
 (defn get-last-word [text]
-  (-> text
-      (str/split #" ")
-      last))
+  (if (empty? text)
+    nil
+    (-> text
+        (str/split #" ")
+        last)))

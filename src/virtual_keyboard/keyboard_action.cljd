@@ -190,6 +190,14 @@
       .onTap #(on-key-press text-controller vkey state)
       .child child)))))
 
+
+(defn on-spacer-pressed [controller text selection]
+  (let [new-text (.replaceRange text (.-start selection) (.-end selection) " ")]
+    (set! (.-text controller) new-text)
+    (set! (.-selection controller)
+          (.copyWith selection
+                     .baseOffset (+ (.-start selection) 1)
+                     .extentOffset (+ (.-start selection) 1)))))
 (defn on-key-press
   [^m/TextEditingController controller
    vkey
@@ -251,12 +259,10 @@
                            .extentOffset (+ (.-start selection) 1))))
 
         :space
-        (let [new-text (.replaceRange text (.-start selection) (.-end selection) " ")]
-          (set! (.-text controller) new-text)
-          (set! (.-selection controller)
-                (.copyWith selection
-                           .baseOffset (+ (.-start selection) 1)
-                           .extentOffset (+ (.-start selection) 1))))
+        (on-spacer-pressed controller text selection)
+        
+        :spacer-block
+        (on-spacer-pressed controller text selection)
 
         :shift
         (swap! state :is-shift-enabled true)))))
