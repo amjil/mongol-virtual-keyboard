@@ -1,6 +1,7 @@
 (ns virtual-keyboard.keyboard-action
   (:require
    ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
    ["package:mongol_code/mongol_code.dart" :as code]
    ["dart:async" :as a]
    [cljd.flutter.alpha2 :as f]))
@@ -102,9 +103,22 @@
                         .fontWeight (.w700 m/FontWeight)
                         .fontSize (:shift-click-font-size info))))} vkey)
 
+     :suffix-candidates
+     (action-key-container
+      {:width (- (* 1 key-base-width) (* 2 (:horizontal-key-padding info)))
+       :height key-height
+       :child (m/Center
+               .child
+               (mgl/MongolText
+                "ᠳᠠᠭᠠᠪᠤᠷᠢ"
+                .style (m/TextStyle
+                        .color (:shift-click-text-color info)
+                        .fontWeight (.w700 m/FontWeight)
+                        .fontSize (:shift-click-font-size info))))} vkey)
+
      :spacer-block
      (action-key-container
-      {:width (* 3 key-base-width)
+      {:width (- (* 4 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Text "")} vkey)
 
