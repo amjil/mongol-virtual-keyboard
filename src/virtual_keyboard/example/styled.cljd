@@ -10,7 +10,7 @@
 
 (def keyboard-style 
   {:key-cap-border-radius 6
-   :key-container-color (-> m/Colors .blueGrey .shade400)})
+   :key-container-color (-> m/Colors .blueGrey .-shade400)})
 
 (defn styled []
   (f/widget
@@ -55,7 +55,7 @@
       .onPressed #(candidates/remove-overlay state))
      (m/Expanded .child (m/Container))
      (m/Container
-      .color (-> m/Colors .grey .shade300)
+      .color (-> m/Colors .grey .-shade300)
       .child
       (keyboard/keyboard
        keyboard-style text-controller))])))

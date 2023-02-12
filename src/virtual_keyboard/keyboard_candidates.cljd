@@ -9,9 +9,10 @@
 
 (defn remove-overlay
   [state]
-  (let [^m/OverlayEntry entry (:entry @state)]
+  (let [entry (:entry @state)]
     (if-not (nil? entry)
-      (.remove entry))
+      (let [^m/OverlayEntry entry- entry]
+        (.remove entry-)))
     (swap! state assoc :entry nil)))
 
 (defn insert-overlay
