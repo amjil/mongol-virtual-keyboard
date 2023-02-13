@@ -61,6 +61,23 @@
    code.Suffix/ECHEGEN code.Suffix/UD code.Suffix/NUGUD code.Suffix/NUEGUED
    code.Suffix/NAR code.Suffix/UU code.Suffix/DA code.Suffix/CHU])
 
+(defn suffix-candidates-for-word
+  [word gender]
+  (let [last-char (int (last word))]
+    [(code.Suffix/getSuffixYinUnU gender last-char)
+     (code.Suffix/getSuffixTuDu gender last-char)
+     (code.Suffix/getSuffixTaganDagan gender last-char)
+     (code.Suffix/getSuffixTaqiDaqi gender last-char)
+     (code.Suffix/getSuffixYiI last-char)
+     (code.Suffix/getSuffixBarIyar gender last-char)
+     (code.Suffix/getSuffixBanIyan gender last-char)
+     (code.Suffix/getSuffixAchaEche gender)
+     (code.Suffix/getSuffixTaiTei gender)
+     (code.Suffix/getSuffixUu gender)
+     (code.Suffix/getSuffixUd gender)
+     (code.Suffix/getSuffixNugud gender)
+     (code.Suffix/getSuffixChu gender)]))
+
 ;; Todo
 (defn suffix-candidates 
   [^dart:core/String text 
@@ -71,7 +88,7 @@
         gender (.getWordGender code/MongolCode last-word)]
     (cond
       (empty? last-word)
-      (suffix-candidatges-for-full)
+      suffix-candidatges-for-full
 
       (= gender code.Gender/MASCULINE)
       :masculine
