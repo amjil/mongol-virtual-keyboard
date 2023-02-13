@@ -49,7 +49,7 @@
        .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
      (m/ElevatedButton
       .child (m/Text "Open")
-      .onPressed #(candidates/insert-overlay ctx state))
+      .onPressed #(candidates/insert-overlay ctx text-controller state))
      (m/ElevatedButton
       .child (m/Text "Close")
       .onPressed #(candidates/remove-overlay state))

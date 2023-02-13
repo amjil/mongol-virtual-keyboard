@@ -107,9 +107,8 @@
                          (popup-key/key-widget info state vkey controller))
               .onAccept (fn [_]
                           (dart:core/print "onAccept")
-                          (keyboard-action/on-key-press 
-                           controller (assoc vkey :key-type :string) state)
-                          (dart:core/print (str "on-key-press aflter  = " (.-selection controller))))))
+                          (keyboard-action/on-key-press
+                           controller (assoc vkey :key-type :string) state))))
            additional-keys))))))
 
 (defn build-entry [^m/BuildContext ctx

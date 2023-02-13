@@ -191,7 +191,10 @@
       .child child)))))
 
 
-(defn on-spacer-pressed [controller text selection]
+(defn on-spacer-pressed 
+  [^m/TextEditingController controller 
+   ^String text 
+   ^m/TextSelection selection]
   (let [new-text (.replaceRange text (.-start selection) (.-end selection) " ")]
     (set! (.-text controller) new-text)
     (set! (.-selection controller)

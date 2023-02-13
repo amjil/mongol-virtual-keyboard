@@ -7,7 +7,8 @@
    [virtual-keyboard.utils :as utils]
    [cljd.flutter.alpha2 :as f]))
 
-(declare build-entry)
+(declare build-entry
+         suffix-candidates)
 
 (defn remove-overlay
   [state]
@@ -19,8 +20,9 @@
 
 (defn insert-overlay
   [^m/BuildContext ctx
+   ^m/TextEditingController controller
    state]
-  (let [^m/OverlayEntry entry (build-entry ctx)]
+  (let [^m/OverlayEntry entry (build-entry ctx controller)]
     (dart:core/print "insert-overlay ...")
     (swap! state assoc :entry nil)
     (.insert (.of m/Overlay ctx) entry)
@@ -28,10 +30,14 @@
 
 ;; Todo Candidates Widget's Position & Style
 (defn build-entry
-  [^m/BuildContext ctx]
+  [^m/BuildContext ctx
+   ^m/TextEditingController controller]
   (let [^m/RenderBox box (.findRenderObject ctx)
         size (.-size box)
-        offset (.localToGlobal box (.zero m/Offset))]
+        offset (.localToGlobal box (.zero m/Offset))
+        
+        text (.-text controller)
+        selection (.-selection controller)]
     (m/OverlayEntry
      .builder
      (fn [_]
@@ -45,25 +51,40 @@
          .child
          (m/Row
           .children 
-          [(mgl/MongolText "Football")
-           (mgl/MongolText "Basketball")
-           (mgl/MongolText "Handball")
-           (mgl/MongolText "Bowling ball")])))))))
+          ;; [(mgl/MongolText "Football")
+          ;;  (mgl/MongolText "Basketball")
+          ;;  (mgl/MongolText "Handball")
+          ;;  (mgl/MongolText "Bowling ball")]
+          (suffix-candidates text selection)
+          )))))))
 
 (def suffix-candidatges-for-full
-  [code.Suffix/YIN code.Suffix/UN
-   code.Suffix/U code.Suffix/I code.Suffix/DU code.Suffix/TU
-   code.Suffix/DUR code.Suffix/TUR code.Suffix/DAQI code.Suffix/TAQI
-   code.Suffix/ACHA code.Suffix/ECHE code.Suffix/BAR code.Suffix/IYAR
-   code.Suffix/TAI code.Suffix/LUGA code.Suffix/LUEGE code.Suffix/BAN
-   code.Suffix/IYEN code.Suffix/YUGAN code.Suffix/YUEGEN code.Suffix/DAGAN
-   code.Suffix/DEGEN code.Suffix/TAGAN code.Suffix/TEGEN code.Suffix/ACHAGAN
-   code.Suffix/ECHEGEN code.Suffix/UD code.Suffix/NUGUD code.Suffix/NUEGUED
-   code.Suffix/NAR code.Suffix/UU code.Suffix/DA code.Suffix/CHU])
+  [code.Suffix/YIN 
+   code.Suffix/UN
+   code.Suffix/U 
+   code.Suffix/I 
+   code.Suffix/DU code.Suffix/TU
+   code.Suffix/DUR code.Suffix/TUR 
+   code.Suffix/DAQI code.Suffix/TAQI
+   code.Suffix/ACHA code.Suffix/ECHE 
+   code.Suffix/BAR code.Suffix/IYAR
+   code.Suffix/TAI 
+   code.Suffix/LUGA code.Suffix/LUEGE 
+   code.Suffix/BAN code.Suffix/IYEN 
+   code.Suffix/YUGAN code.Suffix/YUEGEN 
+   code.Suffix/DAGAN code.Suffix/DEGEN 
+   code.Suffix/TAGAN code.Suffix/TEGEN 
+   code.Suffix/ACHAGAN code.Suffix/ECHEGEN 
+   code.Suffix/UD 
+   code.Suffix/NUGUD code.Suffix/NUEGUED
+   code.Suffix/NAR 
+   code.Suffix/UU 
+   code.Suffix/DA 
+   code.Suffix/CHU])
 
 (defn suffix-candidates-for-word
   [word gender]
-  (let [last-char (int (last word))]
+  (let [last-char (if (empty? word) 0 (int (last word)))]
     [(code.Suffix/getSuffixYinUnU gender last-char)
      (code.Suffix/getSuffixTuDu gender last-char)
      (code.Suffix/getSuffixTaganDagan gender last-char)
@@ -78,7 +99,6 @@
      (code.Suffix/getSuffixNugud gender)
      (code.Suffix/getSuffixChu gender)]))
 
-;; Todo
 (defn suffix-candidates 
   [^dart:core/String text 
    ^services/TextSelection selection]
@@ -86,15 +106,6 @@
         substr (subs text (max 0 (- (.-start selection) back-count)) (.-start selection))
         last-word (utils/get-last-word substr)
         gender (.getWordGender code/MongolCode last-word)]
-    (cond
-      (empty? last-word)
+    (if (empty? last-word)
       suffix-candidatges-for-full
-
-      (= gender code.Gender/MASCULINE)
-      :masculine
-
-      (= gender code.Gender/FEMININE)
-      :feminine
-
-      :else
-      :neuter)))
+      (remove #(nil? %) (suffix-candidates-for-word last-word gender)))))
