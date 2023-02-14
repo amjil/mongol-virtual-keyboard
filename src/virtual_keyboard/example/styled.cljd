@@ -4,6 +4,7 @@
    ["package:mongol/mongol.dart" :as mgl]
    [cljd.flutter.alpha2 :as f]
    [virtual-keyboard.keyboard :as keyboard]
+   [virtual-keyboard.options :as options]
    [virtual-keyboard.keyboard-candidates :as candidates]))
 
 (declare body)
@@ -31,31 +32,35 @@
    :get [:text-controller]
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
          height (-> m/MediaQuery (.of ctx) .-size .-height)
-         state (atom {})]
+         info (merge options/keyboard-option keyboard-style {:width width})
+         state (atom options/keyboard-state)]
+   :bind {:info info :state state :text-controller text-controller :context ctx}
    (m/SafeArea)
    .child
    (m/Center)
    .child
-   (m/Column
-    .children
-    [(m/Container
-      .height 200
-      .width 200
-      .child
-      (mgl/MongolTextField
-       .controller text-controller
-       .maxLines 500
-       .autofocus true
-       .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
-     (m/ElevatedButton
-      .child (m/Text "Open")
-      .onPressed #(candidates/insert-overlay ctx text-controller state))
-     (m/ElevatedButton
-      .child (m/Text "Close")
-      .onPressed #(candidates/remove-overlay state))
-     (m/Expanded .child (m/Container))
-     (m/Container
-      .color (-> m/Colors .grey .-shade300)
-      .child
-      (keyboard/keyboard
-       keyboard-style text-controller))])))
+   (m/Stack)
+   .children
+   [(m/Column
+     .children
+     [(m/Container
+       .height 200
+       .width 200
+       .child
+       (mgl/MongolTextField
+        .controller text-controller
+        .maxLines 500
+        .autofocus true
+        .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
+    ;;  (m/ElevatedButton
+    ;;   .child (m/Text "Open")
+    ;;   .onPressed #(candidates/insert-overlay ctx state))
+    ;;  (m/ElevatedButton
+    ;;   .child (m/Text "Close")
+    ;;   .onPressed #(candidates/remove-overlay state))
+      (m/Expanded .child (m/Container))
+      (m/Container
+       .color (-> m/Colors .grey .-shade300)
+       .child
+       (keyboard/keyboard))])
+(candidates/candidates-widget)]))

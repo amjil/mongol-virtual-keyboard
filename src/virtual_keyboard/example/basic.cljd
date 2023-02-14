@@ -30,8 +30,7 @@
      (m/Container
       .color m.Colors/black87
       .child
-      (keyboard/keyboard
-       {:key-cap-border-radius 0} text-controller))])))
+      (keyboard/keyboard))])))
 
 (defn basic []
   (f/widget
