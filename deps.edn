@@ -2,7 +2,11 @@
  :deps {org.clojure/clojure {:mvn/version "1.10.1"}
         tensegritics/clojuredart
         {:git/url "https://github.com/tensegritics/ClojureDart.git"
-         :sha "aa1964b8e9ea3d797f5098a3d5cc47982e886e4a"}}
+         :sha "aa1964b8e9ea3d797f5098a3d5cc47982e886e4a"}
+        amjil/mongol-menu-bar
+        {:git/url "https://github.com/amjil/mongol-menu-bar.git"
+         :sha "6ee88c03e60c7038f8cd46e9ac6f60b742de80fc"}
+        }
  :aliases {:cljd {:main-opts ["-m" "cljd.build"]}}
  :cljd/opts {:kind :flutter
              :main virtual-keyboard.example.main}}
