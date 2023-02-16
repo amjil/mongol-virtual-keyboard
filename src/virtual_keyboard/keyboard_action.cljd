@@ -276,3 +276,13 @@
           (dart:core/print "In The Suffix-Candidates button on clicked")
           (keyboard-candidates/suffix-candidates text selection state))))))
 
+(defn on-candidates-clicked
+  [^m/TextEditingController controller
+   text
+   state]
+  (on-key-press
+   controller
+   {:key-type :string :text text}
+   state)
+  (swap! state assoc :candidates-list [])
+  )

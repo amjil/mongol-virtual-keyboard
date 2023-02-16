@@ -4,8 +4,8 @@
    ["package:mongol/mongol.dart" :as mgl]
    [cljd.flutter.alpha2 :as f]
    [virtual-keyboard.keyboard :as keyboard]
+   [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.options :as options]
-   [virtual-keyboard.keyboard-candidates :as candidates]
    [menu-bar.menu :as menu]))
 
 (declare body)
@@ -26,7 +26,6 @@
     .body
     (body))))
 
-;; 
 (defn body []
   (f/widget
    :context ctx
@@ -53,19 +52,17 @@
         .controller text-controller
         .maxLines 500
         .autofocus true
+        .onTap (fn []
+                 (swap! state assoc :candidates-list [])
+                 (dart:core/print "onTap TextField"))
+        .showCursor true
+        .readOnly true
         .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
-    ;;  (m/ElevatedButton
-    ;;   .child (m/Text "Open")
-    ;;   .onPressed #(candidates/insert-overlay ctx state))
-    ;;  (m/ElevatedButton
-    ;;   .child (m/Text "Close")
-    ;;   .onPressed #(candidates/remove-overlay state))
       (m/Expanded .child (m/Container))
       (m/Container
        .color (-> m/Colors .grey .-shade300)
        .child
        (keyboard/keyboard))])
-;; (candidates/candidates-widget)
     (menu/menu {:bar {:elavation 10}
-                :item {}}
+                :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked text-controller x state))}}
                candidates-list)]))

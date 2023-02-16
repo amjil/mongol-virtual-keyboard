@@ -1,48 +1,8 @@
 (ns virtual-keyboard.keyboard-candidates
   (:require
-   ["package:flutter/material.dart" :as m]
    ["package:flutter/services.dart" :as services]
-   ["package:mongol/mongol.dart" :as mgl]
    ["package:mongol_code/mongol_code.dart" :as code]
-   [virtual-keyboard.utils :as utils]
-   [cljd.flutter.alpha2 :as f]
-   [menu-bar.menu :as menu]))
-
-(defn candidates-widget []
-  (f/widget
-   :get [:state]
-   :watch [{:keys [candidates-list]} state]
-   (m/Positioned
-    .top 0;(.-dy offset)
-    .left 100 ;(.-dx offset)
-    .child
-    ;; (m/UnconstrainedBox
-    ;;  .child
-    (m/ConstrainedBox
-     .constraints
-     (m/BoxConstraints
-      .minHeight 10
-      .maxHeight 200
-       .maxWidth 200)
-     .child
-    ;; (m/Container
-    ;;  .color m.Colors/transparent
-    ;;  .width 200
-    ;;  .height 200
-    ;;  .child
-     (if (nil? candidates-list)
-       (m/Container)
-
-       (m/ListView.builder
-        .scrollDirection (.horizontal m/Axis)
-        .itemCount (count candidates-list)
-        .itemBuilder
-        (f/build
-         [i]
-         (m/Card .child
-                 (mgl/MongolListTile
-                  .title (mgl/MongolText (nth candidates-list i)))))))))
-))
+   [virtual-keyboard.utils :as utils]))
 
 (def suffix-candidatges-for-full
   [code.Suffix/YIN 
