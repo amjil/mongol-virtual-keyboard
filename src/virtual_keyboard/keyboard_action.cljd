@@ -4,6 +4,7 @@
    ["package:mongol/mongol.dart" :as mgl]
    ["package:mongol_code/mongol_code.dart" :as code]
    ["dart:async" :as a]
+   [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
    [cljd.flutter.alpha2 :as f]))
 
 (declare on-key-press
@@ -268,5 +269,10 @@
         (on-spacer-pressed controller text selection)
 
         :shift
-        (swap! state :is-shift-enabled true)))))
+        (swap! state :is-shift-enabled true)
+        
+        :suffix-candidates
+        (let [foo "bar"]
+          (dart:core/print "In The Suffix-Candidates button on clicked")
+          (keyboard-candidates/suffix-candidates text selection state))))))
 

@@ -5,7 +5,8 @@
    [cljd.flutter.alpha2 :as f]
    [virtual-keyboard.keyboard :as keyboard]
    [virtual-keyboard.options :as options]
-   [virtual-keyboard.keyboard-candidates :as candidates]))
+   [virtual-keyboard.keyboard-candidates :as candidates]
+   [menu-bar.menu :as menu]))
 
 (declare body)
 
@@ -35,6 +36,7 @@
          info (merge options/keyboard-option keyboard-style {:width width})
          state (atom options/keyboard-state)]
    :bind {:info info :state state :text-controller text-controller :context ctx}
+   :watch [{:keys [candidates-list]} state]
    (m/SafeArea)
    .child
    (m/Center)
@@ -63,4 +65,7 @@
        .color (-> m/Colors .grey .-shade300)
        .child
        (keyboard/keyboard))])
-(candidates/candidates-widget)]))
+;; (candidates/candidates-widget)
+    (menu/menu {:bar {:elavation 10}
+                :item {}}
+               candidates-list)]))

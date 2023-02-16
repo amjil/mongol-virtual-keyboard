@@ -5,58 +5,44 @@
    ["package:mongol/mongol.dart" :as mgl]
    ["package:mongol_code/mongol_code.dart" :as code]
    [virtual-keyboard.utils :as utils]
-   [cljd.flutter.alpha2 :as f]))
+   [cljd.flutter.alpha2 :as f]
+   [menu-bar.menu :as menu]))
 
-(declare build-entry
-         suffix-candidates)
+(defn candidates-widget []
+  (f/widget
+   :get [:state]
+   :watch [{:keys [candidates-list]} state]
+   (m/Positioned
+    .top 0;(.-dy offset)
+    .left 100 ;(.-dx offset)
+    .child
+    ;; (m/UnconstrainedBox
+    ;;  .child
+    (m/ConstrainedBox
+     .constraints
+     (m/BoxConstraints
+      .minHeight 10
+      .maxHeight 200
+       .maxWidth 200)
+     .child
+    ;; (m/Container
+    ;;  .color m.Colors/transparent
+    ;;  .width 200
+    ;;  .height 200
+    ;;  .child
+     (if (nil? candidates-list)
+       (m/Container)
 
-(defn remove-overlay
-  [state]
-  (let [entry (:entry @state)]
-    (if-not (nil? entry)
-      (let [^m/OverlayEntry entry- entry]
-        (.remove entry-)))
-    (swap! state assoc :entry nil)))
-
-(defn insert-overlay
-  [^m/BuildContext ctx
-   ^m/TextEditingController controller
-   state]
-  (let [^m/OverlayEntry entry (build-entry ctx controller)]
-    (dart:core/print "insert-overlay ...")
-    (swap! state assoc :entry nil)
-    (.insert (.of m/Overlay ctx) entry)
-    (swap! state assoc :entry entry)))
-
-;; Todo Candidates Widget's Position & Style
-(defn build-entry
-  [^m/BuildContext ctx
-   ^m/TextEditingController controller]
-  (let [^m/RenderBox box (.findRenderObject ctx)
-        size (.-size box)
-        offset (.localToGlobal box (.zero m/Offset))
-        
-        text (.-text controller)
-        selection (.-selection controller)]
-    (m/OverlayEntry
-     .builder
-     (fn [_]
-       (m/Positioned
-        .top (.-dy offset)
-        .left (.-dx offset)
-        .child
-        (m/Card
-        ;;  .color (:key-container-color info)
-         .elevation 10
-         .child
-         (m/Row
-          .children 
-          ;; [(mgl/MongolText "Football")
-          ;;  (mgl/MongolText "Basketball")
-          ;;  (mgl/MongolText "Handball")
-          ;;  (mgl/MongolText "Bowling ball")]
-          (suffix-candidates text selection)
-          )))))))
+       (m/ListView.builder
+        .scrollDirection (.horizontal m/Axis)
+        .itemCount (count candidates-list)
+        .itemBuilder
+        (f/build
+         [i]
+         (m/Card .child
+                 (mgl/MongolListTile
+                  .title (mgl/MongolText (nth candidates-list i)))))))))
+))
 
 (def suffix-candidatges-for-full
   [code.Suffix/YIN 
@@ -100,12 +86,19 @@
      (code.Suffix/getSuffixChu gender)]))
 
 (defn suffix-candidates 
-  [^dart:core/String text 
-   ^services/TextSelection selection]
-  (let [back-count 30
-        substr (subs text (max 0 (- (.-start selection) back-count)) (.-start selection))
-        last-word (utils/get-last-word substr)
-        gender (.getWordGender code/MongolCode last-word)]
-    (if (empty? last-word)
-      suffix-candidatges-for-full
-      (remove #(nil? %) (suffix-candidates-for-word last-word gender)))))
+  [text 
+   ^services/TextSelection selection
+   state]
+   (dart:core/print (str ":: text = " text))
+   (if (empty? text)
+     (swap! state assoc :candidates-list suffix-candidatges-for-full)
+     (let [back-count 30
+           substr (subs text (max 0 (- (.-start selection) back-count)) (.-start selection))
+           last-word (utils/get-last-word substr)
+           gender (.getWordGender code/MongolCode last-word)]
+       (dart:core/print (str "22 :: last-word = " last-word))
+       (if (empty? last-word)
+         (swap! state assoc :candidates-list suffix-candidatges-for-full)
+         (swap! state assoc :candidates-list
+                (remove #(nil? %) (suffix-candidates-for-word last-word gender))))
+       (dart:core/print (str "33 :: list = " (:candidates-list @state))))))

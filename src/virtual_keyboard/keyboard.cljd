@@ -9,25 +9,20 @@
 (declare keyboard-rows
          keyboard-row-keys)
 
-(defn keyboard [info controller]
+(defn keyboard []
   (f/widget
-   :context ctx
-   :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-        ;;  height (-> m/MediaQuery (.of ctx) .-size .-height)
-         info (merge options/keyboard-option info {:width width})
-         state (atom options/keyboard-state)
-         mn-keys (builder/keyboard-layout-builder layouts/mn-layout)]
-   :bind {:info info :state state :text-controller controller :context ctx}
+   :get [:info]
+   :let [mn-keys (builder/keyboard-layout-builder layouts/mn-layout)]
    (keyboard-rows info mn-keys)))
 
 (defn keyboard-rows [info rows]
-   (m/Container
-    .height ( + (:height info) (* (count rows) (+ 4 (:row-vertical-padding info))))
-    .width (:width info) 
-    .child (m/Column
-            .mainAxisAlignment (.spaceBetween m/MainAxisAlignment)
-            .crossAxisAlignment (.center m/CrossAxisAlignment)
-            .children (keyboard-row-keys info rows))))
+  (m/Container
+   .height (+ options/keyboard-default-height (* (count rows) (+ 4 (:row-vertical-padding info))))
+   .width (:width info)
+   .child (m/Column
+           .mainAxisAlignment (.spaceBetween m/MainAxisAlignment)
+           .crossAxisAlignment (.center m/CrossAxisAlignment)
+           .children (keyboard-row-keys info rows))))
 
 (defn keyboard-row-keys [info items]
   (doall
