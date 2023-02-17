@@ -104,6 +104,21 @@
                         .fontWeight (.w700 m/FontWeight)
                         .fontSize (:shift-click-font-size info))))} vkey)
 
+     :small-special-characters
+     (action-key-container
+      {:width (- (* 1 key-base-width) (* 2 (:horizontal-key-padding info)))
+       :height key-height
+       :child (m/Center
+               .child
+               (m/Text
+                "?123"
+                .textAlign (.center m/TextAlign)
+                .style (m/TextStyle
+                        .color (:shift-click-text-color info)
+                        .fontFamily "Courier"
+                        .fontWeight (.w700 m/FontWeight)
+                        .fontSize (:shift-click-font-size info))))} vkey)
+
      :suffix-candidates
      (action-key-container
       {:width (- (* 1 key-base-width) (* 2 (:horizontal-key-padding info)))
@@ -125,7 +140,7 @@
 
      :small-spacer-block
      (action-key-container
-      {:width (* 2 key-base-width)
+      {:width (- (* 3 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Text "")} vkey)
 
@@ -150,7 +165,7 @@
 
      :abc
      (action-key-container
-      {:width (* 1.5 key-base-width)
+      {:width (- (* 1 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
