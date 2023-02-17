@@ -10,7 +10,6 @@
   (f/widget
    (m/InkWell)
    (m/Container .color (:long-press-container-color info))
-   (m/Expanded)
    (m/Padding .padding
               (.symmetric m/EdgeInsets .vertical 24 .horizontal 16))
    (mgl/MongolText
