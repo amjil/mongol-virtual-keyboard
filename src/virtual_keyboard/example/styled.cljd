@@ -44,9 +44,7 @@
    .children
    [(m/Column
      .children
-     [(m/Container
-       .height 200
-       .width 200
+     [(m/Expanded
        .child
        (mgl/MongolTextField
         .controller text-controller
@@ -58,11 +56,14 @@
         .showCursor true
         .readOnly true
         .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
-      (m/Expanded .child (m/Container))
       (m/Container
        .color (-> m/Colors .grey .-shade300)
        .child
        (keyboard/keyboard))])
-    (menu/menu {:bar {:elavation 10}
-                :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked text-controller x state))}}
-               candidates-list)]))
+    (m/Positioned
+     .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:row-vertical-padding info))))
+     .right (/ width 4)
+     .child
+     (menu/menu {:bar {:elavation 10}
+                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked text-controller x state))}}
+                candidates-list))]))

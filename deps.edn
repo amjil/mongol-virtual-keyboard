@@ -4,9 +4,10 @@
         {:git/url "https://github.com/tensegritics/ClojureDart.git"
          :sha "aa1964b8e9ea3d797f5098a3d5cc47982e886e4a"}
         amjil/mongol-menu-bar
-        {:git/url "https://github.com/amjil/mongol-menu-bar.git"
-         :sha "6ee88c03e60c7038f8cd46e9ac6f60b742de80fc"}
-        }
+       ;;  {:git/url "https://github.com/amjil/mongol-menu-bar.git"
+       ;;   :sha "d93fc9129b7e63f0db841153eec464c52ec2b0bf"}
+        {:local/root "../mongol-menu-bar"}}
+       
  :aliases {:cljd {:main-opts ["-m" "cljd.build"]}}
  :cljd/opts {:kind :flutter
              :main virtual-keyboard.example.main}}
