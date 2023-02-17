@@ -82,8 +82,6 @@
   (m/GestureDetector
    .child
    (m/Card
-    .color (or (:long-press-overlay-container-color info)
-               (:key-container-color info))
     .elevation 10
     .child
     (m/ConstrainedBox
@@ -92,13 +90,7 @@
       .minHeight (.-height size)
       .maxHeight (* (.-height size) 1.8))
      .child
-     (m/Wrap
-      .runSpacing 4
-      .spacing 4
-      .direction (.horizontal m/Axis)
-      .alignment (if (> (count additional-keys) 1)
-                   (.start m/WrapAlignment)
-                   (.spaceEvenly m/WrapAlignment))
+     (m/Row
       .children
       (map (fn [vkey]
              (m/DragTarget
@@ -124,12 +116,15 @@
         top-offset-adjustment (calculate-offset-adjustment (count additional-keys))]
     (m/OverlayEntry
      .builder (fn [_]
-                (dart:core/print (str "over-popup-widget add count = " additional-keys))
+                ;; (dart:core/print (str "over-popup-widget add count = " additional-keys))
                 (m/Positioned
-                 .top (- (.-dy offset) (* top-offset-adjustment (.-height size)))
-                 .left (if (> (count additional-keys) 1)
-                         (- (.-dx offset) 24)
-                         (.-dx offset))
+                 .top (- (.-dy offset) (+ 10 (.-height size)));(* top-offset-adjustment (.-height size)))
+                 .right (if (> (.-dx offset) (/ (:width info) 2))
+                          (- (:width info) (.-dx offset) (.-width size))
+                          nil)
+                 .left (if (< (.-dx offset) (/ (:width info) 2))
+                         (.-dx offset)
+                         nil)
                  .child
                  (overlay-popup-widget size info state controller additional-keys))))))
 

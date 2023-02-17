@@ -31,4 +31,8 @@
 (def layouts 
   {:mn {:abc mn-layout
         :special mn-special-layout
-        :other-special mn-other-special-layout}})
+        :other-special mn-other-special-layout}
+  ;;  :en {:abc en-layout
+  ;;       :special en-special-layout
+  ;;       :other-special en-other-special-layout}
+   })

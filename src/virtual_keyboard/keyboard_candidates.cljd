@@ -50,19 +50,15 @@
   [text 
    ^services/TextSelection selection
    state]
-   (dart:core/print (str ":: text = " text))
    (if (empty? text)
      (swap! state assoc :candidates-list suffix-candidatges-for-full)
      (let [back-count 30
            substr (subs text (max 0 (- (.-start selection) back-count)) (.-start selection))
            last-word (str/trim (utils/get-last-word substr))]
-       (dart:core/print (str "22 :: last-word = " last-word))
        (if (empty? last-word)
          (swap! state assoc :candidates-list suffix-candidatges-for-full)
          (let [gender (.getWordGender code/MongolCode last-word)]
            (if (empty? last-word)
              (swap! state assoc :candidates-list suffix-candidatges-for-full)
              (swap! state assoc :candidates-list
-                    (remove #(nil? %) (suffix-candidates-for-word last-word gender))))))
-       
-       (dart:core/print (str "33 :: list = " (:candidates-list @state))))))
+                    (remove #(nil? %) (suffix-candidates-for-word last-word gender)))))))))

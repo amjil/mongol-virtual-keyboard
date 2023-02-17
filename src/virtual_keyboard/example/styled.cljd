@@ -21,8 +21,9 @@
    :bind {:text-controller text-controller}
    (m/Scaffold
     .resizeToAvoidBottomInset true
-    .appBar (m/AppBar
-             .title (m/Text "Virtual Keyboard"))
+    ;; .appBar (m/AppBar
+    ;;          .title (m/Text "Virtual Keyboard"))
+    .backgroundColor (-> m/Colors .grey .-shade50)
     .body
     (body))))
 
@@ -55,6 +56,7 @@
                  (dart:core/print "onTap TextField"))
         .showCursor true
         .readOnly true
+        .style (m/TextStyle .fontSize 26)
         .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
       (m/Container
        .color (-> m/Colors .grey .-shade300)
