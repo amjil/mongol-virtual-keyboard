@@ -106,7 +106,7 @@
 
      :small-special-characters
      (action-key-container
-      {:width (- (* 1 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* (/ 2.5 2) key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -165,7 +165,7 @@
 
      :abc
      (action-key-container
-      {:width (- (* 1 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* (/ 2.5 2) key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -223,7 +223,6 @@
    state]
   (let [text (.-text controller)
         selection (-> controller .-selection)] 
-    (dart:core/print (str "on-key-press selection = " selection))
     (condp = (:key-type vkey)
       :string
       (let [new-str (cond
@@ -279,20 +278,18 @@
 
         :space
         (on-spacer-pressed controller text selection)
-        
+
         :spacer-block
         (on-spacer-pressed controller text selection)
-        
+
         :small-spacer-block
         (on-spacer-pressed controller text selection)
 
         :shift
         (swap! state :is-shift-enabled true)
-        
+
         :suffix-candidates
-        (let [foo "bar"]
-          (dart:core/print "In The Suffix-Candidates button on clicked")
-          (keyboard-candidates/suffix-candidates text selection state))))))
+        (keyboard-candidates/suffix-candidates text selection state)))))
 
 (defn on-candidates-clicked
   [^m/TextEditingController controller
@@ -302,5 +299,4 @@
    controller
    {:key-type :string :text text}
    state)
-  (swap! state assoc :candidates-list [])
-  )
+  (swap! state assoc :candidates-list []))

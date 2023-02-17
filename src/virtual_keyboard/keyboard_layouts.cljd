@@ -11,7 +11,7 @@
    [:shift "ᠽ᠊" "ᠱ᠊" "ᠣ" "ᠤ᠊" "ᠪ᠊" "ᠨ᠊" "ᠮ᠊" :backspace]
   ;;  [:special-characters :suffix-candidates "᠂" :spacer-block "᠃" :return]])
   ;;  [:special-characters :switch-layout "᠂" :space "᠃" :return]])
-   [:special-characters :abc :suffix-candidates "᠂" :small-spacer-block "᠃" :return]])
+   [:small-special-characters :abc :suffix-candidates "᠂" :small-spacer-block "᠃" :return]])
 
 ;; Todo ......
 (def mn-special-layout

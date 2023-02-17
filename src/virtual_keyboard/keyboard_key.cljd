@@ -8,7 +8,6 @@
    [cljd.flutter.alpha2 :as f]))
 
 (declare
- calculate-offset-adjustment
  insert-overlay
  remove-overlay)
 
@@ -39,9 +38,7 @@
    .child
    (m/InkWell
     .splashColor m.Colors/white
-    .onTap #(keyboard-action/on-key-press text-controller virtual-key state)
-    ;; #(dart:core/print "xxx")
-    )
+    .onTap #(keyboard-action/on-key-press text-controller virtual-key state))
    .child
    (m/LongPressDraggable
     .delay (Duration .milliseconds 200)
@@ -95,10 +92,8 @@
       (map (fn [vkey]
              (m/DragTarget
               .builder (fn [_ _ _]
-                         (dart:core/print (str "DragTarget ..." vkey))
                          (popup-key/key-widget info state vkey controller))
               .onAccept (fn [_]
-                          (dart:core/print "onAccept")
                           (keyboard-action/on-key-press
                            controller (assoc vkey :key-type :string) state))))
            additional-keys))))))
@@ -108,17 +103,14 @@
                    info
                    state
                    current-key]
-  (dart:core/print (str "current-key " current-key))
   (let [^m/RenderBox box (.findRenderObject ctx)
         size (.-size box)
         offset (.localToGlobal box (.zero m/Offset))
-        additional-keys (candidates/popup-candidates controller current-key)
-        top-offset-adjustment (calculate-offset-adjustment (count additional-keys))]
+        additional-keys (candidates/popup-candidates controller current-key)]
     (m/OverlayEntry
      .builder (fn [_]
-                ;; (dart:core/print (str "over-popup-widget add count = " additional-keys))
                 (m/Positioned
-                 .top (- (.-dy offset) (+ 10 (.-height size)));(* top-offset-adjustment (.-height size)))
+                 .top (- (.-dy offset) (+ 10 (.-height size)))
                  .right (if (> (.-dx offset) (/ (:width info) 2))
                           (- (:width info) (.-dx offset) (.-width size))
                           nil)
@@ -146,12 +138,3 @@
     (swap! state assoc :entry nil)
     (.insert (.of m/Overlay ctx) entry)
     (swap! state assoc :entry entry)))
-
-(defn- calculate-offset-adjustment
-  [length]
-  (cond
-    (> length 9) 3.9
-    (> length 7) 2.9
-    (> length 6) 2
-    (> length 4) 2
-    :else 1))

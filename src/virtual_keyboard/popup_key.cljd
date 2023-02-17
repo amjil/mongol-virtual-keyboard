@@ -8,15 +8,11 @@
 (defn key-widget [info state vkey 
                 ^m/TextEditingController controller]
   (f/widget
-   (m/InkWell ;.onTap #(keyboard-action/on-key-press controller vkey state)
-              )
-   .child
+   (m/InkWell)
    (m/Container .color (:long-press-container-color info))
-   .child
    (m/Expanded)
    (m/Padding .padding
               (.symmetric m/EdgeInsets .vertical 24 .horizontal 16))
-   .child
    (mgl/MongolText
     (utils/key-text state vkey)
     .style
