@@ -282,6 +282,9 @@
         
         :spacer-block
         (on-spacer-pressed controller text selection)
+        
+        :small-spacer-block
+        (on-spacer-pressed controller text selection)
 
         :shift
         (swap! state :is-shift-enabled true)

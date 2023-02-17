@@ -2,7 +2,8 @@
   (:require
    ["package:flutter/services.dart" :as services]
    ["package:mongol_code/mongol_code.dart" :as code]
-   [virtual-keyboard.utils :as utils]))
+   [virtual-keyboard.utils :as utils]
+   [clojure.string :as str]))
 
 (def suffix-candidatges-for-full
   [code.Suffix/YIN 
@@ -54,11 +55,14 @@
      (swap! state assoc :candidates-list suffix-candidatges-for-full)
      (let [back-count 30
            substr (subs text (max 0 (- (.-start selection) back-count)) (.-start selection))
-           last-word (utils/get-last-word substr)
-           gender (.getWordGender code/MongolCode last-word)]
+           last-word (str/trim (utils/get-last-word substr))]
        (dart:core/print (str "22 :: last-word = " last-word))
        (if (empty? last-word)
          (swap! state assoc :candidates-list suffix-candidatges-for-full)
-         (swap! state assoc :candidates-list
-                (remove #(nil? %) (suffix-candidates-for-word last-word gender))))
+         (let [gender (.getWordGender code/MongolCode last-word)]
+           (if (empty? last-word)
+             (swap! state assoc :candidates-list suffix-candidatges-for-full)
+             (swap! state assoc :candidates-list
+                    (remove #(nil? %) (suffix-candidates-for-word last-word gender))))))
+       
        (dart:core/print (str "33 :: list = " (:candidates-list @state))))))
