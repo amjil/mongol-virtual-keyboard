@@ -3,34 +3,53 @@
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
    [cljd.flutter.alpha2 :as f]
-   [virtual-keyboard.keyboard :as keyboard]))
+   [virtual-keyboard.keyboard :as keyboard]
+   [virtual-keyboard.keyboard-action :as keyboard-action]
+   [virtual-keyboard.options :as options]
+   [menu-bar.menu :as menu]))
 
 (defn basic-body []
   (f/widget
    :context ctx
    :get [:text-controller]
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-         height (-> m/MediaQuery (.of ctx) .-size .-height)]
+         height (-> m/MediaQuery (.of ctx) .-size .-height)
+         info (merge options/keyboard-option {} {:width width})
+         state (atom options/keyboard-state)]
+   :bind {:info info :state state :text-controller text-controller :context ctx}
+   :watch [{:keys [candidates-list]} state]
    (m/SafeArea)
    .child
    (m/Center)
    .child
-   (m/Column
-    .children
-    [(m/Container
-      .height 200
-      .width 200
-      .child
-      (mgl/MongolTextField
-       .controller text-controller
-       .maxLines nil
-       .autofocus true
-       .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
-     (m/Expanded .child (m/Container))
-     (m/Container
-      .color m.Colors/black87
-      .child
-      (keyboard/keyboard))])))
+   (m/Stack)
+   .children
+   [(m/Column
+     .children
+     [(m/Expanded
+       .child
+       (mgl/MongolTextField
+        .controller text-controller
+        .maxLines 500
+        .autofocus true
+        .onTap (fn []
+                 (swap! state assoc :candidates-list [])
+                 (dart:core/print "onTap TextField"))
+        .showCursor true
+        .readOnly true
+        .style (m/TextStyle .fontSize 26)
+        .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
+      (m/Container
+       .color (-> m/Colors .grey .-shade300)
+       .child
+       (keyboard/keyboard))])
+    (m/Positioned
+     .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:row-vertical-padding info))))
+     .right (/ width 4)
+     .child
+     (menu/menu {:bar {:elavation 10}
+                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked text-controller x state))}}
+                candidates-list))]))
 
 (defn basic []
   (f/widget
@@ -39,7 +58,7 @@
    :bind {:text-controller text-controller}
    (m/Scaffold
     .resizeToAvoidBottomInset true
-    .appBar (m/AppBar
-             .title (m/Text "Virtual Keyboard"))
+    ;; .appBar (m/AppBar
+    ;;          .title (m/Text "Virtual Keyboard"))
     .body
     (basic-body))))

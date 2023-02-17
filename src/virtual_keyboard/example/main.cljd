@@ -12,8 +12,8 @@
     .theme (m/ThemeData .primarySwatch m.Colors/blue
                         .fontFamily "MongolianBaiZheng")
     .home
-    ;; (example-basic/basic)
-    (example-styled/styled)
+    (example-basic/basic)
+    ;; (example-styled/styled)
     ;; (m/Scaffold
     ;;  .appBar (m/AppBar
     ;;           .title (m/Text "Mongolian Search Bar"))
