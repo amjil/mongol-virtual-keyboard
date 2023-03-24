@@ -12,8 +12,10 @@
     .color (:key-container-color info))
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
-    .width (* 1.5 (.-width size))
-    .height (* 1.5 (.-height size))
+    ;; .width (* 1.5 (.-width size))
+    ;; .height (* 1.5 (.-height size))
+    .width (* 1 (.-width size))
+    .height (* 1 (.-height size))
     .alignment m.Alignment/center
     .decoration (m/BoxDecoration
                  .borderRadius
@@ -40,17 +42,18 @@
     (m/OverlayEntry
      .builder (fn [_]
                 (m/Positioned
-                 .top (- (.-dy offset) (* 1.5 (.-height size)))
-                 .left (+ (.-dx offset) (/ (.-width size) 2) (- (/ (* 1.5 (.-width size)) 2)))
+                 .top (- (.-dy offset) (* 1 (.-height size)))
+                 .left (+ (.-dx offset) (/ (.-width size) 2) (- (/ (* 1 (.-width size)) 2)))
                  .child
                  (bubble-widget size info state virtual-key))))))
 
 (defn remove-overlay
   [state]
-  (let [^m/OverlayEntry entry (:entry @state)]
-    (if-not (nil? entry)
-      (.remove entry))
-    (swap! state assoc :entry nil)))
+  (if-not (nil? (:entry @state))
+    (let [^m/OverlayEntry entry (:entry @state)]
+      (if-not (nil? entry)
+        (.remove entry))
+      (swap! state assoc :entry nil))))
 
 (defn insert-overlay-bubble
   [state

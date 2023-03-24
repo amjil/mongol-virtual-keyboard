@@ -9,9 +9,11 @@
                 ^m/TextEditingController controller]
   (f/widget
    (m/InkWell)
-   (m/Container .color (:long-press-container-color info))
+   (m/Container .color (:long-press-container-color info)
+                .height (:height info)
+                .alignment m.Alignment/center)
    (m/Padding .padding
-              (.symmetric m/EdgeInsets .vertical 24 .horizontal 16))
+              (.symmetric m/EdgeInsets .vertical 16 .horizontal 6))
    (mgl/MongolText
     (utils/key-text state vkey)
     .style

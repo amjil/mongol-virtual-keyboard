@@ -45,7 +45,12 @@
                  (keyboard-overlay/insert-overlay-bubble state ctx text-controller info virtual-key))
     .onTapUp (fn [_]
                (dart:core/print "key onTapUp >>>")
-               (keyboard-overlay/remove-overlay state)))
+               (keyboard-overlay/remove-overlay state))
+    .onTapCancel (fn []
+                   (dart:core/print "key onTapCancel >>>")
+                   (keyboard-overlay/remove-overlay state))
+    )
+
    .child
    (m/LongPressDraggable
     .delay (Duration .milliseconds 300)
@@ -83,27 +88,26 @@
                                        (:text-style info)))))])))
 
 (defn overlay-popup-widget [^m/Size size info state controller additional-keys]
-  (m/GestureDetector
-   .child
+  (f/widget
+   (m/GestureDetector)
    (m/Card
-    .elevation 10
-    .child
-    (m/ConstrainedBox
-     .constraints
-     (m/BoxConstraints
-      .minHeight (.-height size)
-      .maxHeight (* (.-height size) 1.8))
-     .child
-     (m/Row
-      .children
-      (map (fn [vkey]
-             (m/DragTarget
-              .builder (fn [_ _ _]
-                         (popup-key/key-widget info state vkey controller))
-              .onAccept (fn [_]
-                          (keyboard-action/on-key-press
-                           controller (assoc vkey :key-type :string) state))))
-           additional-keys))))))
+    .elevation 10)
+   (m/ConstrainedBox
+    .constraints (m/BoxConstraints
+                  .minHeight (.-height size)
+                  .maxHeight (.-height size)
+                  ;; .maxHeight (* (.-height size) 1.8)
+                   ))
+   (m/Row
+    .children
+    (map (fn [vkey]
+           (m/DragTarget
+            .builder (fn [_ _ _]
+                       (popup-key/key-widget info state vkey controller))
+            .onAccept (fn [_]
+                        (keyboard-action/on-key-press
+                         controller (assoc vkey :key-type :string) state))))
+         additional-keys))))
 
 (defn build-entry [^m/BuildContext ctx
                    ^m/TextEditingController controller
@@ -129,10 +133,11 @@
 
 (defn remove-overlay
   [state]
-  (let [^m/OverlayEntry entry (:entry @state)]
-    (if-not (nil? entry)
-      (.remove entry))
-    (swap! state assoc :entry nil)))
+  (if-not (nil? (:entry @state))
+    (let [^m/OverlayEntry entry (:entry @state)]
+      (if-not (nil? entry)
+        (.remove entry))
+      (swap! state assoc :entry nil))))
 
 (defn insert-overlay
   [state
