@@ -1,0 +1,65 @@
+(ns virtual-keyboard.keyboard-overlay
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
+   [virtual-keyboard.utils :as utils]
+   [cljd.flutter.alpha2 :as f]))
+
+(defn bubble-widget [^m/Size size info state virtual-key]
+  (f/widget
+   (m/Material
+    .elevation 10
+    .color (:key-container-color info))
+   (m/Container
+    .clipBehavior (.hardEdge m/Clip)
+    .width (* 1.5 (.-width size))
+    .height (* 1.5 (.-height size))
+    .alignment m.Alignment/center
+    .decoration (m/BoxDecoration
+                 .borderRadius
+                 (.all m/BorderRadius
+                       (.circular m/Radius (:key-cap-border-radius info)))))
+   (m/RotatedBox
+    .quarterTurns (if (:is-rotated virtual-key) 1 0)
+    .child (m/Text (utils/key-text state virtual-key)
+                   .style
+                   (if (:is-rotated virtual-key)
+                     (m/TextStyle .fontSize 24
+                                  .color (.white m/Colors)
+                                  .fontFamily "MongolianBaiZheng")
+                     (:text-style info))))))
+
+(defn build-entry [^m/BuildContext ctx
+                   ^m/TextEditingController controller
+                   info
+                   state
+                   virtual-key]
+  (let [^m/RenderBox box (.findRenderObject ctx)
+        size (.-size box)
+        offset (.localToGlobal box (.zero m/Offset))]
+    (m/OverlayEntry
+     .builder (fn [_]
+                (m/Positioned
+                 .top (- (.-dy offset) (* 1.5 (.-height size)))
+                 .left (+ (.-dx offset) (/ (.-width size) 2) (- (/ (* 1.5 (.-width size)) 2)))
+                 .child
+                 (bubble-widget size info state virtual-key))))))
+
+(defn remove-overlay
+  [state]
+  (let [^m/OverlayEntry entry (:entry @state)]
+    (if-not (nil? entry)
+      (.remove entry))
+    (swap! state assoc :entry nil)))
+
+(defn insert-overlay
+  [state
+   ^m/BuildContext ctx
+   ^m/TextEditingController controller
+   info
+   current-key]
+  (let [^m/OverlayEntry entry (build-entry ctx controller info state current-key)]
+    (dart:core/print "insert-overlay for bubble ...")
+    (swap! state assoc :entry nil)
+    (.insert (.of m/Overlay ctx) entry)
+    (swap! state assoc :entry entry)))

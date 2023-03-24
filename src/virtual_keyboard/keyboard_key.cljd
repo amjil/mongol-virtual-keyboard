@@ -5,6 +5,7 @@
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.popup-key-candidates :as candidates]
    [virtual-keyboard.utils :as utils]
+   [virtual-keyboard.keyboard-overlay :as keyboard-overlay]
    [cljd.flutter.alpha2 :as f]))
 
 (declare
@@ -38,14 +39,21 @@
    .child
    (m/InkWell
     .splashColor m.Colors/white
-    .onTap #(keyboard-action/on-key-press text-controller virtual-key state))
+    .onTap #(keyboard-action/on-key-press text-controller virtual-key state)
+    .onTapDown (fn [_]
+                 (dart:core/print "key onTapDown >>>")
+                 (keyboard-overlay/insert-overlay state ctx text-controller info virtual-key))
+    .onTapUp (fn [_]
+               (dart:core/print "key onTapUp >>>")
+               (keyboard-overlay/remove-overlay state)))
    .child
    (m/LongPressDraggable
-    .delay (Duration .milliseconds 200)
+    .delay (Duration .milliseconds 300)
     .dragAnchorStrategy (fn [_ _ _] (m/Offset 10 10))
     .data (:text virtual-key)
     .onDragStarted
     (fn []
+      (remove-overlay state)
       (insert-overlay state ctx text-controller info (:id virtual-key)))
     .onDragEnd
     (fn [_]
