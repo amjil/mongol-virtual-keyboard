@@ -29,7 +29,7 @@
                                   .fontFamily "MongolianBaiZheng")
                      (:text-style info))))))
 
-(defn build-entry [^m/BuildContext ctx
+(defn build-entry-bubble [^m/BuildContext ctx
                    ^m/TextEditingController controller
                    info
                    state
@@ -52,14 +52,14 @@
       (.remove entry))
     (swap! state assoc :entry nil)))
 
-(defn insert-overlay
+(defn insert-overlay-bubble
   [state
    ^m/BuildContext ctx
    ^m/TextEditingController controller
    info
    current-key]
-  (let [^m/OverlayEntry entry (build-entry ctx controller info state current-key)]
-    (dart:core/print "insert-overlay for bubble ...")
+  (let [^m/OverlayEntry entry (build-entry-bubble ctx controller info state current-key)]
     (swap! state assoc :entry nil)
     (.insert (.of m/Overlay ctx) entry)
     (swap! state assoc :entry entry)))
+
