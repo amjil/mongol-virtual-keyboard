@@ -287,6 +287,10 @@
 
         :shift
         (swap! state :is-shift-enabled true)
+        
+        :abc 
+        ;; (swap! state :)
+        (dart:core/print "abc >>>> ...")
 
         :suffix-candidates
         (keyboard-candidates/suffix-candidates text selection state)))))

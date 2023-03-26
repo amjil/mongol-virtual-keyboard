@@ -5,8 +5,9 @@
    [virtual-keyboard.utils :as utils]
    [cljd.flutter.alpha2 :as f]))
 
-(defn key-widget [info state vkey 
-                ^m/TextEditingController controller]
+(defn key-widget [info state vkey
+                  ^m/TextEditingController controller
+                  is-rotated]
   (f/widget
    (m/InkWell)
    (m/Container .color (:long-press-container-color info)
@@ -14,14 +15,26 @@
                 .alignment m.Alignment/center)
    (m/Padding .padding
               (.symmetric m/EdgeInsets .vertical 16 .horizontal 6))
-   (mgl/MongolText
-    (utils/key-text state vkey)
-    .style
-    (if (empty? (:popup-text-style info))
-      (m/TextStyle .fontSize 24
-                   .color (.white m/Colors)
-                   .fontFamily "MongolianBaiZheng")
-      (:text-style info)))))
+   
+   (m/RotatedBox
+    .quarterTurns (if is-rotated 1 0)
+    .child (m/Text (utils/key-text state vkey)
+                   .style
+                  ;;  (if (:is-rotated virtual-key)
+                   (m/TextStyle .fontSize 24
+                                .color (.white m/Colors)
+                                .fontFamily "MongolianBaiZheng")
+                    ;;  (:text-style info))
+                   ))
+;;    (mgl/MongolText
+;;     (utils/key-text state vkey)
+;;     .style
+;;     (if (empty? (:popup-text-style info))
+;;       (m/TextStyle .fontSize 24
+;;                    .color (.white m/Colors)
+;;                    .fontFamily "MongolianBaiZheng")
+;;       (:text-style info)))
+   ))
 
 (def en-popup-keys
   {:a [{:text "ª" :caps-text "ª"}

@@ -2,8 +2,7 @@
   (:require
    ["package:flutter/material.dart" :as m]
    [virtual-keyboard.keyboard-key :as keyboard-key]
-   [cljd.flutter.alpha2 :as f]
-   ))
+   [cljd.flutter.alpha2 :as f]))
 
 (def mn-layout 
   [["ᠴ᠊" "ᠸ᠊" "ᠡ" "ᠷ᠊" "ᠲ᠊" "ᠶ᠊" "ᠦ᠊" "ᠢ" "ᠥ" "ᠫ᠊"]
@@ -27,12 +26,20 @@
    [:special-characters "%" "©" "®" "™" "✓" "[" "]" :backspace]
    [:abc, "<" :space ">" :return]])
 
+(def en-layout 
+  [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]
+   ["a" "s" "d" "f" "g" "h" "j" "k" "l"]
+   [:shift "z" "x" "c" "v" "b" "n" "m" :backspace]
+  ;;  [:special-characters :suffix-candidates "᠂" :spacer-block "᠃" :return]])
+   [:special-characters :abc "," :space "." :return]])
+  ;;  [:small-special-characters :abc :suffix-candidates "᠂" :small-spacer-block "᠃" :return]])
 
 (def layouts 
   {:mn {:abc mn-layout
         :special mn-special-layout
         :other-special mn-other-special-layout}
-  ;;  :en {:abc en-layout
-  ;;       :special en-special-layout
-  ;;       :other-special en-other-special-layout}
+   :en {:abc en-layout
+        ;; :special en-special-layout
+        ;; :other-special en-other-special-layout
+        }
    })

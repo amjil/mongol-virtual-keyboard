@@ -39,17 +39,19 @@
    .child
    (m/InkWell
     .splashColor m.Colors/white
-    .onTap #(keyboard-action/on-key-press text-controller virtual-key state)
+    .onTap 
+    (fn []
+      (if (true? (:is-rotated virtual-key))
+        (keyboard-action/on-key-press text-controller virtual-key state)))
     .onTapDown (fn [_]
-                 (dart:core/print "key onTapDown >>>")
+                ;;  (dart:core/print "key onTapDown >>>")
                  (keyboard-overlay/insert-overlay-bubble state ctx text-controller info virtual-key))
     .onTapUp (fn [_]
-               (dart:core/print "key onTapUp >>>")
+              ;;  (dart:core/print "key onTapUp >>>")
                (keyboard-overlay/remove-overlay state))
     .onTapCancel (fn []
-                   (dart:core/print "key onTapCancel >>>")
-                   (keyboard-overlay/remove-overlay state))
-    )
+                  ;;  (dart:core/print "key onTapCancel >>>")
+                   (keyboard-overlay/remove-overlay state)))
 
    .child
    (m/LongPressDraggable
@@ -58,10 +60,15 @@
     .data (:text virtual-key)
     .onDragStarted
     (fn []
-      (insert-overlay state ctx text-controller info (:id virtual-key)))
+      (insert-overlay state ctx text-controller info virtual-key))
     .onDragEnd
     (fn [_]
       (remove-overlay state))
+    .onDraggableCanceled 
+    (fn [_ _]
+      (dart:core/print "onDraggableCanceled >>>")
+      ;; (remove-overlay state)
+      )
     .feedback
     (m/Card
      .elevation 12
@@ -78,16 +85,17 @@
     .children
     [(m/Align .alignment (.center m/Alignment)
               .child (m/RotatedBox
-                      .quarterTurns (if (:is-rotated virtual-key) 1 0)
+                      .quarterTurns (if (true? (:is-rotated virtual-key)) 1 0)
                       .child (m/Text (utils/key-text state virtual-key)
                                      .style
-                                     (if (:is-rotated virtual-key)
+                                    ;;  (if (:is-rotated virtual-key)
                                        (m/TextStyle .fontSize 24
                                                     .color (.white m/Colors)
                                                     .fontFamily "MongolianBaiZheng")
-                                       (:text-style info)))))])))
+                                      ;;  (:text-style info))
+                      )))])))
 
-(defn overlay-popup-widget [^m/Size size info state controller additional-keys]
+(defn overlay-popup-widget [^m/Size size info state controller additional-keys is-rotated]
   (f/widget
    (m/GestureDetector)
    (m/Card
@@ -103,7 +111,7 @@
     (map (fn [vkey]
            (m/DragTarget
             .builder (fn [_ _ _]
-                       (popup-key/key-widget info state vkey controller))
+                       (popup-key/key-widget info state vkey controller is-rotated))
             .onAccept (fn [_]
                         (keyboard-action/on-key-press
                          controller (assoc vkey :key-type :string) state))))
@@ -113,23 +121,23 @@
                    ^m/TextEditingController controller
                    info
                    state
-                   current-key]
+                   additional-keys
+                   is-rotated]
   (let [^m/RenderBox box (.findRenderObject ctx)
         size (.-size box)
-        offset (.localToGlobal box (.zero m/Offset))
-        additional-keys (candidates/popup-candidates controller current-key)]
+        offset (.localToGlobal box (.zero m/Offset))]
     (m/OverlayEntry
      .builder (fn [_]
                 (m/Positioned
                  .top (- (.-dy offset) (+ 10 (.-height size)))
-                 .right (if (> (.-dx offset) (/ (:width info) 2))
+                 .right (if (>= (.-dx offset) (/ (:width info) 2))
                           (- (:width info) (.-dx offset) (.-width size))
                           nil)
                  .left (if (< (.-dx offset) (/ (:width info) 2))
                          (.-dx offset)
                          nil)
                  .child
-                 (overlay-popup-widget size info state controller additional-keys))))))
+                 (overlay-popup-widget size info state controller additional-keys is-rotated))))))
 
 (defn remove-overlay
   [state]
@@ -144,13 +152,18 @@
    ^m/BuildContext ctx
    ^m/TextEditingController controller
    info
-   current-key]
-  (let [additional-keys (candidates/popup-candidates controller current-key)]
-    (if (empty? additional-keys)
+   virtual-key]
+  (let [additional-keys
+        (if (true? (:is-rotated virtual-key))
+          (candidates/popup-candidates controller (:id virtual-key))
+          (get popup-key/en-popup-keys (keyword (:text virtual-key))))]
+    (dart:core/print (str "candidates = " additional-keys))
+    (dart:core/print (count additional-keys))
+    (if (zero? (count additional-keys))
       nil
       (do
         (remove-overlay state)
-        (let [^m/OverlayEntry entry (build-entry ctx controller info state current-key)]
+        (let [^m/OverlayEntry entry (build-entry ctx controller info state additional-keys (:is-rotated virtual-key))]
           (dart:core/print "insert-overlay ...")
           (swap! state assoc :entry nil)
           (.insert (.of m/Overlay ctx) entry)

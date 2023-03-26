@@ -25,11 +25,12 @@
     .quarterTurns (if (:is-rotated virtual-key) 1 0)
     .child (m/Text (utils/key-text state virtual-key)
                    .style
-                   (if (:is-rotated virtual-key)
+                  ;;  (if (:is-rotated virtual-key)
                      (m/TextStyle .fontSize 24
                                   .color (.white m/Colors)
                                   .fontFamily "MongolianBaiZheng")
-                     (:text-style info))))))
+                    ;;  (:text-style info))
+    ))))
 
 (defn build-entry-bubble [^m/BuildContext ctx
                    ^m/TextEditingController controller

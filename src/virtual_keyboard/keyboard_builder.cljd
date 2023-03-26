@@ -29,7 +29,7 @@
 
     (and
      (string? item)
-     (some? (filter #(code.MongolCode/isMongolian (int %)) item)))
+     (not-empty (filter #(code.MongolCode/isMongolian (int %)) item)))
     (keyboard-key/key-widget
      {:text (as-> item m
                 ;;  (filter #(code.MongolCode/isMongolian (int %)) m)
@@ -45,14 +45,16 @@
     (keyboard-key/key-widget
      {:key-type :string
       :caps-text (str/upper-case item)
-      :text item}
+      :text item
+      :is-rotated false}
      items-count
      rows-count)
 
     :else
     (keyboard-action/action-widget
      {:key-type :action
-      :action item}
+      :action item
+      :is-rotated false}
      items-count rows-count)))
 
 (defn keyboard-layout-builder [layout]
