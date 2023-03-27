@@ -29,7 +29,10 @@
    :text-color m.Colors/white
    :include-secondary-key-in-popup true})
 
-(def keyboard-state 
+(def keyboard-state
   {:long-press false
    :is-shift-enabled false
-   :entry nil})
+   :is-special-enabled false
+   :is-other-special-enabled false
+   :entry nil
+   :current-layout "en"})

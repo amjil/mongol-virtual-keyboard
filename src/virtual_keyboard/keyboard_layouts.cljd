@@ -10,29 +10,38 @@
    [:shift "ᠽ᠊" "ᠱ᠊" "ᠣ" "ᠤ᠊" "ᠪ᠊" "ᠨ᠊" "ᠮ᠊" :backspace]
   ;;  [:special-characters :suffix-candidates "᠂" :spacer-block "᠃" :return]])
   ;;  [:special-characters :switch-layout "᠂" :space "᠃" :return]])
-   [:small-special-characters :abc :suffix-candidates "᠂" :small-spacer-block "᠃" :return]])
+   [:special-characters :abc :suffix-candidates "᠂" :small-spacer-block "᠃" :return]])
 
 ;; Todo ......
 (def mn-special-layout
   [["1" "2" "3" "4" "5" "6" "7" "8" "9" "0"]
    [:empty "@" "#" "€" "_" "&" "-" "+" "(" ")" "/"]
-   [:other-special-characters "*" "\\"" """ ":" ";" "!" "?" :backspace]
-   [:abc " " :space "." :return]])
+   [:other-special-characters "*" "\"" "'" ":" ";" "!" "?" :backspace]
+   [:special-characters :mgl "," :spacer-block "." :return]])
 
 (def mn-other-special-layout
-  ;;
   [["~" "\"" "|" "•" "√" "∏" "÷" "×" "¶" "△"]
    ["£" "¥" "$" "¢" "ˆ" "˚" "=" "❴" "❵" "\\"]
-   [:special-characters "%" "©" "®" "™" "✓" "[" "]" :backspace]
-   [:abc, "<" :space ">" :return]])
+   [:other-special-characters "%" "©" "®" "™" "✓" "[" "]" :backspace]
+   [:special-characters :mgl "," :spacer-block "." :return]])
 
 (def en-layout 
   [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]
-   ["a" "s" "d" "f" "g" "h" "j" "k" "l"]
+   [:empty "a" "s" "d" "f" "g" "h" "j" "k" "l" :empty]
    [:shift "z" "x" "c" "v" "b" "n" "m" :backspace]
-  ;;  [:special-characters :suffix-candidates "᠂" :spacer-block "᠃" :return]])
-   [:special-characters :abc "," :space "." :return]])
-  ;;  [:small-special-characters :abc :suffix-candidates "᠂" :small-spacer-block "᠃" :return]])
+   [:special-characters :mgl "," :spacer-block "." :return]])
+
+(def en-special-layout
+  [["1" "2" "3" "4" "5" "6" "7" "8" "9" "0"]
+   ["@" "#" "€" "_" "&" "-" "+" "(" ")" "/"]
+   [:other-special-characters "*" "\"" "'" ":" ";" "!" "?" :backspace]
+   [:special-characters :mgl "," :spacer-block "." :return]])
+
+(def en-other-special-layout
+  [["~" "\"" "|" "•" "√" "∏" "÷" "×" "¶" "△"]
+   ["£" "¥" "$" "¢" "ˆ" "˚" "=" "❴" "❵" "\\"]
+   [:other-special-characters "%" "©" "®" "™" "✓" "[" "]" :backspace]
+   [:special-characters :mgl "," :spacer-block "." :return]])
 
 (def layouts 
   {:mn {:abc mn-layout

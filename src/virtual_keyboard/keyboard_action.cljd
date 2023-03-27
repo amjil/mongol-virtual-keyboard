@@ -91,7 +91,7 @@
 
      :special-characters
      (action-key-container
-      {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.25 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -106,7 +106,7 @@
 
      :small-special-characters
      (action-key-container
-      {:width (- (* (/ 2.5 2) key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.25 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -152,7 +152,7 @@
 
      :other-special-characters
      (action-key-container
-      {:width (* 1.5 key-base-width)
+      {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -165,7 +165,7 @@
 
      :abc
      (action-key-container
-      {:width (- (* (/ 2.5 2) key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.25 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -176,8 +176,24 @@
                              .fontWeight (.w600 m/FontWeight)
                              .fontSize (:shift-click-font-size info))))} vkey)
 
+     :mgl
+     (action-key-container
+      {:width (- (* 1.25 key-base-width) (* 2 (:horizontal-key-padding info)))
+       :height key-height
+       :child (m/Center
+               .child
+               (m/Text
+                "MGL"
+                .style
+                (m/TextStyle .color (:shift-click-text-color info)
+                             .fontWeight (.w600 m/FontWeight)
+                             .fontSize (:shift-click-font-size info))))} vkey)
+
      :empty
-     (m/Container))))
+    ;;  (.shrink m/SizedBox)
+     (m/Container
+      .width
+      (- (* 0.5 key-base-width) (* 2 (:horizontal-key-padding info)))))))
 
 (defn- key-box-decoration
   [info]
@@ -222,11 +238,11 @@
    vkey
    state]
   (let [text (.-text controller)
-        selection (-> controller .-selection)] 
+        selection (-> controller .-selection)]
     (condp = (:key-type vkey)
       :string
       (let [new-str (cond
-                      (and (:is-shift-enabled state)
+                      (and (:is-shift-enabled @state)
                            (some? (:caps-text vkey)))
                       (:caps-text vkey)
 
@@ -236,10 +252,10 @@
             new-str-length (count new-str)]
 
         (set! (.-text controller) new-text)
-        (set! (.-selection controller) 
-              (.copyWith selection 
-                          .baseOffset (+ (.-start selection) new-str-length)
-                          .extentOffset (+ (.-start selection) new-str-length))))
+        (set! (.-selection controller)
+              (.copyWith selection
+                         .baseOffset (+ (.-start selection) new-str-length)
+                         .extentOffset (+ (.-start selection) new-str-length))))
 
       :action
       (condp = (:action vkey)
@@ -286,11 +302,25 @@
         (on-spacer-pressed controller text selection)
 
         :shift
-        (swap! state :is-shift-enabled true)
+        (swap! state assoc :is-shift-enabled (not (:is-shift-enabled @state)))
+
+        :abc
+        (do
+          (swap! state assoc :current-layout "en")
+          (swap! state assoc :is-special-enabled false)
+          (swap! state assoc :is-other-special-enabled false))
+
+        :mgl
+        (do
+          (swap! state assoc :current-layout "mn")
+          (swap! state assoc :is-special-enabled false)
+          (swap! state assoc :is-other-special-enabled false))
         
-        :abc 
-        ;; (swap! state :)
-        (dart:core/print "abc >>>> ...")
+        :special-characters
+        (swap! state assoc :is-special-enabled (not (:is-special-enabled @state)))
+
+        :other-special-characters
+        (swap! state assoc :is-other-special-enabled (not (:is-other-special-enabled @state)))
 
         :suffix-candidates
         (keyboard-candidates/suffix-candidates text selection state)))))

@@ -37,7 +37,7 @@
                  (dart:core/print "onTap TextField"))
         .showCursor true
         .readOnly true
-        .style (m/TextStyle .fontSize 26)
+        .style (m/TextStyle .fontSize 20)
         .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
       (m/Container
        .color (-> m/Colors .grey .-shade300)

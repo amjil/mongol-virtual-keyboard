@@ -41,8 +41,10 @@
     .splashColor m.Colors/white
     .onTap 
     (fn []
-      (if (true? (:is-rotated virtual-key))
-        (keyboard-action/on-key-press text-controller virtual-key state)))
+      ;; (if (true? (:is-rotated virtual-key))
+        (keyboard-action/on-key-press text-controller virtual-key state)
+      ;; )
+    )
     .onTapDown (fn [_]
                 ;;  (dart:core/print "key onTapDown >>>")
                  (keyboard-overlay/insert-overlay-bubble state ctx text-controller info virtual-key))
@@ -88,11 +90,14 @@
                       .quarterTurns (if (true? (:is-rotated virtual-key)) 1 0)
                       .child (m/Text (utils/key-text state virtual-key)
                                      .style
-                                    ;;  (if (:is-rotated virtual-key)
+                                     (if (:is-rotated virtual-key)
                                        (m/TextStyle .fontSize 24
                                                     .color (.white m/Colors)
                                                     .fontFamily "MongolianBaiZheng")
-                                      ;;  (:text-style info))
+                                      ;;  (:text-style info)
+                                       (m/TextStyle .fontSize 24
+                                                    .color (.white m/Colors)
+                                                    .fontFamily "Courier"))
                       )))])))
 
 (defn overlay-popup-widget [^m/Size size info state controller additional-keys is-rotated]

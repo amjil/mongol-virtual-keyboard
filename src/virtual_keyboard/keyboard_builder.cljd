@@ -24,12 +24,15 @@
     rows-count :rows-count}
    item]
   (cond
-    (= :empty item)
-    nil
+    ;; (= :empty item)
+    ;; nil
 
-    (and
-     (string? item)
-     (not-empty (filter #(code.MongolCode/isMongolian (int %)) item)))
+    (or
+     (some #{item} ["᠂" "᠃"])
+     (and
+      (string? item)
+      ;; (not (empty? (filter #(code.MongolCode/isMongolian (int %)) item)))
+      (code.MongolCode/isMongolian (int (first item)))))
     (keyboard-key/key-widget
      {:text (as-> item m
                 ;;  (filter #(code.MongolCode/isMongolian (int %)) m)
