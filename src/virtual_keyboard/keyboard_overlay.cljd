@@ -2,7 +2,10 @@
   (:require
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
+   [virtual-keyboard.keyboard-action :as keyboard-action]
+   [virtual-keyboard.popup-key :as popup-key]
    [virtual-keyboard.utils :as utils]
+   [virtual-keyboard.popup-key-candidates :as candidates]
    [cljd.flutter.alpha2 :as f]))
 
 (defn bubble-widget [^m/Size size info state virtual-key]
@@ -67,3 +70,70 @@
     (.insert (.of m/Overlay ctx) entry)
     (swap! state assoc :entry entry)))
 
+
+;;;;
+(defn overlay-popup-widget [^m/Size size info state controller additional-keys is-rotated]
+  (f/widget
+   (m/GestureDetector)
+   (m/Card
+    .elevation 10)
+   (m/ConstrainedBox
+    .constraints (m/BoxConstraints
+                  .minHeight (.-height size)
+                  .maxHeight (.-height size)
+                  ;; .maxHeight (* (.-height size) 1.8)
+                  ))
+   (m/Row
+    .children
+    (map (fn [vkey]
+           (m/DragTarget
+            .builder (fn [_ _ _]
+                       (popup-key/key-widget info state vkey controller is-rotated))
+            .onAccept (fn [_]
+                        (keyboard-action/on-key-press
+                         controller (assoc vkey :key-type :string) state))))
+         additional-keys))))
+
+
+(defn build-entry-popup [^m/BuildContext ctx
+                         ^m/TextEditingController controller
+                         info
+                         state
+                         additional-keys
+                         is-rotated]
+  (let [^m/RenderBox box (.findRenderObject ctx)
+        size (.-size box)
+        offset (.localToGlobal box (.zero m/Offset))]
+    (m/OverlayEntry
+     .builder (fn [_]
+                (m/Positioned
+                 .top (- (.-dy offset) (+ 10 (.-height size)))
+                 .right (if (>= (.-dx offset) (/ (:width info) 2))
+                          (- (:width info) (.-dx offset) (.-width size))
+                          nil)
+                 .left (if (< (.-dx offset) (/ (:width info) 2))
+                         (.-dx offset)
+                         nil)
+                 .child
+                 (overlay-popup-widget size info state controller additional-keys is-rotated))))))
+
+
+
+(defn insert-overlay-popup
+  [state
+   ^m/BuildContext ctx
+   ^m/TextEditingController controller
+   info
+   virtual-key]
+  (let [additional-keys
+        (if (true? (:is-rotated virtual-key))
+          (candidates/popup-candidates controller (:id virtual-key))
+          (get popup-key/en-popup-keys (keyword (:text virtual-key))))]
+    (if (zero? (count additional-keys))
+      nil
+      (do
+        (remove-overlay state)
+        (let [^m/OverlayEntry entry (build-entry-popup ctx controller info state additional-keys (:is-rotated virtual-key))]
+          (swap! state assoc :entry nil)
+          (.insert (.of m/Overlay ctx) entry)
+          (swap! state assoc :entry entry))))))

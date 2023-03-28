@@ -1,9 +1,7 @@
 (ns virtual-keyboard.keyboard-key
   (:require
    ["package:flutter/material.dart" :as m]
-   [virtual-keyboard.popup-key :as popup-key]
    [virtual-keyboard.keyboard-action :as keyboard-action]
-   [virtual-keyboard.popup-key-candidates :as candidates]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.keyboard-overlay :as keyboard-overlay]
    [cljd.flutter.alpha2 :as f]))
@@ -62,10 +60,10 @@
     .data (:text virtual-key)
     .onDragStarted
     (fn []
-      (insert-overlay state ctx text-controller info virtual-key))
+      (keyboard-overlay/insert-overlay-popup state ctx text-controller info virtual-key))
     .onDragEnd
     (fn [_]
-      (remove-overlay state))
+      (keyboard-overlay/remove-overlay state))
     .onDraggableCanceled 
     (fn [_ _]
       (dart:core/print "onDraggableCanceled >>>")
@@ -99,77 +97,3 @@
                                                     .color (.white m/Colors)
                                                     .fontFamily "Courier"))
                       )))])))
-
-(defn overlay-popup-widget [^m/Size size info state controller additional-keys is-rotated]
-  (f/widget
-   (m/GestureDetector)
-   (m/Card
-    .elevation 10)
-   (m/ConstrainedBox
-    .constraints (m/BoxConstraints
-                  .minHeight (.-height size)
-                  .maxHeight (.-height size)
-                  ;; .maxHeight (* (.-height size) 1.8)
-                   ))
-   (m/Row
-    .children
-    (map (fn [vkey]
-           (m/DragTarget
-            .builder (fn [_ _ _]
-                       (popup-key/key-widget info state vkey controller is-rotated))
-            .onAccept (fn [_]
-                        (keyboard-action/on-key-press
-                         controller (assoc vkey :key-type :string) state))))
-         additional-keys))))
-
-(defn build-entry [^m/BuildContext ctx
-                   ^m/TextEditingController controller
-                   info
-                   state
-                   additional-keys
-                   is-rotated]
-  (let [^m/RenderBox box (.findRenderObject ctx)
-        size (.-size box)
-        offset (.localToGlobal box (.zero m/Offset))]
-    (m/OverlayEntry
-     .builder (fn [_]
-                (m/Positioned
-                 .top (- (.-dy offset) (+ 10 (.-height size)))
-                 .right (if (>= (.-dx offset) (/ (:width info) 2))
-                          (- (:width info) (.-dx offset) (.-width size))
-                          nil)
-                 .left (if (< (.-dx offset) (/ (:width info) 2))
-                         (.-dx offset)
-                         nil)
-                 .child
-                 (overlay-popup-widget size info state controller additional-keys is-rotated))))))
-
-(defn remove-overlay
-  [state]
-  (if-not (nil? (:entry @state))
-    (let [^m/OverlayEntry entry (:entry @state)]
-      (if-not (nil? entry)
-        (.remove entry))
-      (swap! state assoc :entry nil))))
-
-(defn insert-overlay
-  [state
-   ^m/BuildContext ctx
-   ^m/TextEditingController controller
-   info
-   virtual-key]
-  (let [additional-keys
-        (if (true? (:is-rotated virtual-key))
-          (candidates/popup-candidates controller (:id virtual-key))
-          (get popup-key/en-popup-keys (keyword (:text virtual-key))))]
-    (dart:core/print (str "candidates = " additional-keys))
-    (dart:core/print (count additional-keys))
-    (if (zero? (count additional-keys))
-      nil
-      (do
-        (remove-overlay state)
-        (let [^m/OverlayEntry entry (build-entry ctx controller info state additional-keys (:is-rotated virtual-key))]
-          (dart:core/print "insert-overlay ...")
-          (swap! state assoc :entry nil)
-          (.insert (.of m/Overlay ctx) entry)
-          (swap! state assoc :entry entry))))))
