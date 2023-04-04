@@ -209,7 +209,8 @@
   [{width :width height :height child :child}
    vkey]
   (f/widget
-   :get [:text-controller :info :state]
+   :get [:info :state]
+   :let [text-controller (:text-controller @state)]
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
     .height height
