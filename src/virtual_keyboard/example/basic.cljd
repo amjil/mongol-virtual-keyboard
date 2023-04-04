@@ -15,8 +15,9 @@
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
          height (-> m/MediaQuery (.of ctx) .-size .-height)
          info (merge options/keyboard-option {} {:width width})
-         state (atom options/keyboard-state)]
-   :bind {:info info :state state :text-controller text-controller :context ctx}
+         state (atom (merge options/keyboard-state
+                            {:text-controller text-controller}))]
+   :bind {:info info :state state :context ctx}
    :watch [{:keys [candidates-list]} state]
    (m/SafeArea)
    .child
