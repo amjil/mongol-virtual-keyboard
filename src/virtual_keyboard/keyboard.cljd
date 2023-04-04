@@ -19,9 +19,9 @@
          mn-special-keys (builder/keyboard-layout-builder layouts/mn-special-layout)
          mn-other-special-keys (builder/keyboard-layout-builder layouts/mn-other-special-layout)]
    :watch [{:keys [current-layout is-special-enabled
-                   is-other-special-enabled]} 
+                   is-other-special-enabled]}
            state]
-   (keyboard-rows 
+   (keyboard-rows
     info
     (condp = current-layout
       "mn" (condp = is-special-enabled

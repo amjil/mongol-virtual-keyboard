@@ -12,11 +12,12 @@
 
 (defn action-widget [vkey items-count rows-count]
   (f/widget
-   :get [:info :text-controller :state]
+   :get [:info :state]
    :let [width (:width info)
          height (:height info)
          key-height (/ height rows-count)
-         key-base-width (/ width 10)]
+         key-base-width (/ width 10)
+         text-controller (:text-controller @state)]
   ;;  (m/Flexible)
   ;;  .child
    (m/Padding

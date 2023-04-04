@@ -13,8 +13,9 @@
 (defn key-widget [virtual-key items-count rows-count]
   (f/widget
    :context ctx
-   :get [:info :state :text-controller]
-   :let [^m/OverlayState overlay (.of m/Overlay ctx)]
+   :get [:info :state]
+   :let [^m/OverlayState overlay (.of m/Overlay ctx)
+         text-controller (:text-controller @state)]
    (m/Expanded)
    .child
    (m/Padding
