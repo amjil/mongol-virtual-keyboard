@@ -36,10 +36,10 @@
     ))))
 
 (defn build-entry-bubble [^m/BuildContext ctx
-                   ^m/TextEditingController controller
-                   info
-                   state
-                   virtual-key]
+                          ^m/TextEditingController controller
+                          info
+                          state
+                          virtual-key]
   (let [^m/RenderBox box (.findRenderObject ctx)
         size (.-size box)
         offset (.localToGlobal box (.zero m/Offset))]

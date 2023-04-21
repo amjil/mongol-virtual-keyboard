@@ -263,6 +263,8 @@
       (condp = (:action vkey)
         :backspace
         (let [selection-length (- (.-end selection) (.-start selection))]
+          (when-not (empty? (:candidates-list @state))
+            (swap! state assoc :candidates-list []))
           (cond
             (> selection-length 0)
             (let [new-text (.replaceRange text (.-start selection) (.-end selection) "")]

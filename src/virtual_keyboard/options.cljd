@@ -35,4 +35,4 @@
    :is-special-enabled false
    :is-other-special-enabled false
    :entry nil
-   :current-layout "en"})
+   :current-layout "mn"})
