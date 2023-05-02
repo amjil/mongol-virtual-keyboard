@@ -228,9 +228,12 @@
 (defn on-spacer-pressed 
   [^m/TextEditingController controller 
    ^String text 
-   ^m/TextSelection selection]
+   ^m/TextSelection selection 
+   state]
   (let [new-text (.replaceRange text (.-start selection) (.-end selection) " ")]
+    (swap! state assoc :edit-watcher/lock 1)
     (set! (.-text controller) new-text)
+    (swap! state assoc :edit-watcher/lock 2)
     (set! (.-selection controller)
           (.copyWith selection
                      .baseOffset (+ (.-start selection) 1)
@@ -240,6 +243,7 @@
    vkey
    state]
   (let [text (.-text controller)
+        ^m/TextSelection
         selection (-> controller .-selection)]
     (condp = (:key-type vkey)
       :string
@@ -253,11 +257,14 @@
             new-text (.replaceRange text (.-start selection) (.-end selection) new-str)
             new-str-length (count new-str)]
 
+        (swap! state assoc :edit-watcher/lock 1)
         (set! (.-text controller) new-text)
+        (swap! state assoc :edit-watcher/lock 2)
         (set! (.-selection controller)
               (.copyWith selection
                          .baseOffset (+ (.-start selection) new-str-length)
-                         .extentOffset (+ (.-start selection) new-str-length))))
+                         .extentOffset (+ (.-start selection) new-str-length)))
+        (swap! state assoc :edit-watcher/lock 1))
 
       :action
       (condp = (:action vkey)
@@ -268,7 +275,9 @@
           (cond
             (> selection-length 0)
             (let [new-text (.replaceRange text (.-start selection) (.-end selection) "")]
+              (swap! state assoc :edit-watcher/lock 1)
               (set! (.-text controller) new-text)
+              (swap! state assoc :edit-watcher/lock 2)
               (set! (.-selection controller)
                     (.copyWith selection
                                .baseOffset (.-start selection)
@@ -282,7 +291,9 @@
                   new-end (.-start selection)
                   new-text (.replaceRange text new-start new-end "")]
 
+              (swap! state assoc :edit-watcher/lock 1)
               (set! (.-text controller) new-text)
+              (swap! state assoc :edit-watcher/lock 2)
               (set! (.-selection controller)
                     (.copyWith selection
                                .baseOffset new-start
@@ -290,20 +301,22 @@
 
         :return
         (let [new-text (.replaceRange text (.-start selection) (.-end selection) "\n")]
+          (swap! state assoc :edit-watcher/lock 1)
           (set! (.-text controller) new-text)
+          (swap! state assoc :edit-watcher/lock 2)
           (set! (.-selection controller)
                 (.copyWith selection
                            .baseOffset (+ (.-start selection) 1)
                            .extentOffset (+ (.-start selection) 1))))
 
         :space
-        (on-spacer-pressed controller text selection)
+        (on-spacer-pressed controller text selection state)
 
         :spacer-block
-        (on-spacer-pressed controller text selection)
+        (on-spacer-pressed controller text selection state)
 
         :small-spacer-block
-        (on-spacer-pressed controller text selection)
+        (on-spacer-pressed controller text selection state)
 
         :shift
         (swap! state assoc :is-shift-enabled (not (:is-shift-enabled @state)))
