@@ -237,7 +237,8 @@
     (set! (.-selection controller)
           (.copyWith selection
                      .baseOffset (+ (.-start selection) 1)
-                     .extentOffset (+ (.-start selection) 1)))))
+                     .extentOffset (+ (.-start selection) 1)))
+    (swap! state assoc :edit-watcher/lock 1)))
 (defn on-key-press
   [^m/TextEditingController controller
    vkey
@@ -281,7 +282,8 @@
               (set! (.-selection controller)
                     (.copyWith selection
                                .baseOffset (.-start selection)
-                               .extentOffset (.-start selection))))
+                               .extentOffset (.-start selection)))
+              (swap! state assoc :edit-watcher/lock 1))
 
             (zero? (.-start selection))
             nil
@@ -297,7 +299,8 @@
               (set! (.-selection controller)
                     (.copyWith selection
                                .baseOffset new-start
-                               .extentOffset new-start)))))
+                               .extentOffset new-start))
+              (swap! state assoc :edit-watcher/lock 1))))
 
         :return
         (let [new-text (.replaceRange text (.-start selection) (.-end selection) "\n")]
@@ -307,7 +310,8 @@
           (set! (.-selection controller)
                 (.copyWith selection
                            .baseOffset (+ (.-start selection) 1)
-                           .extentOffset (+ (.-start selection) 1))))
+                           .extentOffset (+ (.-start selection) 1)))
+          (swap! state assoc :edit-watcher/lock 1))
 
         :space
         (on-spacer-pressed controller text selection state)
