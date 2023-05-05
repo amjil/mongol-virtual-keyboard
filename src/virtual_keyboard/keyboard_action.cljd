@@ -271,36 +271,37 @@
       (condp = (:action vkey)
         :backspace
         (let [selection-length (- (.-end selection) (.-start selection))]
-          (when-not (empty? (:candidates-list @state))
+          (if (empty? (:candidates-list @state))
+            (cond
+              (> selection-length 0)
+              (let [new-text (.replaceRange text (.-start selection) (.-end selection) "")]
+                (swap! state assoc :edit-watcher/lock 1)
+                (set! (.-text controller) new-text)
+                (swap! state assoc :edit-watcher/lock 2)
+                (set! (.-selection controller)
+                      (.copyWith selection
+                                 .baseOffset (.-start selection)
+                                 .extentOffset (.-start selection)))
+                (swap! state assoc :edit-watcher/lock 1))
+
+              (zero? (.-start selection))
+              nil
+
+              :else
+              (let [new-start (dec (.-start selection))
+                    new-end (.-start selection)
+                    new-text (.replaceRange text new-start new-end "")]
+
+                (swap! state assoc :edit-watcher/lock 1)
+                (set! (.-text controller) new-text)
+                (swap! state assoc :edit-watcher/lock 2)
+                (set! (.-selection controller)
+                      (.copyWith selection
+                                 .baseOffset new-start
+                                 .extentOffset new-start))
+                (swap! state assoc :edit-watcher/lock 1)))
             (swap! state assoc :candidates-list []))
-          (cond
-            (> selection-length 0)
-            (let [new-text (.replaceRange text (.-start selection) (.-end selection) "")]
-              (swap! state assoc :edit-watcher/lock 1)
-              (set! (.-text controller) new-text)
-              (swap! state assoc :edit-watcher/lock 2)
-              (set! (.-selection controller)
-                    (.copyWith selection
-                               .baseOffset (.-start selection)
-                               .extentOffset (.-start selection)))
-              (swap! state assoc :edit-watcher/lock 1))
-
-            (zero? (.-start selection))
-            nil
-
-            :else
-            (let [new-start (dec (.-start selection))
-                  new-end (.-start selection)
-                  new-text (.replaceRange text new-start new-end "")]
-
-              (swap! state assoc :edit-watcher/lock 1)
-              (set! (.-text controller) new-text)
-              (swap! state assoc :edit-watcher/lock 2)
-              (set! (.-selection controller)
-                    (.copyWith selection
-                               .baseOffset new-start
-                               .extentOffset new-start))
-              (swap! state assoc :edit-watcher/lock 1))))
+          )
 
         :return
         (let [new-text (.replaceRange text (.-start selection) (.-end selection) "\n")]
@@ -333,7 +334,7 @@
 
         :mgl
         (do
-          (swap! state assoc :current-layout "mn")
+          (swap! state assoc :current-layout "mg")
           (swap! state assoc :is-special-enabled false)
           (swap! state assoc :is-other-special-enabled false))
         
