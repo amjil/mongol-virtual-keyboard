@@ -22,7 +22,7 @@
                    .style
                   ;;  (if (:is-rotated virtual-key)
                    (m/TextStyle .fontSize 24
-                                .color (.white m/Colors)
+                                .color (:key-text-color info)
                                 .fontFamily "MongolianBaiZheng")
                     ;;  (:text-style info))
                    ))

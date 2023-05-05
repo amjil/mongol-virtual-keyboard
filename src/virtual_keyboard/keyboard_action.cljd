@@ -61,19 +61,19 @@
       (action-key-container
        {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
         :height key-height
-        :child (m/Icon (.backspace m/Icons) .color (:text-color info))} vkey))
+        :child (m/Icon (.backspace m/Icons) .color (:action-text-color info))} vkey))
 
      :shift
      (action-key-container
       {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
-       :child (m/Icon (.arrow_upward m/Icons) .color (:text-color info))} vkey)
+       :child (m/Icon (.arrow_upward m/Icons) .color (:action-text-color info))} vkey)
 
      :return
      (action-key-container
       {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
        :height key-height
-       :child (m/Icon (.keyboard_return m/Icons) .color (:text-color info))} vkey)
+       :child (m/Icon (.keyboard_return m/Icons) .color (:action-text-color info))} vkey)
 
      :space
      (action-key-container
@@ -88,7 +88,7 @@
                         .color (:shift-click-text-color info)
                         .fontWeight (.w700 m/FontWeight)
                         .fontSize (:shift-click-font-size info))))} vkey)
-      ;;  :child (m/Icon (.space_bar m/Icons) .color (:text-color info))} info)
+      ;;  :child (m/Icon (.space_bar m/Icons) .color (:action-text-color info))} info)
 
      :special-characters
      (action-key-container

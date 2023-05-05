@@ -37,7 +37,7 @@
    (m/Material .color (:key-container-color info))
    .child
    (m/InkWell
-    .splashColor m.Colors/white
+    .splashColor m.Colors/black
     .onTap 
     (fn []
       ;; (if (true? (:is-rotated virtual-key))
@@ -45,13 +45,13 @@
       ;; )
     )
     .onTapDown (fn [_]
-                ;;  (dart:core/print "key onTapDown >>>")
+                 ;;  (dart:core/print "key onTapDown >>>")
                  (keyboard-overlay/insert-overlay-bubble state ctx text-controller info virtual-key))
     .onTapUp (fn [_]
-              ;;  (dart:core/print "key onTapUp >>>")
+               ;;  (dart:core/print "key onTapUp >>>")
                (keyboard-overlay/remove-overlay state))
     .onTapCancel (fn []
-                  ;;  (dart:core/print "key onTapCancel >>>")
+                   ;;  (dart:core/print "key onTapCancel >>>")
                    (keyboard-overlay/remove-overlay state)))
 
    .child
@@ -91,10 +91,10 @@
                                      .style
                                      (if (:is-rotated virtual-key)
                                        (m/TextStyle .fontSize 24
-                                                    .color (.white m/Colors)
+                                                    .color (:key-text-color info)
                                                     .fontFamily "MongolianBaiZheng")
                                       ;;  (:text-style info)
                                        (m/TextStyle .fontSize 24
-                                                    .color (.white m/Colors)
+                                                    .color (:key-text-color info)
                                                     .fontFamily "Courier"))
                       )))])))
