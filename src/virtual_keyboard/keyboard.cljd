@@ -12,23 +12,23 @@
 (defn keyboard []
   (f/widget
    :get [:info :state]
-   :let [mn-keys (builder/keyboard-layout-builder layouts/mn-layout)
+   :let [mg-keys (builder/keyboard-layout-builder layouts/mg-layout)
          en-keys (builder/keyboard-layout-builder layouts/en-layout)
          en-special-keys (builder/keyboard-layout-builder layouts/en-special-layout)
          en-other-special-keys (builder/keyboard-layout-builder layouts/en-other-special-layout)
-         mn-special-keys (builder/keyboard-layout-builder layouts/mn-special-layout)
-         mn-other-special-keys (builder/keyboard-layout-builder layouts/mn-other-special-layout)]
+         mg-special-keys (builder/keyboard-layout-builder layouts/mg-special-layout)
+         mg-other-special-keys (builder/keyboard-layout-builder layouts/mg-other-special-layout)]
    :watch [{:keys [current-layout is-special-enabled
                    is-other-special-enabled]}
            state]
    (keyboard-rows
     info
     (condp = current-layout
-      "mn" (condp = is-special-enabled
+      "mg" (condp = is-special-enabled
              true (condp = is-other-special-enabled
-                    true mn-other-special-keys
-                    mn-special-keys)
-             false mn-keys)
+                    true mg-other-special-keys
+                    mg-special-keys)
+             false mg-keys)
       "en" (condp = is-special-enabled
              true (condp = is-other-special-enabled
                     true en-other-special-keys

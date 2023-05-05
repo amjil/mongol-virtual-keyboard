@@ -15,7 +15,7 @@
   ;;  :width nil
    :height keyboard-default-height
    :row-vertical-padding 4.0
-   :horizontal-key-padding 4.0
+   :horizontal-key-padding 2.0
    :font-size 26
    :shift-click-text-color m.Colors/white
    :shift-click-font-size 14
@@ -35,4 +35,4 @@
    :is-special-enabled false
    :is-other-special-enabled false
    :entry nil
-   :current-layout "mn"})
+   :current-layout "mg"})
