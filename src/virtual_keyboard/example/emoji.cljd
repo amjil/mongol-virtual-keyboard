@@ -1,0 +1,105 @@
+(ns virtual-keyboard.example.emoji
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
+   ["package:emoji_picker_flutter/emoji_picker_flutter.dart" :as emoji]
+   ["package:flutter/foundation.dart" :as foundation]
+   [cljd.flutter.alpha2 :as f]
+   [virtual-keyboard.keyboard :as keyboard]
+   [virtual-keyboard.keyboard-action :as keyboard-action]
+   [virtual-keyboard.options :as options]
+   [menu-bar.menu :as menu]))
+
+(defn basic-body []
+  (f/widget
+   :context ctx
+   :get [:text-controller]
+   :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
+         height (-> m/MediaQuery (.of ctx) .-size .-height)
+         info (merge options/keyboard-option {} {:width width})
+         state (atom (merge options/keyboard-state
+                            {:text-controller text-controller}))]
+   :bind {:info info :state state :context ctx}
+   :watch [{:keys [candidates-list]} state]
+   (m/SafeArea)
+   .child
+   (m/Center)
+   .child
+   (m/Stack)
+   .children
+   [(m/Column
+     .children
+     [(m/Expanded
+       .child
+       (mgl/MongolTextField
+        .controller text-controller
+        .maxLines 500
+        .autofocus true
+        .onTap (fn []
+                 (swap! state assoc :candidates-list [])
+                 (dart:core/print "onTap TextField"))
+        .showCursor true
+        .readOnly true
+        .style (m/TextStyle .fontSize 20)
+        .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
+      (m/Container
+       .color (-> m/Colors .grey .-shade300)
+       .child
+      ;;  (keyboard/keyboard)
+       (m/SizedBox 
+        .height 250
+        .child
+        (emoji/EmojiPicker
+         .textEditingController text-controller
+         .onBackspacePressed (fn [] (dart:core/print "aaaa>>>>"))
+         .config (emoji/Config
+                  .columns 7
+                  .emojiSizeMax (* 32
+                                   (if (= foundation/defaultTargetPlatform
+                                          (.iOS m/TargetPlatform))
+                                     1.0
+                                     0.9))
+                  .verticalSpacing 0
+                  .horizontalSpacing 0
+                  .gridPadding (.zero m/EdgeInsets)
+                  .initCategory (.RECENT emoji/Category)
+                  .bgColor (m/Color 0xFFF2F2F2)
+                  .indicatorColor (.blue m/Colors)
+                  .iconColor (.grey m/Colors)
+                  .iconColorSelected (.blue m/Colors)
+                  .backspaceColor (.blue m/Colors)
+                  .skinToneDialogBgColor (.white m/Colors)
+                  .skinToneIndicatorColor (.grey m/Colors)
+                  .enableSkinTones true
+                  .showRecentsTab true
+                  .recentsLimit 28
+                  .replaceEmojiOnLimitExceed false
+                  .noRecents
+                  (m/Text "No Recents"
+                          .style (m/TextStyle .fontSize 20
+                                              .color (.black26 m/Colors))
+                          .textAlign (.center m/TextAlign))
+                  .loadingIndicator (.shrink m/SizedBox)
+                  .tabIndicatorAnimDuration m/kTabScrollDuration
+                  .categoryIcons (emoji/CategoryIcons)
+                  .buttonMode (.MATERIAL emoji/ButtonMode)
+                  .checkPlatformCompatibility true))))])
+    (m/Positioned
+     .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:row-vertical-padding info))))
+     .right (/ width 4)
+     .child
+     (menu/menu {:bar {:elavation 10}
+                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked text-controller x state))}}
+                candidates-list))]))
+
+(defn basic []
+  (f/widget
+   :context ctx
+   :managed [^m/TextEditingController text-controller (m/TextEditingController)]
+   :bind {:text-controller text-controller}
+   (m/Scaffold
+    .resizeToAvoidBottomInset true
+    ;; .appBar (m/AppBar
+    ;;          .title (m/Text "Virtual Keyboard"))
+    .body
+    (basic-body))))

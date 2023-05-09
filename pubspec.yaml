@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   mongol: ^4.0.0
   mongol_code: ^0.3.0
+  emoji_picker_flutter: ^1.5.4
 
 dev_dependencies:
   flutter_test:

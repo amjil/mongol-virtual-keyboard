@@ -3,7 +3,9 @@
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
    [virtual-keyboard.example.basic :as example-basic]
-   [virtual-keyboard.example.styled :as example-styled]))
+   [virtual-keyboard.example.styled :as example-styled]
+   [virtual-keyboard.example.emoji :as example-emoji]
+   ))
 
 (defn main []
   (m/runApp
@@ -12,7 +14,7 @@
     .theme (m/ThemeData .primarySwatch m.Colors/blue
                         .fontFamily "MongolianBaiZheng")
     .home
-    (example-basic/basic)
+    (example-emoji/basic)
     ;; (example-styled/styled)
     ;; (m/Scaffold
     ;;  .appBar (m/AppBar
