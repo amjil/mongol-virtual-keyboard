@@ -100,7 +100,7 @@
                 "?123"
                 .textAlign (.center m/TextAlign)
                 .style (m/TextStyle
-                        .color (:shift-click-text-color info)
+                        .color (:key-text-color info)
                         .fontFamily "Courier"
                         .fontWeight (.w700 m/FontWeight)
                         .fontSize (:shift-click-font-size info))))} vkey)
@@ -115,7 +115,7 @@
                 "?123"
                 .textAlign (.center m/TextAlign)
                 .style (m/TextStyle
-                        .color (:shift-click-text-color info)
+                        .color (:key-text-color info)
                         .fontFamily "Courier"
                         .fontWeight (.w700 m/FontWeight)
                         .fontSize (:shift-click-font-size info))))} vkey)
@@ -129,7 +129,7 @@
                (mgl/MongolText
                 "ᠳᠠᠭᠠᠪᠤᠷᠢ"
                 .style (m/TextStyle
-                        .color (:shift-click-text-color info)
+                        .color (:key-text-color info)
                         .fontWeight (.w700 m/FontWeight)
                         .fontSize (:shift-click-font-size info))))} vkey)
 
@@ -161,6 +161,7 @@
                 "=\\\\<"
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
+                             .color (:key-text-color info)
                              .fontSize (:shift-click-font-size info))))} vkey)
 
      :abc
@@ -173,6 +174,7 @@
                 "ABC"
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
+                             .color (:key-text-color info)
                              .fontSize (:shift-click-font-size info))))} vkey)
 
      :mgl
@@ -185,6 +187,7 @@
                 "MGL"
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
+                             .color (:key-text-color info)
                              .fontSize (:shift-click-font-size info))))} vkey)
 
      :empty

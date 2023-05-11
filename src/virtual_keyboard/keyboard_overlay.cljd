@@ -65,6 +65,7 @@
    ^m/TextEditingController controller
    info
    current-key]
+  (remove-overlay state)
   (let [^m/OverlayEntry entry (build-entry-bubble ctx controller info state current-key)]
     (swap! state assoc :entry nil)
     (.insert (.of m/Overlay ctx) entry)
@@ -74,25 +75,32 @@
 ;;;;
 (defn overlay-popup-widget [^m/Size size info state controller additional-keys is-rotated]
   (f/widget
+   :context ctx
    (m/GestureDetector)
    (m/Card
     .elevation 10)
-   (m/ConstrainedBox
-    .constraints (m/BoxConstraints
-                  .minHeight (.-height size)
-                  .maxHeight (.-height size)
-                  ;; .maxHeight (* (.-height size) 1.8)
-                  ))
-   (m/Row
+   (m/Container
+    .color (-> m/Theme (.of ctx) .-colorScheme .-primaryContainer))
+   (m/Wrap
+    .direction m.Axis/horizontal
+    .runSpacing 2
+    .spacing 1
     .children
     (map (fn [vkey]
-           (m/DragTarget
-            .builder (fn [_ _ _]
-                       (popup-key/key-widget info state vkey controller is-rotated))
-            .onAccept (fn [_]
-                        (keyboard-action/on-key-press
-                         controller (assoc vkey :key-type :string) state))))
-         additional-keys))))
+           (m/Card
+            .child
+            (m/ConstrainedBox
+             .constraints (m/BoxConstraints
+                           .maxHeight (/ (:height info) 4))
+             .child
+             (m/DragTarget
+              .builder (fn [_ _ _]
+                         (popup-key/key-widget info state vkey controller is-rotated))
+              .onAccept (fn [_]
+                          (keyboard-action/on-key-press
+                           controller (assoc vkey :key-type :string) state))))))
+         additional-keys))
+   ))
 
 
 (defn build-entry-popup [^m/BuildContext ctx
