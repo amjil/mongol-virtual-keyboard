@@ -160,8 +160,7 @@
                (m/Text
                 "=\\\\<"
                 .style
-                (m/TextStyle .color (:shift-click-text-color info)
-                             .fontWeight (.w600 m/FontWeight)
+                (m/TextStyle .fontWeight (.w600 m/FontWeight)
                              .fontSize (:shift-click-font-size info))))} vkey)
 
      :abc
@@ -173,8 +172,7 @@
                (m/Text
                 "ABC"
                 .style
-                (m/TextStyle .color (:shift-click-text-color info)
-                             .fontWeight (.w600 m/FontWeight)
+                (m/TextStyle .fontWeight (.w600 m/FontWeight)
                              .fontSize (:shift-click-font-size info))))} vkey)
 
      :mgl
@@ -186,8 +184,7 @@
                (m/Text
                 "MGL"
                 .style
-                (m/TextStyle .color (:shift-click-text-color info)
-                             .fontWeight (.w600 m/FontWeight)
+                (m/TextStyle .fontWeight (.w600 m/FontWeight)
                              .fontSize (:shift-click-font-size info))))} vkey)
 
      :empty
