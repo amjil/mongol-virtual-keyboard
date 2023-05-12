@@ -39,6 +39,7 @@ dependencies:
   mongol: ^4.0.0
   mongol_code: ^0.3.0
   emoji_picker_flutter: ^1.5.4
+  vibration: ^1.7.7
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,7 @@
    ["package:mongol/mongol.dart" :as mgl]
    ["package:mongol_code/mongol_code.dart" :as code]
    ["dart:async" :as a]
+   ["package:vibration/vibration.dart" :as vibrate]
    [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
    [cljd.flutter.alpha2 :as f]))
 
@@ -245,7 +246,11 @@
    state]
   (let [text (.-text controller)
         ^m/TextSelection
-        selection (-> controller .-selection)]
+        selection (-> controller .-selection)] 
+    (when (true? (:is-vibrate-on @state))
+      (let [has-vibrate (await (.hasVibrator vibrate/Vibration))]
+        (when (true? has-vibrate)
+          (.vibrate vibrate/Vibration .duration 100))))
     (condp = (:key-type vkey)
       :string
       (let [new-str (cond

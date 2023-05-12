@@ -36,4 +36,5 @@
    :is-special-enabled false
    :is-other-special-enabled false
    :entry nil
-   :current-layout "mg"})
+   :current-layout "mg"
+   :is-vibrate-on false})
