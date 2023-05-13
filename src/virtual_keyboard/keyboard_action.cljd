@@ -250,7 +250,7 @@
     (when (true? (:is-vibrate-on @state))
       (let [has-vibrate (await (.hasVibrator vibrate/Vibration))]
         (when (true? has-vibrate)
-          (.vibrate vibrate/Vibration .duration 100))))
+          (.vibrate vibrate/Vibration .duration (:vibrate-duration @state)))))
     (condp = (:key-type vkey)
       :string
       (let [new-str (cond
