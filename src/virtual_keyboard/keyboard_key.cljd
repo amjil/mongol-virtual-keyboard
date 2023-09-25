@@ -14,8 +14,7 @@
   (f/widget
    :context ctx
    :get [:info :state]
-   :let [^m/OverlayState overlay (.of m/Overlay ctx)
-         text-controller (:text-controller @state)]
+   :let [^m/OverlayState overlay (.of m/Overlay ctx)]
    (m/Expanded)
    .child
    (m/Padding
@@ -41,12 +40,12 @@
     .onTap 
     (fn []
       ;; (if (true? (:is-rotated virtual-key))
-        (keyboard-action/on-key-press text-controller virtual-key state)
+        (keyboard-action/on-key-press virtual-key state)
       ;; )
     )
     .onTapDown (fn [_]
                  ;;  (dart:core/print "key onTapDown >>>")
-                 (keyboard-overlay/insert-overlay-bubble state ctx text-controller info virtual-key))
+                 (keyboard-overlay/insert-overlay-bubble state ctx info virtual-key))
     .onTapUp (fn [_]
                ;;  (dart:core/print "key onTapUp >>>")
                (keyboard-overlay/remove-overlay state))
@@ -61,7 +60,7 @@
     .data (:text virtual-key)
     .onDragStarted
     (fn []
-      (keyboard-overlay/insert-overlay-popup state ctx text-controller info virtual-key))
+      (keyboard-overlay/insert-overlay-popup state ctx info virtual-key))
     .onDragEnd
     (fn [_]
       (keyboard-overlay/remove-overlay state))
@@ -96,5 +95,4 @@
                                       ;;  (:text-style info)
                                        (m/TextStyle .fontSize 24
                                                     .color (:key-text-color info)
-                                                    .fontFamily "Courier"))
-                      )))])))
+                                                    .fontFamily "Courier")))))])))

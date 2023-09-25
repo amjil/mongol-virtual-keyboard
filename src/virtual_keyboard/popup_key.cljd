@@ -6,7 +6,6 @@
    [cljd.flutter.alpha2 :as f]))
 
 (defn key-widget [info state vkey
-                  ^m/TextEditingController controller
                   is-rotated]
   (f/widget
    (m/InkWell)

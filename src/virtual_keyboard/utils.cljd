@@ -18,7 +18,7 @@
     (some? (:display vkey))
     (:display vkey)
     
-    (and (:is-shift-enabled @state)
+    (and (:keyboard/is-shift-enabled @state)
          (some? (:caps-text vkey)))
     (:caps-text vkey)
     

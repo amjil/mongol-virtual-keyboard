@@ -18,8 +18,9 @@
          en-other-special-keys (builder/keyboard-layout-builder layouts/en-other-special-layout)
          mg-special-keys (builder/keyboard-layout-builder layouts/mg-special-layout)
          mg-other-special-keys (builder/keyboard-layout-builder layouts/mg-other-special-layout)]
-   :watch [{:keys [current-layout is-special-enabled
-                   is-other-special-enabled]}
+   :watch [{current-layout :keyboard/current-layout
+            is-special-enabled :keyboard/is-special-enabled
+            is-other-special-enabled :keyboard/is-other-special-enabled}
            state]
    (keyboard-rows
     info

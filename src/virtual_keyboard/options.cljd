@@ -31,9 +31,9 @@
    :include-secondary-key-in-popup true})
 
 (def keyboard-state
-  {:long-press false
-   :is-shift-enabled false
-   :is-special-enabled false
+  {:keyboard/long-press false
+   :keyboard/is-shift-enabled false
+   :keyboard/is-special-enabled false
    :is-other-special-enabled false
    :entry nil
    :current-layout "mg"

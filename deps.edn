@@ -2,7 +2,7 @@
  :deps {org.clojure/clojure {:mvn/version "1.10.1"}
         tensegritics/clojuredart
         {:git/url "https://github.com/tensegritics/ClojureDart.git"
-         :sha "aa1964b8e9ea3d797f5098a3d5cc47982e886e4a"}
+         :sha "6c1b1538310862dfe3fc3960fb897cf5de5a4b59"}
         amjil/mongol-menu-bar
        ;;  {:git/url "https://github.com/amjil/mongol-menu-bar.git"
        ;;   :sha "d93fc9129b7e63f0db841153eec464c52ec2b0bf"}

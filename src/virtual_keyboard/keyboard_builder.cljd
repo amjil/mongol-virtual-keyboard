@@ -11,7 +11,7 @@
 (def mn-index-layout
   [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]
    ["a" "s" "d" "f" "g" "h" "j" "k" "l" "ng"]
-   ["_" "z" "x" "c" "v" "b" "n" "m" "_"]])
+   ["-" "z" "x" "c" "v" "b" "n" "m" "_"]])
 
 (defn is-basic-mongolian-alphabet [x]
   ;; code.MongolCode/_isBasicMongolianAlphabet just can't use now

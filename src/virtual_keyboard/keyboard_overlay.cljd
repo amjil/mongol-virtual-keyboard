@@ -36,7 +36,6 @@
     ))))
 
 (defn build-entry-bubble [^m/BuildContext ctx
-                          ^m/TextEditingController controller
                           info
                           state
                           virtual-key]
@@ -62,18 +61,17 @@
 (defn insert-overlay-bubble
   [state
    ^m/BuildContext ctx
-   ^m/TextEditingController controller
    info
    current-key]
   (remove-overlay state)
-  (let [^m/OverlayEntry entry (build-entry-bubble ctx controller info state current-key)]
+  (let [^m/OverlayEntry entry (build-entry-bubble ctx info state current-key)]
     (swap! state assoc :entry nil)
     (.insert (.of m/Overlay ctx) entry)
     (swap! state assoc :entry entry)))
 
 
 ;;;;
-(defn overlay-popup-widget [^m/Size size info state controller additional-keys is-rotated]
+(defn overlay-popup-widget [^m/Size size info state additional-keys is-rotated]
   (f/widget
    :context ctx
    (m/GestureDetector)
@@ -95,16 +93,15 @@
              .child
              (m/DragTarget
               .builder (fn [_ _ _]
-                         (popup-key/key-widget info state vkey controller is-rotated))
+                         (popup-key/key-widget info state vkey is-rotated))
               .onAccept (fn [_]
                           (keyboard-action/on-key-press
-                           controller (assoc vkey :key-type :string) state))))))
+                           (assoc vkey :key-type :string) state))))))
          additional-keys))
    ))
 
 
 (defn build-entry-popup [^m/BuildContext ctx
-                         ^m/TextEditingController controller
                          info
                          state
                          additional-keys
@@ -123,25 +120,25 @@
                          (.-dx offset)
                          nil)
                  .child
-                 (overlay-popup-widget size info state controller additional-keys is-rotated))))))
-
+                 (overlay-popup-widget size info state additional-keys is-rotated))))))
 
 
 (defn insert-overlay-popup
   [state
    ^m/BuildContext ctx
-   ^m/TextEditingController controller
    info
    virtual-key]
-  (let [additional-keys
-        (if (true? (:is-rotated virtual-key))
-          (candidates/popup-candidates controller (:id virtual-key))
-          (get popup-key/en-popup-keys (keyword (:text virtual-key))))]
-    (if (zero? (count additional-keys))
-      nil
-      (do
-        (remove-overlay state)
-        (let [^m/OverlayEntry entry (build-entry-popup ctx controller info state additional-keys (:is-rotated virtual-key))]
-          (swap! state assoc :entry nil)
-          (.insert (.of m/Overlay ctx) entry)
-          (swap! state assoc :entry entry))))))
+  (let [^m/TextEditingController controller (get @state :text-controller)]
+    (when-not (nil? controller)
+      (let [additional-keys
+            (if (true? (:is-rotated virtual-key))
+              (candidates/popup-candidates controller (:id virtual-key))
+              (get popup-key/en-popup-keys (keyword (:text virtual-key))))]
+        (if (zero? (count additional-keys))
+          nil
+          (do
+            (remove-overlay state)
+            (let [^m/OverlayEntry entry (build-entry-popup ctx info state additional-keys (:is-rotated virtual-key))]
+              (swap! state assoc :entry nil)
+              (.insert (.of m/Overlay ctx) entry)
+              (swap! state assoc :entry entry))))))))
