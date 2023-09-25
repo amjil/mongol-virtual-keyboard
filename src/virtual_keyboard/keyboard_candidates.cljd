@@ -51,16 +51,16 @@
    ^services/TextSelection selection
    state]
    (if (empty? text)
-     (swap! state assoc :candidates-list suffix-candidatges-for-full)
+     (swap! state assoc :keyboard/candidates-list suffix-candidatges-for-full)
      (let [back-count 30
            substr (subs text (max 0 (- (.-start selection) back-count)) (.-start selection))
            last-word (str/trim (utils/get-last-word substr))]
        (if (empty? last-word)
-         (swap! state assoc :candidates-list suffix-candidatges-for-full)
+         (swap! state assoc :keyboard/candidates-list suffix-candidatges-for-full)
          (if (code.MongolCode/isMongolian (int (last last-word)))
            (let [gender (.getWordGender code/MongolCode last-word)]
              (if (empty? last-word)
-               (swap! state assoc :candidates-list suffix-candidatges-for-full)
-               (swap! state assoc :candidates-list
+               (swap! state assoc :keyboard/candidates-list suffix-candidatges-for-full)
+               (swap! state assoc :keyboard/candidates-list
                       (remove #(nil? %) (suffix-candidates-for-word last-word gender)))))
-           (swap! state assoc :candidates-list suffix-candidatges-for-full))))))
+           (swap! state assoc :keyboard/candidates-list suffix-candidatges-for-full))))))

@@ -12,7 +12,7 @@
   (f/widget
    (m/Material
     .elevation 10
-    .color (:key-container-color info))
+    .color (:keyboard/key-container-color info))
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
     ;; .width (* 1.5 (.-width size))
@@ -23,14 +23,14 @@
     .decoration (m/BoxDecoration
                  .borderRadius
                  (.all m/BorderRadius
-                       (.circular m/Radius (:key-cap-border-radius info)))))
+                       (.circular m/Radius (:keyboard/key-cap-border-radius info)))))
    (m/RotatedBox
     .quarterTurns (if (:is-rotated virtual-key) 1 0)
     .child (m/Text (utils/key-text state virtual-key)
                    .style
                   ;;  (if (:is-rotated virtual-key)
                      (m/TextStyle .fontSize 24
-                                  .color (:key-text-color info)
+                                  .color (:keyboard/key-text-color info)
                                   .fontFamily "MongolianBaiZheng")
                     ;;  (:text-style info))
     ))))
@@ -52,11 +52,11 @@
 
 (defn remove-overlay
   [state]
-  (if-not (nil? (:entry @state))
-    (let [^m/OverlayEntry entry (:entry @state)]
-      (if-not (nil? entry)
+  (when-not (nil? (:keyboard/entry @state))
+    (let [^m/OverlayEntry entry (:keyboard/entry @state)]
+      (when-not (nil? entry)
         (.remove entry))
-      (swap! state assoc :entry nil))))
+      (swap! state assoc :keyboard/entry nil))))
 
 (defn insert-overlay-bubble
   [state
@@ -65,9 +65,9 @@
    current-key]
   (remove-overlay state)
   (let [^m/OverlayEntry entry (build-entry-bubble ctx info state current-key)]
-    (swap! state assoc :entry nil)
+    (swap! state assoc :keyboard/entry nil)
     (.insert (.of m/Overlay ctx) entry)
-    (swap! state assoc :entry entry)))
+    (swap! state assoc :keyboard/entry entry)))
 
 
 ;;;;
@@ -89,7 +89,7 @@
             .child
             (m/ConstrainedBox
              .constraints (m/BoxConstraints
-                           .maxHeight (/ (:height info) 4))
+                           .maxHeight (/ (:keyboard/height info) 4))
              .child
              (m/DragTarget
               .builder (fn [_ _ _]
@@ -128,7 +128,7 @@
    ^m/BuildContext ctx
    info
    virtual-key]
-  (let [^m/TextEditingController controller (get @state :text-controller)]
+  (let [^m/TextEditingController controller (get @state :keyboard/text-controller)]
     (when-not (nil? controller)
       (let [additional-keys
             (if (true? (:is-rotated virtual-key))

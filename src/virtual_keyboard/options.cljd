@@ -10,32 +10,30 @@
 (def keyboard-key-type [:action :normal])
 
 (def keyboard-option 
-  {:padding 0
-   :reverse-layout false
-  ;;  :width nil
-   :height keyboard-default-height
-   :row-vertical-padding 4.0
-   :horizontal-key-padding 2.0
-   :font-size 26
-   :shift-click-text-color m.Colors/white
-   :shift-click-font-size 14
-   :key-container-color (-> m.Colors/grey .-shade100);;m.Colors/transparent
-   :long-press-container-color (-> m.Colors/grey .-shade100)
-   :long-press-key-color m.Colors/orange
-   :action-keys-container-color (-> m/Colors .-lightBlue .-shade900);m.Colors/transparent
-   :key-cap-border-radius 0
-   :shift-click-key-padding 4.0
-   :always-caps false
-   :key-text-color m.Colors/black
-   :action-text-color m.Colors/grey
-   :include-secondary-key-in-popup true})
+  {;;  :width nil
+   :keyboard/height keyboard-default-height
+   :keyboard/row-vertical-padding 4.0
+   :keyboard/horizontal-key-padding 2.0
+   :keyboard/font-size 26
+   :keyboard/shift-click-text-color m.Colors/white
+   :keyboard/shift-click-font-size 14
+   :keyboard/key-container-color (-> m.Colors/grey .-shade100);;m.Colors/transparent
+   :keyboard/long-press-container-color (-> m.Colors/grey .-shade100)
+   :keyboard/long-press-key-color m.Colors/orange
+   :keyboard/action-keys-container-color (-> m/Colors .-lightBlue .-shade900);m.Colors/transparent
+   :keyboard/key-cap-border-radius 0
+   :keyboard/shift-click-key-padding 4.0
+   :keyboard/always-caps false
+   :keyboard/key-text-color m.Colors/black
+   :keyboard/action-text-color m.Colors/grey
+   :keyboard/include-secondary-key-in-popup true})
 
 (def keyboard-state
   {:keyboard/long-press false
    :keyboard/is-shift-enabled false
    :keyboard/is-special-enabled false
-   :is-other-special-enabled false
-   :entry nil
-   :current-layout "mg"
-   :is-vibrate-on false
-   :vibrate-duration 100})
+   :keyboard/is-other-special-enabled false
+   :keyboard/entry nil
+   :keyboard/current-layout "mg"
+   :keyboard/is-vibrate-on false
+   :keyboard/vibrate-duration 100})

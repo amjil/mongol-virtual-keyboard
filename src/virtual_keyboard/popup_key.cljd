@@ -9,8 +9,8 @@
                   is-rotated]
   (f/widget
    (m/InkWell)
-   (m/Container .color (:long-press-container-color info)
-                .height (:height info)
+   (m/Container .color (:keyboard/long-press-container-color info)
+                .height (:keyboard/height info)
                 .alignment m.Alignment/center)
    (m/Padding .padding
               (.symmetric m/EdgeInsets .vertical 16 .horizontal 6))
@@ -21,18 +21,18 @@
                    .style
                   ;;  (if (:is-rotated virtual-key)
                    (m/TextStyle .fontSize 24
-                                .color (:key-text-color info)
+                                .color (:keyboard/key-text-color info)
                                 .fontFamily "MongolianBaiZheng")
-                    ;;  (:text-style info))
+                    ;;  (:keyboard/text-style info))
                    ))
 ;;    (mgl/MongolText
 ;;     (utils/key-text state vkey)
 ;;     .style
-;;     (if (empty? (:popup-text-style info))
+;;     (if (empty? (:keyboard/popup-text-style info))
 ;;       (m/TextStyle .fontSize 24
 ;;                    .color (.white m/Colors)
 ;;                    .fontFamily "MongolianBaiZheng")
-;;       (:text-style info)))
+;;       (:keyboard/text-style info)))
    ))
 
 (def en-popup-keys

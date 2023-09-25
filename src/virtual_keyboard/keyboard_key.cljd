@@ -22,18 +22,18 @@
     (.symmetric
      m/EdgeInsets
      .horizontal
-     (:horizontal-key-padding info)
+     (:keyboard/horizontal-key-padding info)
      .vertical 0))
    .child
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
-    .height (/ (:height info) rows-count)
+    .height (/ (:keyboard/height info) rows-count)
     .decoration (m/BoxDecoration
                  .borderRadius
                  (.all m/BorderRadius
-                       (.circular m/Radius (:key-cap-border-radius info)))))
+                       (.circular m/Radius (:keyboard/key-cap-border-radius info)))))
    .child
-   (m/Material .color (:key-container-color info))
+   (m/Material .color (:keyboard/key-container-color info))
    .child
    (m/InkWell
     .splashColor m.Colors/black
@@ -90,9 +90,9 @@
                                      .style
                                      (if (:is-rotated virtual-key)
                                        (m/TextStyle .fontSize 24
-                                                    .color (:key-text-color info)
+                                                    .color (:keyboard/key-text-color info)
                                                     .fontFamily "MongolianBaiZheng")
                                       ;;  (:text-style info)
                                        (m/TextStyle .fontSize 24
-                                                    .color (:key-text-color info)
+                                                    .color (:keyboard/key-text-color info)
                                                     .fontFamily "Courier")))))])))

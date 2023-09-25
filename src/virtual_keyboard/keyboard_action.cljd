@@ -14,8 +14,8 @@
 (defn action-widget [vkey items-count rows-count]
   (f/widget
    :get [:info :state]
-   :let [width (:width info)
-         height (:height info)
+   :let [width (:keyboard/width info)
+         height (:keyboard/height info)
          key-height (/ height rows-count)
          key-base-width (/ width 10)]
   ;;  (m/Flexible)
@@ -24,7 +24,7 @@
     .padding
     (.symmetric
      m/EdgeInsets
-     .horizontal (:horizontal-key-padding info)
+     .horizontal (:keyboard/horizontal-key-padding info)
      .vertical 0))
   ;;  .child
   ;;  (m/Container
@@ -32,11 +32,11 @@
   ;;   .height key-height
   ;;   .decoration
   ;;   (m/BoxDecoration
-  ;;    .color (:action-keys-container-color info)
+  ;;    .color (:keyboard/action-keys-container-color info)
   ;;    .borderRadius
   ;;    (.all m/BorderRadius
   ;;          (.circular m/Radius
-  ;;                     (:key-cap-border-radius info))))
+  ;;                     (:keyboard/key-cap-border-radius info))))
   ;;   ;; .width double/infinity
   ;;   )
 
@@ -59,25 +59,25 @@
       (fn [] (swap! state assoc :keyboard/long-press false))
       .child
       (action-key-container
-       {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
+       {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
         :height key-height
-        :child (m/Icon (.backspace m/Icons) .color (:action-text-color info))} vkey))
+        :child (m/Icon (.backspace m/Icons) .color (:keyboard/action-text-color info))} vkey))
 
      :shift
      (action-key-container
-      {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
-       :child (m/Icon (.arrow_upward m/Icons) .color (:action-text-color info))} vkey)
+       :child (m/Icon (.arrow_upward m/Icons) .color (:keyboard/action-text-color info))} vkey)
 
      :return
      (action-key-container
-      {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
-       :child (m/Icon (.keyboard_return m/Icons) .color (:action-text-color info))} vkey)
+       :child (m/Icon (.keyboard_return m/Icons) .color (:keyboard/action-text-color info))} vkey)
 
      :space
      (action-key-container
-      {:width (- (* 5 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -85,14 +85,14 @@
                 "_____"
                 .textAlign (.center m/TextAlign)
                 .style (m/TextStyle
-                        .color (:shift-click-text-color info)
+                        .color (:keyboard/shift-click-text-color info)
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:shift-click-font-size info))))} vkey)
-      ;;  :child (m/Icon (.space_bar m/Icons) .color (:action-text-color info))} info)
+                        .fontSize (:keyboard/shift-click-font-size info))))} vkey)
+      ;;  :child (m/Icon (.space_bar m/Icons) .color (:keyboard/action-text-color info))} info)
 
      :special-characters
      (action-key-container
-      {:width (- (* 1.25 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -100,14 +100,14 @@
                 "?123"
                 .textAlign (.center m/TextAlign)
                 .style (m/TextStyle
-                        .color (:key-text-color info)
+                        .color (:keyboard/key-text-color info)
                         .fontFamily "Courier"
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:shift-click-font-size info))))} vkey)
+                        .fontSize (:keyboard/shift-click-font-size info))))} vkey)
 
      :small-special-characters
      (action-key-container
-      {:width (- (* 1.25 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -115,33 +115,33 @@
                 "?123"
                 .textAlign (.center m/TextAlign)
                 .style (m/TextStyle
-                        .color (:key-text-color info)
+                        .color (:keyboard/key-text-color info)
                         .fontFamily "Courier"
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:shift-click-font-size info))))} vkey)
+                        .fontSize (:keyboard/shift-click-font-size info))))} vkey)
 
      :suffix-candidates
      (action-key-container
-      {:width (- (* 1 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
                (mgl/MongolText
                 "ᠳᠠᠭᠠᠪᠤᠷᠢ"
                 .style (m/TextStyle
-                        .color (:key-text-color info)
+                        .color (:keyboard/key-text-color info)
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:shift-click-font-size info))))} vkey)
+                        .fontSize (:keyboard/shift-click-font-size info))))} vkey)
 
      :spacer-block
      (action-key-container
-      {:width (- (* 4 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 4 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Text "")} vkey)
 
      :small-spacer-block
      (action-key-container
-      {:width (- (* 3 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 3 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Text "")} vkey)
 
@@ -153,7 +153,7 @@
 
      :other-special-characters
      (action-key-container
-      {:width (- (* 1.5 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -161,12 +161,12 @@
                 "=\\\\<"
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
-                             .color (:key-text-color info)
-                             .fontSize (:shift-click-font-size info))))} vkey)
+                             .color (:keyboard/key-text-color info)
+                             .fontSize (:keyboard/shift-click-font-size info))))} vkey)
 
      :abc
      (action-key-container
-      {:width (- (* 1.25 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -174,12 +174,12 @@
                 "ABC"
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
-                             .color (:key-text-color info)
-                             .fontSize (:shift-click-font-size info))))} vkey)
+                             .color (:keyboard/key-text-color info)
+                             .fontSize (:keyboard/shift-click-font-size info))))} vkey)
 
      :mgl
      (action-key-container
-      {:width (- (* 1.25 key-base-width) (* 2 (:horizontal-key-padding info)))
+      {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child (m/Center
                .child
@@ -187,30 +187,30 @@
                 "MGL"
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
-                             .color (:key-text-color info)
-                             .fontSize (:shift-click-font-size info))))} vkey)
+                             .color (:keyboard/key-text-color info)
+                             .fontSize (:keyboard/shift-click-font-size info))))} vkey)
 
      :empty
     ;;  (.shrink m/SizedBox)
      (m/Container
       .width
-      (- (* 0.5 key-base-width) (* 2 (:horizontal-key-padding info)))))))
+      (- (* 0.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))))))
 
 (defn- key-box-decoration
   [info]
   (m/BoxDecoration
-   .color (:action-keys-container-color info)
+   .color (:keyboard/action-keys-container-color info)
    .borderRadius
    (.all m/BorderRadius
          (.circular m/Radius
-                    (:key-cap-border-radius info)))))
+                    (:keyboard/key-cap-border-radius info)))))
 
 (defn action-key-container
   [{width :width height :height child :child}
    vkey]
   (f/widget
    :get [:info :state]
-   :let [text-controller (:text-controller @state)]
+   :let [text-controller (:keyboard/text-controller @state)]
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
     .height height
@@ -242,7 +242,7 @@
 
 (defn on-key-press
   [vkey state]
-  (let [^m/TextEditingController controller (get @state :text-controller)
+  (let [^m/TextEditingController controller (get @state :keyboard/text-controller)
         text (.-text controller)
         ^m/TextSelection
         selection (-> controller .-selection)]
@@ -277,7 +277,7 @@
         (condp = (:action vkey)
           :backspace
           (let [selection-length (- (.-end selection) (.-start selection))]
-            (if (empty? (:candidates-list @state))
+            (if (empty? (:keyboard/candidates-list @state))
               (cond
                 (> selection-length 0)
                 (let [new-text (.replaceRange text (.-start selection) (.-end selection) "")]
@@ -306,7 +306,7 @@
                                    .baseOffset new-start
                                    .extentOffset new-start))
                   (swap! state assoc :edit-watcher/lock 1)))
-              (swap! state assoc :candidates-list [])))
+              (swap! state assoc :keyboard/candidates-list [])))
 
           :return
           (let [new-text (.replaceRange text (.-start selection) (.-end selection) "\n")]
@@ -344,10 +344,10 @@
             (swap! state assoc :keyboard/is-other-special-enabled false))
 
           :special-characters
-          (swap! state assoc :is-special-enabled (not (:is-special-enabled @state)))
+          (swap! state assoc :keyboard/is-special-enabled (not (:keyboard/is-special-enabled @state)))
 
           :other-special-characters
-          (swap! state assoc :is-other-special-enabled (not (:is-other-special-enabled @state)))
+          (swap! state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state)))
 
           :suffix-candidates
           (keyboard-candidates/suffix-candidates text selection state))))))
@@ -355,4 +355,4 @@
 (defn on-candidates-clicked
   [text state]
   (on-key-press {:key-type :string :text text} state)
-  (swap! state assoc :candidates-list []))
+  (swap! state assoc :keyboard/candidates-list []))

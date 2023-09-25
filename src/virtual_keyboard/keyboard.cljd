@@ -38,8 +38,8 @@
 
 (defn keyboard-rows [info rows]
   (m/Container
-   .height (+ options/keyboard-default-height (* (count rows) (+ 4 (:row-vertical-padding info))))
-   .width (:width info)
+   .height (+ options/keyboard-default-height (* (count rows) (+ 4 (:keyboard/row-vertical-padding info))))
+   .width (:keyboard/width info)
    .child (m/Column
           ;;  .mainAxisAlignment (.spaceBetween m/MainAxisAlignment)
            .mainAxisAlignment (.center m/MainAxisAlignment)
@@ -58,7 +58,7 @@
         .padding
         (.symmetric
          m/EdgeInsets
-         .vertical (:row-vertical-padding info)
+         .vertical (:keyboard/row-vertical-padding info)
          .horizontal 1))
        .child
        (m/Row
