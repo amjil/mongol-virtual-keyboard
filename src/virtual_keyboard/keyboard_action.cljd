@@ -332,14 +332,20 @@
           (swap! state assoc :keyboard/is-shift-enabled (not (:keyboard/is-shift-enabled @state)))
 
           :abc
-          (do
-            (swap! state assoc :keyboard/current-layout "en")
+          (let [layout-index (get @state :keyboard/layout-index)
+                layouts (get @state :keyboard/layouts)
+                current-layout (nth layouts (mod (inc layout-index) (count layouts)))]
+            (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count layouts)))
+            (swap! state assoc :keyboard/current-layout current-layout)
             (swap! state assoc :keyboard/is-special-enabled false)
             (swap! state assoc :keyboard/is-other-special-enabled false))
 
           :mgl
-          (do
-            (swap! state assoc :keyboard/current-layout "mg")
+          (let [layout-index (get @state :keyboard/layout-index)
+                layouts (get @state :keyboard/layouts)
+                current-layout (nth layouts (mod (inc layout-index) (count layouts)))]
+            (swap! state assoc :keyboard/current-layout current-layout)
+            (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count layouts)))
             (swap! state assoc :keyboard/is-special-enabled false)
             (swap! state assoc :keyboard/is-other-special-enabled false))
 

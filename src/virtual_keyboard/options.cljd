@@ -35,5 +35,7 @@
    :keyboard/is-other-special-enabled false
    :keyboard/entry nil
    :keyboard/current-layout "mg"
+   :keyboard/layout-index 0
+   :keyboard/layouts ["mg" "en"]
    :keyboard/is-vibrate-on false
    :keyboard/vibrate-duration 100})

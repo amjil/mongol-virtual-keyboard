@@ -139,6 +139,6 @@
           (do
             (remove-overlay state)
             (let [^m/OverlayEntry entry (build-entry-popup ctx info state additional-keys (:is-rotated virtual-key))]
-              (swap! state assoc :entry nil)
+              (swap! state assoc :keyboard/entry nil)
               (.insert (.of m/Overlay ctx) entry)
-              (swap! state assoc :entry entry))))))))
+              (swap! state assoc :keyboard/entry entry))))))))
