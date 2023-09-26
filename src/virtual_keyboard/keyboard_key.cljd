@@ -60,10 +60,12 @@
     .data (:text virtual-key)
     .onDragStarted
     (fn []
-      (keyboard-overlay/insert-overlay-popup state ctx info virtual-key))
+      (when-not (zero? (get @state :keyboard/layout-index))
+        (keyboard-overlay/insert-overlay-popup state ctx info virtual-key)))
     .onDragEnd
     (fn [_]
-      (keyboard-overlay/remove-overlay state))
+      (when-not (zero? (get @state :keyboard/layout-index))
+        (keyboard-overlay/remove-overlay state)))
     .onDraggableCanceled 
     (fn [_ _]
       (dart:core/print "onDraggableCanceled >>>")
@@ -83,7 +85,13 @@
    .child
    (m/Stack
     .children
-    [(m/Align .alignment (.center m/Alignment)
+    [(if (and (zero? (:keyboard/layout-index @state))
+              (not (some #{(:id virtual-key)} ["ng" "-" "_"]))
+              (not-empty (:id virtual-key)))
+       (m/Align .alignment m.Alignment/topLeft
+                .child (m/Text (:id virtual-key)))
+       (m/SizedBox))
+     (m/Align .alignment (.center m/Alignment)
               .child (m/RotatedBox
                       .quarterTurns (if (true? (:is-rotated virtual-key)) 1 0)
                       .child (m/Text (utils/key-text state virtual-key)

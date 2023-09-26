@@ -32,6 +32,11 @@
              false mg-keys)
       1 (condp = is-special-enabled
              true (condp = is-other-special-enabled
+                    true mg-other-special-keys
+                    mg-special-keys)
+             false mg-keys)
+      2 (condp = is-special-enabled
+             true (condp = is-other-special-enabled
                     true en-other-special-keys
                     en-special-keys)
              false en-keys)))))

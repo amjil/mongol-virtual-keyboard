@@ -170,7 +170,7 @@
        :height key-height
        :child (m/Center
                .child
-               (m/Text
+               (mgl/MongolText
                 (nth (:keyboard/layout-names info) (:keyboard/layout-index @state))
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
