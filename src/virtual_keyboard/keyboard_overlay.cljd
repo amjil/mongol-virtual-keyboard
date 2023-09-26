@@ -96,7 +96,7 @@
                          (popup-key/key-widget info state vkey is-rotated))
               .onAccept (fn [_]
                           (keyboard-action/on-key-press
-                           (assoc vkey :key-type :string) state))))))
+                           (assoc vkey :key-type :string) state info))))))
          additional-keys))
    ))
 
@@ -113,10 +113,10 @@
      .builder (fn [_]
                 (m/Positioned
                  .top (- (.-dy offset) (+ 10 (.-height size)))
-                 .right (if (>= (.-dx offset) (/ (:width info) 2))
-                          (- (:width info) (.-dx offset) (.-width size))
+                 .right (if (>= (.-dx offset) (/ (:keyboard/width info) 2))
+                          (- (:keyboard/width info) (.-dx offset) (.-width size))
                           nil)
-                 .left (if (< (.-dx offset) (/ (:width info) 2))
+                 .left (if (< (.-dx offset) (/ (:keyboard/width info) 2))
                          (.-dx offset)
                          nil)
                  .child

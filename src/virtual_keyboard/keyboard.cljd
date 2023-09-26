@@ -18,19 +18,19 @@
          en-other-special-keys (builder/keyboard-layout-builder layouts/en-other-special-layout)
          mg-special-keys (builder/keyboard-layout-builder layouts/mg-special-layout)
          mg-other-special-keys (builder/keyboard-layout-builder layouts/mg-other-special-layout)]
-   :watch [{current-layout :keyboard/current-layout
+   :watch [{layout-index :keyboard/layout-index
             is-special-enabled :keyboard/is-special-enabled
             is-other-special-enabled :keyboard/is-other-special-enabled}
            state]
    (keyboard-rows
     info
-    (condp = current-layout
-      "mg" (condp = is-special-enabled
+    (condp = layout-index
+      0 (condp = is-special-enabled
              true (condp = is-other-special-enabled
                     true mg-other-special-keys
                     mg-special-keys)
              false mg-keys)
-      "en" (condp = is-special-enabled
+      1 (condp = is-special-enabled
              true (condp = is-other-special-enabled
                     true en-other-special-keys
                     en-special-keys)

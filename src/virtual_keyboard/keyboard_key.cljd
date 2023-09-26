@@ -40,7 +40,7 @@
     .onTap 
     (fn []
       ;; (if (true? (:is-rotated virtual-key))
-        (keyboard-action/on-key-press virtual-key state)
+        (keyboard-action/on-key-press virtual-key state info)
       ;; )
     )
     .onTapDown (fn [_]

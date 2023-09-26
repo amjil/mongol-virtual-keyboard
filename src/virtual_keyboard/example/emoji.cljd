@@ -88,7 +88,7 @@
      .right (/ width 4)
      .child
      (menu/menu {:bar {:elavation 10}
-                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x state))}}
+                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x state info))}}
                 candidates-list))]))
 
 (defn basic []

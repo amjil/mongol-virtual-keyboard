@@ -51,7 +51,7 @@
         ;;  a/Timer
         ;;  (Duration .milliseconds 300);options/back-space-event-period)
         ;;  (fn [^a/Timer timer] (if (true? (:keyboard/long-press @state))
-        ;;                         (on-key-press vkey state)
+        ;;                         (on-key-press vkey state info)
         ;;                         (.cancel timer))))
         (dart:core/print "long press")
         nil)
@@ -171,20 +171,7 @@
        :child (m/Center
                .child
                (m/Text
-                "ABC"
-                .style
-                (m/TextStyle .fontWeight (.w600 m/FontWeight)
-                             .color (:keyboard/key-text-color info)
-                             .fontSize (:keyboard/shift-click-font-size info))))} vkey)
-
-     :mgl
-     (action-key-container
-      {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
-       :height key-height
-       :child (m/Center
-               .child
-               (m/Text
-                "MGL"
+                (nth (:keyboard/layout-names info) (:keyboard/layout-index @state))
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
                              .color (:keyboard/key-text-color info)
@@ -221,7 +208,7 @@
      .color (:keyboard/action-keys-container-color info)
      .child
      (m/InkWell ;.splashColor m.Colors/white
-      .onTap #(on-key-press vkey state)
+      .onTap #(on-key-press vkey state info)
       .child child)))))
 
 
@@ -241,7 +228,7 @@
     (swap! state assoc :edit-watcher/lock 1)))
 
 (defn on-key-press
-  [vkey state]
+  [vkey state info]
   (let [^m/TextEditingController controller (get @state :keyboard/text-controller)
         text (.-text controller)
         ^m/TextSelection
@@ -332,20 +319,8 @@
           (swap! state assoc :keyboard/is-shift-enabled (not (:keyboard/is-shift-enabled @state)))
 
           :abc
-          (let [layout-index (get @state :keyboard/layout-index)
-                layouts (get @state :keyboard/layouts)
-                current-layout (nth layouts (mod (inc layout-index) (count layouts)))]
-            (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count layouts)))
-            (swap! state assoc :keyboard/current-layout current-layout)
-            (swap! state assoc :keyboard/is-special-enabled false)
-            (swap! state assoc :keyboard/is-other-special-enabled false))
-
-          :mgl
-          (let [layout-index (get @state :keyboard/layout-index)
-                layouts (get @state :keyboard/layouts)
-                current-layout (nth layouts (mod (inc layout-index) (count layouts)))]
-            (swap! state assoc :keyboard/current-layout current-layout)
-            (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count layouts)))
+          (let [layout-index (get @state :keyboard/layout-index)]
+            (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count (:keyboard/layout-names info))))
             (swap! state assoc :keyboard/is-special-enabled false)
             (swap! state assoc :keyboard/is-other-special-enabled false))
 
@@ -359,6 +334,6 @@
           (keyboard-candidates/suffix-candidates text selection state))))))
 
 (defn on-candidates-clicked
-  [text state]
-  (on-key-press {:key-type :string :text text} state)
+  [text state info]
+  (on-key-press {:key-type :string :text text} state info)
   (swap! state assoc :keyboard/candidates-list []))
