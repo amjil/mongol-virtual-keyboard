@@ -60,12 +60,10 @@
     .data (:text virtual-key)
     .onDragStarted
     (fn []
-      (when-not (zero? (get @state :keyboard/layout-index))
-        (keyboard-overlay/insert-overlay-popup state ctx info virtual-key)))
+      (keyboard-overlay/insert-overlay-popup state ctx info virtual-key))
     .onDragEnd
     (fn [_]
-      (when-not (zero? (get @state :keyboard/layout-index))
-        (keyboard-overlay/remove-overlay state)))
+      (keyboard-overlay/remove-overlay state))
     .onDraggableCanceled 
     (fn [_ _]
       (dart:core/print "onDraggableCanceled >>>")

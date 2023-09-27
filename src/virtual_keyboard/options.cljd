@@ -27,7 +27,7 @@
    :keyboard/key-text-color m.Colors/black
    :keyboard/action-text-color m.Colors/grey
    ;; 
-   :keyboard/layout-names ["smart" "MGL" "ABC"]
+   :keyboard/layout-names ["MGL" "ABC"]
    :keyboard/include-secondary-key-in-popup true})
 
 (def keyboard-state
