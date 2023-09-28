@@ -73,7 +73,20 @@
      (action-key-container
       {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
-       :child (m/Icon (.keyboard_return m/Icons) .color (:keyboard/action-text-color info))} vkey)
+       :child
+       (if (= :single-line (:keyboard/return-mode @state))
+         (m/Center
+          .child
+          (m/Text
+           "done"
+           .textAlign (.center m/TextAlign)
+           .style (m/TextStyle
+                   .color (:keyboard/key-text-color info)
+                   .fontFamily "Courier"
+                   .fontWeight (.w700 m/FontWeight)
+                   .fontSize (:keyboard/shift-click-font-size info))))
+         (m/Icon (.keyboard_return m/Icons) .color (:keyboard/action-text-color info)))
+       } vkey)
 
      :space
      (action-key-container
@@ -296,15 +309,19 @@
               (swap! state assoc :keyboard/candidates-list [])))
 
           :return
-          (let [new-text (.replaceRange text (.-start selection) (.-end selection) "\n")]
-            (swap! state assoc :edit-watcher/lock 1)
-            (set! (.-text controller) new-text)
-            (swap! state assoc :edit-watcher/lock 2)
-            (set! (.-selection controller)
-                  (.copyWith selection
-                             .baseOffset (+ (.-start selection) 1)
-                             .extentOffset (+ (.-start selection) 1)))
-            (swap! state assoc :edit-watcher/lock 1))
+          (if (= :single-line (:keyboard/return-mode @state))
+            (let [callback (:keyboard/return-callback @state)]
+              (when-not (nil? callback)
+                (callback)))
+            (let [new-text (.replaceRange text (.-start selection) (.-end selection) "\n")]
+              (swap! state assoc :edit-watcher/lock 1)
+              (set! (.-text controller) new-text)
+              (swap! state assoc :edit-watcher/lock 2)
+              (set! (.-selection controller)
+                    (.copyWith selection
+                               .baseOffset (+ (.-start selection) 1)
+                               .extentOffset (+ (.-start selection) 1)))
+              (swap! state assoc :edit-watcher/lock 1)))
 
           :space
           (on-spacer-pressed controller text selection state)
