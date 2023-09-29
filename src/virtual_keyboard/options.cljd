@@ -9,6 +9,8 @@
 
 (def keyboard-key-type [:action :normal])
 
+(def base-url "localhost:3003")
+
 (def keyboard-option 
   {;;  :width nil
    :keyboard/height keyboard-default-height
