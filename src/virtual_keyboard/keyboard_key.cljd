@@ -4,7 +4,7 @@
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.keyboard-overlay :as keyboard-overlay]
-   [cljd.flutter.alpha2 :as f]))
+   [cljd.flutter :as f]))
 
 (declare
  insert-overlay
@@ -40,7 +40,7 @@
     .onTap 
     (fn []
       ;; (if (true? (:is-rotated virtual-key))
-        (keyboard-action/on-key-press virtual-key state info)
+        (keyboard-action/on-key-press virtual-key state)
       ;; )
     )
     .onTapDown (fn [_]

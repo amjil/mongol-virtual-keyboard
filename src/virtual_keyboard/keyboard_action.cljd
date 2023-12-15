@@ -2,11 +2,10 @@
   (:require
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
-   ["package:mongol_code/mongol_code.dart" :as code]
-   ["dart:async" :as a]
    ["package:vibration/vibration.dart" :as vibrate]
    [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
-   [cljd.flutter.alpha2 :as f]))
+   [virtual-keyboard.options :as options]
+   [cljd.flutter :as f]))
 
 (declare on-key-press
          action-key-container)
@@ -51,7 +50,7 @@
         ;;  a/Timer
         ;;  (Duration .milliseconds 300);options/back-space-event-period)
         ;;  (fn [^a/Timer timer] (if (true? (:keyboard/long-press @state))
-        ;;                         (on-key-press vkey state info)
+        ;;                         (on-key-press vkey state)
         ;;                         (.cancel timer))))
         (dart:core/print "long press")
         nil)
@@ -210,7 +209,6 @@
    vkey]
   (f/widget
    :get [:info :state]
-   :let [text-controller (:keyboard/text-controller @state)]
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
     .height height
@@ -221,7 +219,7 @@
      .color (:keyboard/action-keys-container-color info)
      .child
      (m/InkWell ;.splashColor m.Colors/white
-      .onTap #(on-key-press vkey state info)
+      .onTap #(on-key-press vkey state)
       .child child)))))
 
 
@@ -241,7 +239,7 @@
     (swap! state assoc :edit-watcher/lock 1)))
 
 (defn on-key-press
-  [vkey state info]
+  [vkey state]
   (let [^m/TextEditingController controller (get @state :keyboard/text-controller)
         text (.-text controller)
         ^m/TextSelection
@@ -337,7 +335,7 @@
 
           :abc
           (let [layout-index (get @state :keyboard/layout-index)]
-            (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count (:keyboard/layout-names info))))
+            (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count (:keyboard/layout-names options/keyboard-option))))
             (swap! state assoc :keyboard/is-special-enabled false)
             (swap! state assoc :keyboard/is-other-special-enabled false))
 
@@ -352,5 +350,5 @@
 
 (defn on-candidates-clicked
   [text state info]
-  (on-key-press {:key-type :string :text text} state info)
+  (on-key-press {:key-type :string :text text} state)
   (swap! state assoc :keyboard/candidates-list []))

@@ -1,7 +1,7 @@
 (ns virtual-keyboard.keyboard
   (:require
    ["package:flutter/material.dart" :as m]
-   [cljd.flutter.alpha2 :as f]
+   [cljd.flutter :as f]
    [virtual-keyboard.keyboard-builder :as builder]
    [virtual-keyboard.keyboard-layouts :as layouts]
    [virtual-keyboard.options :as options]))
