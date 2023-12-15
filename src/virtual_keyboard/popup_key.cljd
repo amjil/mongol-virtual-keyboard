@@ -1,9 +1,8 @@
 (ns virtual-keyboard.popup-key
   (:require
    ["package:flutter/material.dart" :as m]
-   ["package:mongol/mongol.dart" :as mgl]
    [virtual-keyboard.utils :as utils]
-   [cljd.flutter.alpha2 :as f]))
+   [cljd.flutter :as f]))
 
 (defn key-widget [info state vkey
                   is-rotated]

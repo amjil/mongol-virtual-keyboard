@@ -1,12 +1,11 @@
 (ns virtual-keyboard.keyboard-overlay
   (:require
    ["package:flutter/material.dart" :as m]
-   ["package:mongol/mongol.dart" :as mgl]
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.popup-key :as popup-key]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.popup-key-candidates :as candidates]
-   [cljd.flutter.alpha2 :as f]))
+   [cljd.flutter :as f]))
 
 (defn bubble-widget [^m/Size size info state virtual-key]
   (f/widget
@@ -28,12 +27,9 @@
     .quarterTurns (if (:is-rotated virtual-key) 1 0)
     .child (m/Text (utils/key-text state virtual-key)
                    .style
-                  ;;  (if (:is-rotated virtual-key)
-                     (m/TextStyle .fontSize 24
-                                  .color (:keyboard/key-text-color info)
-                                  .fontFamily "MongolianBaiZheng")
-                    ;;  (:text-style info))
-    ))))
+                   (m/TextStyle .fontSize 24
+                                .color (:keyboard/key-text-color info)
+                                .fontFamily "MongolianBaiZheng")))))
 
 (defn build-entry-bubble [^m/BuildContext ctx
                           info
@@ -96,7 +92,7 @@
                          (popup-key/key-widget info state vkey is-rotated))
               .onAccept (fn [_]
                           (keyboard-action/on-key-press
-                           (assoc vkey :key-type :string) state info))))))
+                           (assoc vkey :key-type :string) state))))))
          additional-keys))
    ))
 

@@ -2,7 +2,7 @@
   (:require
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
-   [cljd.flutter.alpha2 :as f]
+   [cljd.flutter :as f]
    [virtual-keyboard.keyboard :as keyboard]
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.options :as options]
@@ -13,11 +13,10 @@
    :context ctx
    :get [:keyboard/text-controller]
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-         height (-> m/MediaQuery (.of ctx) .-size .-height)
          info (merge options/keyboard-option {} {:keyboard/width width})
          state (atom (merge options/keyboard-state
                             {:keyboard/text-controller text-controller}))]
-   :bind {:info info :state state :context ctx}
+   :bind {:state state :info info}
    :watch [{candidates-list :keyboard/candidates-list} state]
    (m/SafeArea)
    .child
@@ -49,7 +48,7 @@
      .right (/ width 4)
      .child
      (menu/menu {:bar {:elavation 10}
-                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x state info))}}
+                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x state))}}
                 candidates-list))]))
 
 (defn basic []

@@ -3,8 +3,7 @@
    ["package:flutter/material.dart" :as m]
    ["package:mongol_code/mongol_code.dart" :as code]
    ["package:mongol/mongol.dart" :as mgl]
-   [clojure.string :as str]
-   [cljd.flutter.alpha2 :as f]))
+   [clojure.string :as str]))
 
 (defn get-key-button-size [ctx]
   (let [screen-width (-> m/MediaQuery (.of ctx) .-size .-width)

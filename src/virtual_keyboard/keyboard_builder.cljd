@@ -1,12 +1,9 @@
 (ns virtual-keyboard.keyboard-builder
   (:require
-   ["package:flutter/material.dart" :as m]
    ["package:mongol_code/mongol_code.dart" :as code]
-   ["package:mongol/mongol.dart" :as mgl]
    [virtual-keyboard.keyboard-key :as keyboard-key]
    [virtual-keyboard.keyboard-action :as keyboard-action]
-   [clojure.string :as str]
-   [cljd.flutter.alpha2 :as f]))
+   [clojure.string :as str]))
 
 (def mn-index-layout
   [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]

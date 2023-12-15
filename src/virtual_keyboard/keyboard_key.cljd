@@ -13,6 +13,7 @@
 (defn key-widget [virtual-key items-count rows-count]
   (f/widget
    :context ctx
+  ;;  :get {:value-of [:info :state]}
    :get [:info :state]
    :let [^m/OverlayState overlay (.of m/Overlay ctx)]
    (m/Expanded)
@@ -37,12 +38,12 @@
    .child
    (m/InkWell
     .splashColor m.Colors/black
-    .onTap 
+    .onTap
     (fn []
       ;; (if (true? (:is-rotated virtual-key))
-        (keyboard-action/on-key-press virtual-key state info)
+      (keyboard-action/on-key-press virtual-key state)
       ;; )
-    )
+      )
     .onTapDown (fn [_]
                  ;;  (dart:core/print "key onTapDown >>>")
                  (keyboard-overlay/insert-overlay-bubble state ctx info virtual-key))
@@ -64,7 +65,7 @@
     .onDragEnd
     (fn [_]
       (keyboard-overlay/remove-overlay state))
-    .onDraggableCanceled 
+    .onDraggableCanceled
     (fn [_ _]
       (dart:core/print "onDraggableCanceled >>>")
       ;; (remove-overlay state)

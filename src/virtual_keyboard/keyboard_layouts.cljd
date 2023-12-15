@@ -1,8 +1,4 @@
-(ns virtual-keyboard.keyboard-layouts
-  (:require
-   ["package:flutter/material.dart" :as m]
-   [virtual-keyboard.keyboard-key :as keyboard-key]
-   [cljd.flutter.alpha2 :as f]))
+(ns virtual-keyboard.keyboard-layouts)
 
 (def mg-layout 
   [["ᠴ᠊" "ᠸ᠊" "ᠡ" "ᠷ᠊" "ᠲ᠊" "ᠶ᠊" "ᠦ᠊" "ᠢ" "ᠥ" "ᠫ᠊"]

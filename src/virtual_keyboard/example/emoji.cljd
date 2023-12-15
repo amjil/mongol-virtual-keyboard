@@ -4,7 +4,7 @@
    ["package:mongol/mongol.dart" :as mgl]
    ["package:emoji_picker_flutter/emoji_picker_flutter.dart" :as emoji]
    ["package:flutter/foundation.dart" :as foundation]
-   [cljd.flutter.alpha2 :as f]
+   [cljd.flutter :as f]
    [virtual-keyboard.keyboard :as keyboard]
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.options :as options]
@@ -88,7 +88,7 @@
      .right (/ width 4)
      .child
      (menu/menu {:bar {:elavation 10}
-                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x state info))}}
+                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x state))}}
                 candidates-list))]))
 
 (defn basic []
