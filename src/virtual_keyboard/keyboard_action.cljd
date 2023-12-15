@@ -349,6 +349,6 @@
           (keyboard-candidates/suffix-candidates text selection state))))))
 
 (defn on-candidates-clicked
-  [text state info]
+  [text state]
   (on-key-press {:key-type :string :text text} state)
   (swap! state assoc :keyboard/candidates-list []))
