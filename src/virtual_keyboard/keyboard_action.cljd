@@ -208,9 +208,8 @@
   [{width :width height :height child :child}
    vkey]
   (f/widget
-  ;;  :get [:state]
-   :get {:value-of [:info :state]}
-  ;;  :let [info (:info @state)]
+   :get [:info :state]
+  ;;  :get {:value-of [:info :state]}
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
     .height height
