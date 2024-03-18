@@ -5,16 +5,16 @@
    ["package:vibration/vibration.dart" :as vibrate]
    [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
    [virtual-keyboard.options :as options]
-   [cljd.flutter.alpha2 :as f]))
+   [cljd.flutter :as f]))
 
 (declare on-key-press
          action-key-container)
 
 (defn action-widget [vkey items-count rows-count]
   (f/widget
-   :get [:info :state]
-  ;;  :get {:value-of [:info :state]}
-   :let [ width (:keyboard/width info)
+  ;;  :get [:info :state]
+   :get {:value-of [:info :state]}
+   :let [width (:keyboard/width info)
          height (:keyboard/height info)
          key-height (/ height rows-count)
          key-base-width (/ width 10)]
@@ -39,7 +39,7 @@
   ;;                     (:keyboard/key-cap-border-radius info))))
   ;;   ;; .width double/infinity
   ;;   )
-   
+
    .child
    (condp = (:action vkey)
      :backspace
@@ -101,7 +101,7 @@
                         .fontWeight (.w700 m/FontWeight)
                         .fontSize (:keyboard/shift-click-font-size info))))} vkey)
       ;;  :child (m/Icon (.space_bar m/Icons) .color (:keyboard/action-text-color info))} info)
-     
+
      :special-characters
      (action-key-container
       {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
@@ -208,8 +208,8 @@
   [{width :width height :height child :child}
    vkey]
   (f/widget
-   :get [:info :state]
-  ;;  :get {:value-of [:info :state]}
+  ;;  :get [:info :state]
+   :get {:value-of [:info :state]}
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
     .height height

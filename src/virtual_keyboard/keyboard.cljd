@@ -1,7 +1,7 @@
 (ns virtual-keyboard.keyboard
   (:require
    ["package:flutter/material.dart" :as m]
-   [cljd.flutter.alpha2 :as f]
+   [cljd.flutter :as f]
    [virtual-keyboard.keyboard-builder :as builder]
    [virtual-keyboard.keyboard-layouts :as layouts]
    [virtual-keyboard.options :as options]))
@@ -11,8 +11,8 @@
 
 (defn keyboard []
   (f/widget
-  ;;  :get {:value-of [:state]}
-   :get [:state]
+   :get {:value-of [:state]}
+;;    :get [:state]
    :let [mg-keys (builder/keyboard-layout-builder layouts/mg-layout)
          en-keys (builder/keyboard-layout-builder layouts/en-layout)
          en-special-keys (builder/keyboard-layout-builder layouts/en-special-layout)
@@ -37,16 +37,17 @@
              false en-keys)))))
 
 (defn keyboard-rows [rows]
-  (f/widget 
-   :get [:info]
-  (m/Container
-   .height (+ options/keyboard-default-height (* (count rows) (+ 4 (or (:keyboard/row-vertical-padding info) 4))))
-   .width (:keyboard/width info)
-   .child (m/Column
+  (f/widget
+;;    :get [:info]
+   :get {:value-of [:info]}
+   (m/Container
+    .height (+ options/keyboard-default-height (* (count rows) (+ 4 (or (:keyboard/row-vertical-padding info) 4))))
+    .width (:keyboard/width info)
+    .child (m/Column
           ;;  .mainAxisAlignment (.spaceBetween m/MainAxisAlignment)
-           .mainAxisAlignment (.center m/MainAxisAlignment)
-           .crossAxisAlignment (.center m/CrossAxisAlignment)
-           .children (keyboard-row-keys info rows)))))
+            .mainAxisAlignment (.center m/MainAxisAlignment)
+            .crossAxisAlignment (.center m/CrossAxisAlignment)
+            .children (keyboard-row-keys info rows)))))
 
 (defn keyboard-row-keys [info items]
   (doall

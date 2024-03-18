@@ -4,7 +4,7 @@
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.keyboard-overlay :as keyboard-overlay]
-   [cljd.flutter.alpha2 :as f]))
+   [cljd.flutter :as f]))
 
 (declare
  insert-overlay
@@ -13,8 +13,8 @@
 (defn key-widget [virtual-key items-count rows-count]
   (f/widget
    :context ctx
-  ;;  :get {:value-of [:info :state]}
-   :get [:info :state]
+   :get {:value-of [:info :state]}
+  ;;  :get [:info :state]
    :let [^m/OverlayState overlay (.of m/Overlay ctx)]
    (m/Expanded)
    .child
