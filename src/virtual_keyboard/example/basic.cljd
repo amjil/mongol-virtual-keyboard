@@ -5,19 +5,19 @@
    [cljd.flutter :as f]
    [virtual-keyboard.keyboard :as keyboard]
    [virtual-keyboard.keyboard-action :as keyboard-action]
+   [virtual-keyboard.input-control :as control]
    [virtual-keyboard.options :as options]
    [menu-bar.menu :as menu]))
 
 (defn basic-body []
   (f/widget
    :context ctx
-   :get [:keyboard/text-controller]
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
          info (merge options/keyboard-option {} {:keyboard/width width})
-         state (atom (merge options/keyboard-state
-                            {:keyboard/text-controller text-controller}))]
+         state (atom (merge options/keyboard-state))]
    :bind {:state state :info info}
-   :watch [{candidates-list :keyboard/candidates-list} state]
+   :watch [{candidates-list :keyboard/candidates-list} state
+           visible control/is-show]
    (m/SafeArea)
    .child
    (m/Center)
@@ -29,20 +29,25 @@
      [(m/Expanded
        .child
        (mgl/MongolTextField
-        .controller text-controller
         .maxLines 500
         .autofocus true
         .onTap (fn []
                  (swap! state assoc :keyboard/candidates-list [])
                  (dart:core/print "onTap TextField"))
-        .showCursor true
-        .readOnly true
         .style (m/TextStyle .fontSize 20)
         .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
-      (m/Container
-       .color (-> m/Colors .grey .-shade300)
+      (m/Visibility
+       .visible visible
        .child
-       (keyboard/keyboard))])
+       (m/FocusScope
+        .canRequestFocus false
+        .child
+        (m/TextFieldTapRegion
+         .child
+         (m/Container
+          .color (-> m/Colors .grey .-shade300)
+          .child
+          (keyboard/keyboard)))))])
     (m/Positioned
      .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
      .right (/ width 4)
@@ -52,13 +57,20 @@
                 candidates-list))]))
 
 (defn basic []
+  (control/set-control)
   (f/widget
    :context ctx
-   :managed [^m/TextEditingController text-controller (m/TextEditingController)]
-   :bind {:keyboard/text-controller text-controller}
    (m/Scaffold
     .resizeToAvoidBottomInset true
     ;; .appBar (m/AppBar
     ;;          .title (m/Text "Virtual Keyboard"))
     .body
-    (basic-body))))
+    (basic-body)
+    ;; (m/Center
+    ;;  .child (mgl/MongolText
+    ;;          " ᠳᠠᠶᠠᠭᠠᠷ ᠰᠠᠶ᠋ᠢᠨ ᠪᠠᠶ᠋ᠢᠨ᠎ᠠ ᠊ᠤᠤ?"
+    ;;          .style (m/TextStyle
+    ;;                  .color m.Colors/blue
+    ;;                       ;; .fontFamily "MongolianBaiZheng"
+    ;;                  .fontSize 32.0)))
+    )))

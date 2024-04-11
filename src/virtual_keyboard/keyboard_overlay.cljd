@@ -1,11 +1,13 @@
 (ns virtual-keyboard.keyboard-overlay
   (:require
    ["package:flutter/material.dart" :as m]
+   ["package:flutter/services.dart" :as service]
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.popup-key :as popup-key]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.popup-key-candidates :as candidates]
-   [cljd.flutter :as f]))
+   [cljd.flutter :as f]
+   [virtual-keyboard.input-control :as control]))
 
 (defn bubble-widget [^m/Size size info state virtual-key]
   (f/widget
@@ -124,17 +126,16 @@
    ^m/BuildContext ctx
    info
    virtual-key]
-  (let [^m/TextEditingController controller (get @state :keyboard/text-controller)]
-    (when-not (nil? controller)
-      (let [additional-keys
-            (if (true? (:is-rotated virtual-key))
-              (candidates/popup-candidates controller (:id virtual-key))
-              (get popup-key/en-popup-keys (keyword (:text virtual-key))))]
-        (if (zero? (count additional-keys))
-          nil
-          (do
-            (remove-overlay state)
-            (let [^m/OverlayEntry entry (build-entry-popup ctx info state additional-keys (:is-rotated virtual-key))]
-              (swap! state assoc :keyboard/entry nil)
-              (.insert (.of m/Overlay ctx) entry)
-              (swap! state assoc :keyboard/entry entry))))))))
+  (let [^service/TextEditingValue editing-value @control/editing-value
+        additional-keys
+        (if (true? (:is-rotated virtual-key))
+          (candidates/popup-candidates editing-value (:id virtual-key))
+          (get popup-key/en-popup-keys (keyword (:text virtual-key))))]
+    (if (zero? (count additional-keys))
+      nil
+      (do
+        (remove-overlay state)
+        (let [^m/OverlayEntry entry (build-entry-popup ctx info state additional-keys (:is-rotated virtual-key))]
+          (swap! state assoc :keyboard/entry nil)
+          (.insert (.of m/Overlay ctx) entry)
+          (swap! state assoc :keyboard/entry entry))))))
