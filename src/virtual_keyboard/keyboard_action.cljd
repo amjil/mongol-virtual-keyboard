@@ -5,7 +5,8 @@
    ["package:vibration/vibration.dart" :as vibrate]
    [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
    [virtual-keyboard.options :as options]
-   [cljd.flutter :as f]))
+   [cljd.flutter :as f]
+   [virtual-keyboard.input-control :as control]))
 
 (declare on-key-press
          action-key-container)
@@ -223,131 +224,63 @@
       .onTap #(on-key-press vkey state)
       .child child)))))
 
-
-(defn on-spacer-pressed 
-  [^m/TextEditingController controller 
-   ^String text 
-   ^m/TextSelection selection 
-   state]
-  (let [new-text (.replaceRange text (.-start selection) (.-end selection) " ")]
-    (swap! state assoc :edit-watcher/lock 1)
-    (set! (.-text controller) new-text)
-    (swap! state assoc :edit-watcher/lock 2)
-    (set! (.-selection controller)
-          (.copyWith selection
-                     .baseOffset (+ (.-start selection) 1)
-                     .extentOffset (+ (.-start selection) 1)))
-    (swap! state assoc :edit-watcher/lock 1)))
-
 (defn on-key-press
   [vkey state]
-  (let [^m/TextEditingController controller (get @state :keyboard/text-controller)
-        text (.-text controller)
-        ^m/TextSelection
-        selection (-> controller .-selection)]
-    (when (true? (:keyboard/is-vibrate-on @state))
-      (let [has-vibrate (await (.hasVibrator vibrate/Vibration))]
-        (when (true? has-vibrate)
-          (.vibrate vibrate/Vibration .duration (:keyboard/vibrate-duration @state)))))
-    ;; before open virtual keyboard must set the :text-controller
-    (when-not (nil? controller)
-      (condp = (:key-type vkey)
-        :string
-        (let [new-str (cond
-                        (and (:keyboard/is-shift-enabled @state)
-                             (some? (:caps-text vkey)))
-                        (:caps-text vkey)
+  (when (true? (:keyboard/is-vibrate-on @state))
+    (let [has-vibrate (await (.hasVibrator vibrate/Vibration))]
+      (when (true? has-vibrate)
+        (.vibrate vibrate/Vibration .duration (:keyboard/vibrate-duration @state)))))
+  (condp = (:key-type vkey)
+    :string
+    (let [new-str (cond
+                    (and (:keyboard/is-shift-enabled @state)
+                         (some? (:caps-text vkey)))
+                    (:caps-text vkey)
 
-                        :else
-                        (:text vkey))
-              new-text (.replaceRange text (.-start selection) (.-end selection) new-str)
-              new-str-length (count new-str)]
+                    :else
+                    (:text vkey))]
+      (control/insert-text new-str))
 
-          (swap! state assoc :edit-watcher/lock 1)
-          (set! (.-text controller) new-text)
-          (swap! state assoc :edit-watcher/lock 2)
-          (set! (.-selection controller)
-                (.copyWith selection
-                           .baseOffset (+ (.-start selection) new-str-length)
-                           .extentOffset (+ (.-start selection) new-str-length)))
-          (swap! state assoc :edit-watcher/lock 1))
+    :action
+    (condp = (:action vkey)
+      :backspace
+      (control/delete-text)
 
-        :action
-        (condp = (:action vkey)
-          :backspace
-          (let [selection-length (- (.-end selection) (.-start selection))]
-            (if (empty? (:keyboard/candidates-list @state))
-              (cond
-                (> selection-length 0)
-                (let [new-text (.replaceRange text (.-start selection) (.-end selection) "")]
-                  (swap! state assoc :edit-watcher/lock 1)
-                  (set! (.-text controller) new-text)
-                  (swap! state assoc :edit-watcher/lock 2)
-                  (set! (.-selection controller)
-                        (.copyWith selection
-                                   .baseOffset (.-start selection)
-                                   .extentOffset (.-start selection)))
-                  (swap! state assoc :edit-watcher/lock 1))
+      :return
+      (if (= :single-line (:keyboard/return-mode @state))
+        (let [callback (:keyboard/return-callback @state)]
+          (when-not (nil? callback)
+            (callback)))
+        (control/insert-text "\n"))
 
-                (zero? (.-start selection))
-                nil
+      :space
+      (control/insert-text " ")
 
-                :else
-                (let [new-start (dec (.-start selection))
-                      new-end (.-start selection)
-                      new-text (.replaceRange text new-start new-end "")]
+      :spacer-block
+      (control/insert-text " ")
 
-                  (swap! state assoc :edit-watcher/lock 1)
-                  (set! (.-text controller) new-text)
-                  (swap! state assoc :edit-watcher/lock 2)
-                  (set! (.-selection controller)
-                        (.copyWith selection
-                                   .baseOffset new-start
-                                   .extentOffset new-start))
-                  (swap! state assoc :edit-watcher/lock 1)))
-              (swap! state assoc :keyboard/candidates-list [])))
+      :small-spacer-block
+      (control/insert-text " ")
 
-          :return
-          (if (= :single-line (:keyboard/return-mode @state))
-            (let [callback (:keyboard/return-callback @state)]
-              (when-not (nil? callback)
-                (callback)))
-            (let [new-text (.replaceRange text (.-start selection) (.-end selection) "\n")]
-              (swap! state assoc :edit-watcher/lock 1)
-              (set! (.-text controller) new-text)
-              (swap! state assoc :edit-watcher/lock 2)
-              (set! (.-selection controller)
-                    (.copyWith selection
-                               .baseOffset (+ (.-start selection) 1)
-                               .extentOffset (+ (.-start selection) 1)))
-              (swap! state assoc :edit-watcher/lock 1)))
+      :shift
+      (swap! state assoc :keyboard/is-shift-enabled (not (:keyboard/is-shift-enabled @state)))
 
-          :space
-          (on-spacer-pressed controller text selection state)
+      :abc
+      (let [layout-index (get @state :keyboard/layout-index)]
+        (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count (:keyboard/layout-names options/keyboard-option))))
+        (swap! state assoc :keyboard/is-special-enabled false)
+        (swap! state assoc :keyboard/is-other-special-enabled false))
 
-          :spacer-block
-          (on-spacer-pressed controller text selection state)
+      :special-characters
+      (swap! state assoc :keyboard/is-special-enabled (not (:keyboard/is-special-enabled @state)))
 
-          :small-spacer-block
-          (on-spacer-pressed controller text selection state)
+      :other-special-characters
+      (swap! state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state)))
 
-          :shift
-          (swap! state assoc :keyboard/is-shift-enabled (not (:keyboard/is-shift-enabled @state)))
-
-          :abc
-          (let [layout-index (get @state :keyboard/layout-index)]
-            (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count (:keyboard/layout-names options/keyboard-option))))
-            (swap! state assoc :keyboard/is-special-enabled false)
-            (swap! state assoc :keyboard/is-other-special-enabled false))
-
-          :special-characters
-          (swap! state assoc :keyboard/is-special-enabled (not (:keyboard/is-special-enabled @state)))
-
-          :other-special-characters
-          (swap! state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state)))
-
-          :suffix-candidates
-          (keyboard-candidates/suffix-candidates text selection state))))))
+      :suffix-candidates
+      (keyboard-candidates/suffix-candidates (.-text @control/editing-value)
+                                             (.-selection @control/editing-value)
+                                             state))))
 
 (defn on-candidates-clicked
   [text state]
