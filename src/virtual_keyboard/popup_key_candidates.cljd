@@ -1,10 +1,11 @@
 (ns virtual-keyboard.popup-key-candidates
   (:require
    ["package:mongol_code/mongol_code.dart" :as code]
-   ["package:flutter/material.dart" :as m]))
+   ["package:flutter/material.dart" :as m]
+   ["package:flutter/services.dart" :as service]))
 
 (defn is-initial 
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (let [text (.-text controller)
         selection (-> controller .-selection)
         start (.-start selection)] 
@@ -17,7 +18,7 @@
             (= location code.Location/INITIAL))))))
 
 (defn get-previous-char 
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (let [text (.-text controller)
         cursor (-> controller .-selection .-baseOffset)]
     (if (or (empty? text) (zero? cursor))
@@ -25,7 +26,7 @@
       (.codeUnitAt (subs text (dec cursor) cursor) 0))))
 
 (defn- popup-candidates-for-e 
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (let [previous-char (get-previous-char controller)]
     (cond-> []
       (and (not (is-initial controller))
@@ -43,21 +44,21 @@
          :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/E code.Unicode/FVS1])}]))))
 
 (defn- popup-candidates-for-t
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
     (concat [{:text (String/fromCharCodes [code.Unicode/TA code.Unicode/FVS1])
               :display (String/fromCharCodes [code.Unicode/MONGOLIAN_NIRUGU code.Unicode/TA code.Unicode/FVS1 code.Unicode/ZWJ])}])))
 
 (defn- popup-candidates-for-y
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (cond-> []
     (is-initial controller)
     (concat [{:text (String/fromCharCodes [code.Unicode/YA code.Unicode/FVS1])
               :display (String/fromCharCodes [code.Unicode/YA code.Unicode/FVS1 code.Unicode/ZWJ])}])))
 
 (defn- popup-candidates-for-u
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (if (is-initial controller)
     [{:text (String/fromCharCodes [code.Unicode/UE code.Unicode/FVS1])}]
 
@@ -69,7 +70,7 @@
       :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/UE code.Unicode/FVS1])}]))
 
 (defn- popup-candidates-for-i
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
     (concat [{:text (String/fromCharCodes [code.Unicode/I code.Unicode/FVS1])
@@ -81,7 +82,7 @@
               :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/I code.Unicode/ZWJ])}])))
 
 (defn- popup-candidates-for-o
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (if (is-initial controller)
     []
     [{:text (String/fromCharCodes [code.Unicode/OE code.Unicode/FVS2])
@@ -90,7 +91,7 @@
       :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/OE code.Unicode/FVS1])}]))
 
 (defn- popup-candidates-for-a
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (if (is-initial controller)
     [{:text (String/fromCharCodes [code.Unicode/A code.Unicode/FVS1])}]
     
@@ -110,14 +111,14 @@
 
 
 (defn- popup-candidates-for-s
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (if (is-initial controller)
     []
     [{:text (String/fromCharCodes [code.Unicode/SA code.Unicode/FVS1])
       :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/SA code.Unicode/FVS1])}]))
 
 (defn- popup-candidates-for-d
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (if (is-initial controller)
     (let [previous-char (get-previous-char controller)
           text (if (= previous-char (String/fromCharCode code.Unicode/NNBS))
@@ -128,7 +129,7 @@
       :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/DA code.Unicode/FVS1])}]))
 
 (defn- popup-candidates-for-g
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (if (is-initial controller)
     []
     [{:text (String/fromCharCodes [code.Unicode/GA code.Unicode/FVS1])
@@ -139,7 +140,7 @@
       :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/GA code.Unicode/FVS3 code.Unicode/ZWJ])}]))
 
 (defn- popup-candidates-for-c
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (if (is-initial controller)
     []
     [{:text (String/fromCharCodes [code.Unicode/O code.Unicode/FVS1])
@@ -148,7 +149,7 @@
       :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/O code.Unicode/FVS1])}]))
 
 (defn- popup-candidates-for-v
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
     (concat [{:text (String/fromCharCodes [code.Unicode/U code.Unicode/FVS1])
@@ -157,7 +158,7 @@
               :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/U code.Unicode/FVS1])}])))
 
 (defn- popup-candidates-for-n
-  [^m/TextEditingController controller]
+  [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
     (concat [{:text (String/fromCharCodes [code.Unicode/NA code.Unicode/ZWJ])
@@ -168,7 +169,7 @@
               :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/U code.Unicode/FVS2 code.Unicode/ZWJ])}])))
 
 (defn popup-candidates
-  [^m/TextEditingController controller char]
+  [^service/TextEditingValue controller char]
   (condp = char
     "q" [{:text (String/fromCharCode code.Unicode/CHI)}]
     "w" []
