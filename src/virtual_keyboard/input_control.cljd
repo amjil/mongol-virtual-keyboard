@@ -1,0 +1,77 @@
+(ns virtual-keyboard.input-control
+  (:require 
+   ["package:flutter/services.dart" :as service]))
+
+(def editing-value (atom nil))
+
+(def is-show (atom false))
+
+(def input-control
+  (reify
+    ^:mixin service/TextInputControl
+    (show [_] (reset! is-show true))
+    (hide [_] (reset! is-show false))
+    (setEditingState [_ ^service/TextEditingValue m]
+      (reset! editing-value m))))
+
+(defn set-control []
+  (service.TextInput/setInputControl input-control))
+
+(defn restore-control []
+  (service.TextInput/restorePlatformInputControl))
+
+(defn insert-text [^String t]
+  (when-not (nil? @editing-value)
+    (let [^service/TextEditingValue editing-val @editing-value 
+          text (.-text editing-val)
+          selection (.-selection editing-val)
+          new-text (.replaceRange text
+                                  (.-start selection)
+                                  (.-end selection)
+                                  t)
+          tlen (.-length t)]
+      (reset! editing-value
+              (.copyWith editing-val
+                         .text new-text
+                         .selection
+                         (.copyWith selection
+                                    .baseOffset (+ (.-start selection) tlen)
+                                    .extentOffset (+ (.-start selection) tlen))))
+      (service.TextInput/updateEditingValue @editing-value))))
+
+(defn delete-text []
+  (when-not (nil? @editing-value)
+    (let [^service/TextEditingValue editing-val @editing-value 
+          text (.-text editing-val)
+          selection (.-selection editing-val)
+          select-len (- (.-end selection) (.-start selection))]
+      (cond
+        (> select-len 0)
+        (let [new-text (.replaceRange text
+                                      (.-start selection)
+                                      (.-end selection)
+                                      "")]
+          (reset! editing-value
+                  (.copyWith editing-val
+                             .text new-text
+                             .selection
+                             (.copyWith selection
+                                        .baseOffset (.-start selection)
+                                        .extentOffset (.-start selection))))
+          (service.TextInput/updateEditingValue @editing-value))
+
+        (zero? (.-start selection))
+        nil
+
+        :else
+        (let [new-start (dec (.-start selection))
+              new-end (.-start selection)
+              new-text (.replaceRange text new-start new-end "")]
+          (reset! editing-value
+                  (.copyWith editing-val
+                             .text new-text
+                             .selection
+                             (.copyWith selection
+                                        .baseOffset new-start
+                                        .extentOffset new-start)))
+          (service.TextInput/updateEditingValue @editing-value))))))
