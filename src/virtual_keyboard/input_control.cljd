@@ -1,18 +1,18 @@
 (ns virtual-keyboard.input-control
   (:require 
-   ["package:flutter/services.dart" :as service]))
+   ["package:flutter/services.dart" :as service]
+   ["package:flutter/foundation.dart" :as f]))
 
 (def editing-value (atom nil))
 
-(def is-show (atom false))
+(def visible (f/ValueNotifier false))
 
 (def input-control
   (reify
     ^:mixin service/TextInputControl
-    (show [_] (reset! is-show true))
-    (hide [_] (reset! is-show false))
-    (setEditingState [_ ^service/TextEditingValue m]
-      (reset! editing-value m))))
+    (show [_] (.-value! visible true) nil)
+    (hide [_] (.-value! visible false) nil)
+    (setEditingState [_ ^service/TextEditingValue m] (reset! editing-value m))))
 
 (defn set-control []
   (service.TextInput/setInputControl input-control))
