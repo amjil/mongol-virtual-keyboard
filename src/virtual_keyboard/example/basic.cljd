@@ -17,7 +17,7 @@
          state (atom (merge options/keyboard-state))]
    :bind {:state state :info info}
    :watch [{candidates-list :keyboard/candidates-list} state
-           visible control/is-show]
+           visible control/visible]
    (m/SafeArea)
    .child
    (m/Center)
