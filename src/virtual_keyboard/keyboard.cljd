@@ -38,13 +38,11 @@
 
 (defn keyboard-rows [rows]
   (f/widget
-;;    :get [:info]
    :get {:value-of [:info]}
    (m/Container
     .height (+ options/keyboard-default-height (* (count rows) (+ 4 (or (:keyboard/row-vertical-padding info) 4))))
     .width (:keyboard/width info)
     .child (m/Column
-          ;;  .mainAxisAlignment (.spaceBetween m/MainAxisAlignment)
             .mainAxisAlignment (.center m/MainAxisAlignment)
             .crossAxisAlignment (.center m/CrossAxisAlignment)
             .children (keyboard-row-keys info rows)))))

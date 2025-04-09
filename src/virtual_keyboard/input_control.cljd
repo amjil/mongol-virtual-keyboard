@@ -21,23 +21,26 @@
   (service.TextInput/restorePlatformInputControl))
 
 (defn insert-text [^String t]
-  (when-not (nil? @editing-value)
-    (let [^service/TextEditingValue editing-val @editing-value 
-          text (.-text editing-val)
-          selection (.-selection editing-val)
-          new-text (.replaceRange text
-                                  (.-start selection)
-                                  (.-end selection)
-                                  t)
-          tlen (.-length t)]
-      (reset! editing-value
-              (.copyWith editing-val
-                         .text new-text
-                         .selection
-                         (.copyWith selection
-                                    .baseOffset (+ (.-start selection) tlen)
-                                    .extentOffset (+ (.-start selection) tlen))))
-      (service.TextInput/updateEditingValue @editing-value))))
+  (try
+    (when-not (nil? @editing-value)
+      (let [^service/TextEditingValue editing-val @editing-value 
+            text (.-text editing-val)
+            selection (.-selection editing-val)
+            new-text (.replaceRange text
+                                    (.-start selection)
+                                    (.-end selection)
+                                    t)
+            tlen (.-length t)]
+        (reset! editing-value
+                (.copyWith editing-val
+                           .text new-text
+                           .selection
+                           (.copyWith selection
+                                      .baseOffset (+ (.-start selection) tlen)
+                                      .extentOffset (+ (.-start selection) tlen))))
+        (service.TextInput/updateEditingValue @editing-value)))
+    (catch Exception e
+      (dart:core/print (str "Error in insert-text: " e)))))
 
 (defn delete-text []
   (when-not (nil? @editing-value)
