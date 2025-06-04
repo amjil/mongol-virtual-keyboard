@@ -1,0 +1,31 @@
+(ns virtual-keyboard.zip-utils
+  (:require
+   ["dart:io" :as io]
+   ["dart:convert" :as convert]
+   ["package:flutter/services.dart" :refer [rootBundle]]
+   ["package:archive/archive.dart" :as archive]
+   [virtual-keyboard.keyboard-candidates :as kc]))
+
+(defn- process-file-content [^String file-name file-content-bytes]
+  (let [content-string (.decode convert/utf8 file-content-bytes)]
+    (if (.endsWith file-name ".json")
+      (try
+        (convert/jsonDecode content-string)
+        (catch Exception e
+          (dart:core/print (str "Error in process-file-content: " e))))
+      {})))
+
+
+(defn read-json-from-asset-zip [asset-path]
+  (-> (.load rootBundle asset-path)
+      (.then (fn [byte-data]
+               (let [bytes (.buffer.asUint8List byte-data)
+                     ar (.decodeBytes (archive/ZipDecoder.) bytes)
+                     target-file (first ar)]
+                 (if target-file
+                   (let [content (.-content target-file)
+                         content-string (convert/utf8.decode content)
+                         content (convert/json.decode content-string)]
+                     (reset! kc/data content))
+                   (throw (Exception. "未找到JSON文件")))
+                 (dart:core/print "xxxx11111"))))))

@@ -6,10 +6,11 @@
    [virtual-keyboard.example.basic :as example-basic]
    [virtual-keyboard.example.styled :as example-styled]
   ;;  [virtual-keyboard.example.emoji :as example-emoji]
-   ))
+   [virtual-keyboard.zip-utils :as zip-utils]))
 
 (defn main []
-  ;(m/runApp
+  (m.WidgetsFlutterBinding/ensureInitialized)
+  (zip-utils/read-json-from-asset-zip "assets/data.zip")
   (f/run
    (m/MaterialApp
     .title "Welcome to Flutter"

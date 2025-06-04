@@ -1,7 +1,8 @@
 (ns virtual-keyboard.input-control
   (:require 
    ["package:flutter/services.dart" :as service]
-   ["package:flutter/foundation.dart" :as f]))
+   ["package:flutter/foundation.dart" :as f]
+   [virtual-keyboard.utils :as utils]))
 
 (def editing-value (atom nil))
 
@@ -78,3 +79,28 @@
                                         .baseOffset new-start
                                         .extentOffset new-start)))
           (service.TextInput/updateEditingValue @editing-value))))))
+
+(defn replace-word [^String t]
+  (try
+    (when-not (nil? @editing-value)
+      (let [^service/TextEditingValue editing-val @editing-value
+            text (.-text editing-val)
+            selection (.-selection editing-val)
+            last-word (utils/get-current-word text selection)
+            last-word-length (.-length last-word)
+            new-text (.replaceRange text
+                                    (- (.-start selection) last-word-length)
+                                    (.-end selection)
+                                    t)
+            tlen (.-length t)
+            new-start (+ (- (.-start selection) last-word-length) tlen)]
+        (reset! editing-value
+                (.copyWith editing-val
+                           .text new-text
+                           .selection
+                           (.copyWith selection
+                                      .baseOffset new-start 
+                                      .extentOffset new-start)))
+        (service.TextInput/updateEditingValue @editing-value)))
+    (catch Exception e
+      (dart:core/print (str "Error in insert-text: " e)))))

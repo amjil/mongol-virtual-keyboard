@@ -6,7 +6,9 @@
    [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
    [virtual-keyboard.options :as options]
    [cljd.flutter :as f]
-   [virtual-keyboard.input-control :as control]))
+   [virtual-keyboard.input-control :as control]
+   [virtual-keyboard.utils :as utils]
+   [virtual-keyboard.popup-key-candidates :as candidates]))
 
 (declare on-key-press
          action-key-container)
@@ -239,12 +241,21 @@
 
                     :else
                     (:text vkey))]
-      (control/insert-text new-str))
+      (control/insert-text new-str)
+      (let [last-word (utils/get-current-word (.-text @control/editing-value)
+                                              (.-selection @control/editing-value))
+            candidates (get @keyboard-candidates/data last-word)]
+        (swap! state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
 
     :action
     (condp = (:action vkey)
       :backspace
-      (control/delete-text)
+      (do
+        (control/delete-text)
+        (let [last-word (utils/get-current-word (.-text @control/editing-value)
+                                                (.-selection @control/editing-value))
+              candidates (get @keyboard-candidates/data last-word)]
+          (swap! state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
 
       :return
       (if (= :single-line (:keyboard/return-mode @state))
@@ -254,13 +265,19 @@
         (control/insert-text "\n"))
 
       :space
-      (control/insert-text " ")
+      (do
+        (control/insert-text " ")
+        (swap! state assoc :keyboard/candidates-list []))
 
       :spacer-block
-      (control/insert-text " ")
+      (do
+        (control/insert-text " ")
+        (swap! state assoc :keyboard/candidates-list []))
 
       :small-spacer-block
-      (control/insert-text " ")
+      (do
+        (control/insert-text " ")
+        (swap! state assoc :keyboard/candidates-list []))
 
       :shift
       (swap! state assoc :keyboard/is-shift-enabled (not (:keyboard/is-shift-enabled @state)))
@@ -278,11 +295,23 @@
       (swap! state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state)))
 
       :suffix-candidates
-      (keyboard-candidates/suffix-candidates (.-text @control/editing-value)
-                                             (.-selection @control/editing-value)
-                                             state))))
+      (do
+        (let [selection (.-selection @control/editing-value)
+              last-word (utils/get-current-word (.-text @control/editing-value)
+                                                selection)]
+          (when (and (pos? (.-start selection))
+                     (empty? last-word))
+            (control/delete-text)))
+        (keyboard-candidates/suffix-candidates (.-text @control/editing-value)
+                                               (.-selection @control/editing-value)
+                                               state)))))
 
 (defn on-candidates-clicked
   [text state]
-  (on-key-press {:key-type :string :text text} state)
+  (let [text-with-space (str text " ")]
+    (if (some (into #{}
+                    keyboard-candidates/suffix-candidatges-for-full)
+              [text])
+      (control/insert-text text-with-space)
+      (control/replace-word text-with-space)))
   (swap! state assoc :keyboard/candidates-list []))

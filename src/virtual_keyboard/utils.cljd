@@ -1,6 +1,7 @@
 (ns virtual-keyboard.utils
   (:require
    ["package:flutter/material.dart" :as m]
+   ["package:flutter/services.dart" :as services]
    ["package:mongol_code/mongol_code.dart" :as code]
    ["package:mongol/mongol.dart" :as mgl]
    [clojure.string :as str]))
@@ -30,3 +31,13 @@
     (-> text
         (str/split #" ")
         last)))
+
+(defn get-current-word [text ^services/TextSelection selection]
+  (if (empty? text)
+    ""
+    (let [back-count 30
+          substr (subs text (max 0 (- (.-start selection) back-count)) (.-end selection))
+          last-word (str/trim (get-last-word substr))]
+      (if (empty? last-word)
+        ""
+        last-word))))

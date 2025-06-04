@@ -4,6 +4,7 @@
    ["package:mongol_code/mongol_code.dart" :as code]
    ["package:http/http.dart" :as http]
    ["dart:convert" :as convert]
+   ["dart:io" :as io]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.options :as options]
    [clojure.string :as str]))
@@ -68,16 +69,17 @@
                       (remove #(nil? %) (suffix-candidates-for-word last-word gender)))))
            (swap! state assoc :keyboard/candidates-list suffix-candidatges-for-full))))))
 
-
 ;;; 
 ;; http im candidates
-(defn ^:async query-next-word-candidates 
-  [state word]
-  (let [result (await
-                (http/post (Uri/http options/base-url "/api/next_word/candidates")
-                           .headers {"Content-Type" "application/json; charset=UTF-8"}
-                           .body
-                           (convert/jsonEncode
-                            {"word" word})))
-        response-body (convert/jsonDecode (.-body result))]
-    (swap! state assoc :keyboard/candidates-list response-body)))
+;; (defn ^:async query-next-word-candidates 
+;;   [state word]
+;;   (let [result (await
+;;                 (http/post (Uri/http options/base-url "/api/next_word/candidates")
+;;                            .headers {"Content-Type" "application/json; charset=UTF-8"}
+;;                            .body
+;;                            (convert/jsonEncode
+;;                             {"word" word})))
+;;         response-body (convert/jsonDecode (.-body result))]
+;;     (swap! state assoc :keyboard/candidates-list response-body)))
+
+(def data (atom {}))
