@@ -27,5 +27,5 @@
                          content-string (convert/utf8.decode content)
                          content (convert/json.decode content-string)]
                      (reset! kc/data content))
-                   (throw (Exception. "未找到JSON文件")))
+                   (throw (Exception. "JSON file not found")))
                  (dart:core/print "xxxx11111"))))))
