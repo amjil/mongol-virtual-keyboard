@@ -3,8 +3,7 @@
    ["dart:io" :as io]
    ["dart:convert" :as convert]
    ["package:flutter/services.dart" :refer [rootBundle]]
-   ["package:archive/archive.dart" :as archive]
-   [virtual-keyboard.keyboard-candidates :as kc]))
+   ["package:archive/archive.dart" :as archive]))
 
 (defn- process-file-content [^String file-name file-content-bytes]
   (let [content-string (.decode convert/utf8 file-content-bytes)]
@@ -16,7 +15,7 @@
       {})))
 
 
-(defn read-json-from-asset-zip [asset-path]
+(defn ^:async read-json-from-asset-zip [asset-atom asset-path]
   (-> (.load rootBundle asset-path)
       (.then (fn [byte-data]
                (let [bytes (.buffer.asUint8List byte-data)
@@ -26,6 +25,6 @@
                    (let [content (.-content target-file)
                          content-string (convert/utf8.decode content)
                          content (convert/json.decode content-string)]
-                     (reset! kc/data content))
+                     (reset! asset-atom content))
                    (throw (Exception. "JSON file not found")))
                  (dart:core/print "xxxx11111"))))))

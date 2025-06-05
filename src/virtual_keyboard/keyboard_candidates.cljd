@@ -83,3 +83,5 @@
 ;;     (swap! state assoc :keyboard/candidates-list response-body)))
 
 (def data (atom {}))
+
+(def next (atom {}))
