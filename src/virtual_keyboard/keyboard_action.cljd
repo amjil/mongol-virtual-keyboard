@@ -15,9 +15,9 @@
 
 (defn action-widget [vkey items-count rows-count]
   (f/widget
-  ;;  :get [:info :state]
+   :context ctx
    :get {:value-of [:info :state]}
-   :let [width (:keyboard/width info)
+   :let [width (-> m/MediaQuery (.of ctx) .-size .-width)
          height (:keyboard/height info)
          key-height (/ height rows-count)
          key-base-width (/ width 10)]

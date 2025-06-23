@@ -106,15 +106,16 @@
                          is-rotated]
   (let [^m/RenderBox box (.findRenderObject ctx)
         size (.-size box)
-        offset (.localToGlobal box (.zero m/Offset))]
+        offset (.localToGlobal box (.zero m/Offset))
+        screen-width (-> m/MediaQuery (.of ctx) .-size .-width)]
     (m/OverlayEntry
      .builder (fn [_]
                 (m/Positioned
                  .top (- (.-dy offset) (+ 10 (.-height size)))
-                 .right (if (>= (.-dx offset) (/ (:keyboard/width info) 2))
-                          (- (:keyboard/width info) (.-dx offset) (.-width size))
+                 .right (if (>= (.-dx offset) (/ screen-width 2))
+                          (- screen-width (.-dx offset) (.-width size))
                           nil)
-                 .left (if (< (.-dx offset) (/ (:keyboard/width info) 2))
+                 .left (if (< (.-dx offset) (/ screen-width 2))
                          (.-dx offset)
                          nil)
                  .child

@@ -16,7 +16,7 @@
    :get [:keyboard/text-controller]
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
          height (-> m/MediaQuery (.of ctx) .-size .-height)
-         info (merge options/keyboard-option {} {:keyboard/width width})
+         info (merge options/keyboard-option {})
          state (atom (merge options/keyboard-state
                             {:keyboard/text-controller text-controller}))]
    :bind {:info info :state state :context ctx}
@@ -53,36 +53,37 @@
          .textEditingController text-controller
          .onBackspacePressed (fn [] (dart:core/print "aaaa>>>>"))
          .config (emoji/Config
-                  .columns 7
-                  .emojiSizeMax (* 32
-                                   (if (= foundation/defaultTargetPlatform
-                                          (.iOS m/TargetPlatform))
-                                     1.0
-                                     0.9))
-                  .verticalSpacing 0
-                  .horizontalSpacing 0
-                  .gridPadding (.zero m/EdgeInsets)
-                  .initCategory (.RECENT emoji/Category)
-                  .bgColor (m/Color 0xFFF2F2F2)
-                  .indicatorColor (.blue m/Colors)
-                  .iconColor (.grey m/Colors)
-                  .iconColorSelected (.blue m/Colors)
-                  .backspaceColor (.blue m/Colors)
-                  .skinToneDialogBgColor (.white m/Colors)
-                  .skinToneIndicatorColor (.grey m/Colors)
-                  .enableSkinTones true
-                  .recentsLimit 28
-                  .replaceEmojiOnLimitExceed false
-                  .noRecents
-                  (m/Text "No Recents"
-                          .style (m/TextStyle .fontSize 20
-                                              .color (.black26 m/Colors))
-                          .textAlign (.center m/TextAlign))
-                  .loadingIndicator (.shrink m/SizedBox)
-                  .tabIndicatorAnimDuration m/kTabScrollDuration
-                  .categoryIcons (emoji/CategoryIcons)
-                  .buttonMode (.MATERIAL emoji/ButtonMode)
-                  .checkPlatformCompatibility true))))])
+                  ;; .columns 7
+                  ;; .emojiSizeMax (* 32
+                  ;;                  (if (= foundation/defaultTargetPlatform
+                  ;;                         (.iOS m/TargetPlatform))
+                  ;;                    1.0
+                  ;;                    0.9))
+                  ;; .verticalSpacing 0
+                  ;; .horizontalSpacing 0
+                  ;; .gridPadding (.zero m/EdgeInsets)
+                  ;; .initCategory (.RECENT emoji/Category)
+                  ;; .bgColor (m/Color 0xFFF2F2F2)
+                  ;; .indicatorColor (.blue m/Colors)
+                  ;; .iconColor (.grey m/Colors)
+                  ;; .iconColorSelected (.blue m/Colors)
+                  ;; .backspaceColor (.blue m/Colors)
+                  ;; .skinToneDialogBgColor (.white m/Colors)
+                  ;; .skinToneIndicatorColor (.grey m/Colors)
+                  ;; .enableSkinTones true
+                  ;; .recentsLimit 28
+                  ;; .replaceEmojiOnLimitExceed false
+                  ;; .noRecents
+                  ;; (m/Text "No Recents"
+                  ;;         .style (m/TextStyle .fontSize 20
+                  ;;                             .color (.black26 m/Colors))
+                  ;;         .textAlign (.center m/TextAlign))
+                  ;; .loadingIndicator (.shrink m/SizedBox)
+                  ;; .tabIndicatorAnimDuration m/kTabScrollDuration
+                  ;; .categoryIcons (emoji/CategoryIcons)
+                  ;; .buttonMode (.MATERIAL emoji/ButtonMode)
+                  ;; .checkPlatformCompatibility true
+                  ))))])
     (m/Positioned
      .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
      .right (/ width 4)

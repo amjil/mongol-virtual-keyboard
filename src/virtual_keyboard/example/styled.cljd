@@ -33,7 +33,7 @@
    :get [:keyboard/text-controller]
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
          height (-> m/MediaQuery (.of ctx) .-size .-height)
-         info (merge options/keyboard-option keyboard-style {:keyboard/width width})
+         info (merge options/keyboard-option keyboard-style)
          state (atom (merge options/keyboard-state
                             {:keyboard/text-controller text-controller}))]
    :bind {:info info :state state :context ctx}

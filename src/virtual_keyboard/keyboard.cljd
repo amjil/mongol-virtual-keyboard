@@ -38,14 +38,16 @@
 
 (defn keyboard-rows [rows]
   (f/widget
+   :context ctx
    :get {:value-of [:info]}
-   (m/Container
-    .height (+ options/keyboard-default-height (* (count rows) (+ 4 (or (:keyboard/row-vertical-padding info) 4))))
-    .width (:keyboard/width info)
-    .child (m/Column
-            .mainAxisAlignment (.center m/MainAxisAlignment)
-            .crossAxisAlignment (.center m/CrossAxisAlignment)
-            .children (keyboard-row-keys info rows)))))
+   (let [width (-> m/MediaQuery (.of ctx) .-size .-width)]
+     (m/Container
+      .height (+ options/keyboard-default-height (* (count rows) (+ 4 (or (:keyboard/row-vertical-padding info) 4))))
+      .width width
+      .child (m/Column
+              .mainAxisAlignment (.center m/MainAxisAlignment)
+              .crossAxisAlignment (.center m/CrossAxisAlignment)
+              .children (keyboard-row-keys info rows))))))
 
 (defn keyboard-row-keys [info items]
   (doall
