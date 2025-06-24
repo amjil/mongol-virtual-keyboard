@@ -94,7 +94,7 @@
                          (popup-key/key-widget info state vkey is-rotated))
               .onAccept (fn [_]
                           (keyboard-action/on-key-press
-                           (assoc vkey :key-type :string) state))))))
+                           (assoc vkey :key-type :string) state nil))))))
          additional-keys))
    ))
 

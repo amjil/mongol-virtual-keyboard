@@ -10,7 +10,7 @@
  insert-overlay
  remove-overlay)
 
-(defn key-widget [virtual-key items-count rows-count]
+(defn key-widget [virtual-key items-count rows-count custom-fns]
   (f/widget
    :context ctx
    :get {:value-of [:info :state]}
@@ -40,7 +40,7 @@
     .highlightColor (-> m.Colors/grey .-shade200 (.withOpacity 0.3))
     .onTap
     (fn []
-      (keyboard-action/on-key-press virtual-key state))
+      (keyboard-action/on-key-press virtual-key state custom-fns))
     .onTapDown (fn [_]
                  (keyboard-overlay/insert-overlay-bubble state ctx info virtual-key))
     .onTapUp (fn [_]

@@ -47,7 +47,7 @@
          (m/Container
           .color (-> m/Colors .grey .-shade300)
           .child
-          (keyboard/keyboard)))))])
+          (keyboard/keyboard {:custom-fns {}})))))])
     (m/Positioned
      .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
      .right (/ width 4)

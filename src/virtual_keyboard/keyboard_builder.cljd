@@ -18,7 +18,8 @@
 (defn key-map-builder
   [{m :row-index n :item-index
     items-count :items-count
-    rows-count :rows-count}
+    rows-count :rows-count
+    custom-fns :custom-fns}
    item]
   (cond
     ;; (= :empty item)
@@ -39,7 +40,8 @@
       :is-rotated true
       :display item}
      items-count
-     rows-count)
+     rows-count
+     custom-fns)
 
     (string? item)
     (keyboard-key/key-widget
@@ -48,16 +50,17 @@
       :text item
       :is-rotated false}
      items-count
-     rows-count)
+     rows-count
+     custom-fns)
 
     :else
     (keyboard-action/action-widget
      {:key-type :action
       :action item
       :is-rotated false}
-     items-count rows-count)))
+     items-count rows-count custom-fns)))
 
-(defn keyboard-layout-builder [layout]
+(defn keyboard-layout-builder [layout custom-fns]
   (map-indexed
    (fn [m row]
      (map-indexed
@@ -65,7 +68,8 @@
         (key-map-builder
          {:row-index m :item-index n
           :items-count (count (nth layout m))
-          :rows-count (count layout)}
+          :rows-count (count layout)
+          :custom-fns custom-fns}
          (get-in layout [m n])))
       row))
    layout))

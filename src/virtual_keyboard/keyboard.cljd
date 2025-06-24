@@ -9,16 +9,15 @@
 (declare keyboard-rows
          keyboard-row-keys)
 
-(defn keyboard []
+(defn keyboard [{:keys [custom-fns]}]
   (f/widget
    :get {:value-of [:state]}
-;;    :get [:state]
-   :let [mg-keys (builder/keyboard-layout-builder layouts/mg-layout)
-         en-keys (builder/keyboard-layout-builder layouts/en-layout)
-         en-special-keys (builder/keyboard-layout-builder layouts/en-special-layout)
-         en-other-special-keys (builder/keyboard-layout-builder layouts/en-other-special-layout)
-         mg-special-keys (builder/keyboard-layout-builder layouts/mg-special-layout)
-         mg-other-special-keys (builder/keyboard-layout-builder layouts/mg-other-special-layout)]
+   :let [mg-keys (builder/keyboard-layout-builder layouts/mg-layout custom-fns)
+         en-keys (builder/keyboard-layout-builder layouts/en-layout custom-fns)
+         en-special-keys (builder/keyboard-layout-builder layouts/en-special-layout custom-fns)
+         en-other-special-keys (builder/keyboard-layout-builder layouts/en-other-special-layout custom-fns)
+         mg-special-keys (builder/keyboard-layout-builder layouts/mg-special-layout custom-fns)
+         mg-other-special-keys (builder/keyboard-layout-builder layouts/mg-other-special-layout custom-fns)]
    :watch [{layout-index :keyboard/layout-index
             is-special-enabled :keyboard/is-special-enabled
             is-other-special-enabled :keyboard/is-other-special-enabled}

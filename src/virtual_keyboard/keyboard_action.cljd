@@ -13,7 +13,7 @@
 (declare on-key-press
          action-key-container)
 
-(defn action-widget [vkey items-count rows-count]
+(defn action-widget [vkey items-count rows-count custom-fns]
   (f/widget
    :context ctx
    :get {:value-of [:info :state]}
@@ -64,13 +64,13 @@
       (action-key-container
        {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
         :height key-height
-        :child (m/Icon (.backspace m/Icons) .color (:keyboard/action-text-color info))} vkey))
+        :child (m/Icon (.backspace m/Icons) .color (:keyboard/action-text-color info))} vkey custom-fns))
 
      :shift
      (action-key-container
       {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
-       :child (m/Icon (.arrow_upward m/Icons) .color (:keyboard/action-text-color info))} vkey)
+       :child (m/Icon (.arrow_upward m/Icons) .color (:keyboard/action-text-color info))} vkey custom-fns)
 
      :return
      (action-key-container
@@ -88,7 +88,7 @@
                    .fontFamily "Courier"
                    .fontWeight (.w700 m/FontWeight)
                    .fontSize (:keyboard/shift-click-font-size info))))
-         (m/Icon (.keyboard_return m/Icons) .color (:keyboard/action-text-color info)))} vkey)
+         (m/Icon (.keyboard_return m/Icons) .color (:keyboard/action-text-color info)))} vkey custom-fns)
 
      :space
      (action-key-container
@@ -102,7 +102,7 @@
                 .style (m/TextStyle
                         .color (:keyboard/shift-click-text-color info)
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:keyboard/shift-click-font-size info))))} vkey)
+                        .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
       ;;  :child (m/Icon (.space_bar m/Icons) .color (:keyboard/action-text-color info))} info)
 
      :special-characters
@@ -118,7 +118,7 @@
                         .color (:keyboard/key-text-color info)
                         .fontFamily "Courier"
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:keyboard/shift-click-font-size info))))} vkey)
+                        .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
 
      :small-special-characters
      (action-key-container
@@ -133,7 +133,7 @@
                         .color (:keyboard/key-text-color info)
                         .fontFamily "Courier"
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:keyboard/shift-click-font-size info))))} vkey)
+                        .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
 
      :suffix-candidates
      (action-key-container
@@ -146,25 +146,25 @@
                 .style (m/TextStyle
                         .color (:keyboard/key-text-color info)
                         .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:keyboard/shift-click-font-size info))))} vkey)
+                        .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
 
      :spacer-block
      (action-key-container
       {:width (- (* 4 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
-       :child (m/Text "")} vkey)
+       :child (m/Text "")} vkey custom-fns)
 
      :small-spacer-block
      (action-key-container
       {:width (- (* 3 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
-       :child (m/Text "")} vkey)
+       :child (m/Text "")} vkey custom-fns)
 
      :extra-small-spacer-block
      (action-key-container
       {:width (* key-base-width 1.5)
        :height key-height
-       :child (m/Text "")} vkey)
+       :child (m/Text "")} vkey custom-fns)
 
      :other-special-characters
      (action-key-container
@@ -177,7 +177,7 @@
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
                              .color (:keyboard/key-text-color info)
-                             .fontSize (:keyboard/shift-click-font-size info))))} vkey)
+                             .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
 
      :abc
      (action-key-container
@@ -190,7 +190,7 @@
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
                              .color (:keyboard/key-text-color info)
-                             .fontSize (:keyboard/shift-click-font-size info))))} vkey)
+                             .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
 
      :empty
     ;;  (.shrink m/SizedBox)
@@ -209,9 +209,8 @@
 
 (defn action-key-container
   [{width :width height :height child :child}
-   vkey]
+   vkey custom-fns]
   (f/widget
-  ;;  :get [:info :state]
    :get {:value-of [:info :state]}
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
@@ -222,12 +221,12 @@
     (m/Material
      .color (:keyboard/action-keys-container-color info)
      .child
-     (m/InkWell ;.splashColor m.Colors/white
-      .onTap #(on-key-press vkey state)
+     (m/InkWell
+      .onTap #(on-key-press vkey state custom-fns)
       .child child)))))
 
 (defn on-key-press
-  [vkey state]
+  [vkey state custom-fns]
   (when (true? (:keyboard/is-vibrate-on @state))
     (let [has-vibrate (await (.hasVibrator vibrate/Vibration))]
       (when (true? has-vibrate)
@@ -251,7 +250,9 @@
     (condp = (:action vkey)
       :backspace
       (do
-        (control/delete-text)
+        (if-let [custom-backspace (:on-backspace custom-fns)]
+          (custom-backspace)
+          (control/delete-text))
         (let [last-word (utils/get-current-word (.-text @control/editing-value)
                                                 (.-selection @control/editing-value))
               candidates (get @keyboard-candidates/data last-word)]
