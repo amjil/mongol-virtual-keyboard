@@ -13,7 +13,8 @@
   (f/widget
    :context ctx
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-         info (merge options/keyboard-option {})
+         info (merge options/keyboard-option {:keyboard/mongol-font-family "MongolianBaiZheng"
+                                              :keyboard/font-size 26})
          state (atom (merge options/keyboard-state))]
    :bind {:state state :info info}
    :watch [{candidates-list :keyboard/candidates-list} state
@@ -53,6 +54,7 @@
      .right (/ width 4)
      .child
      (menu/menu {:bar {:elavation 10}
+                 :font-config {:font-family "OnonSoninSans"}
                  :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x state))}}
                 candidates-list))]))
 

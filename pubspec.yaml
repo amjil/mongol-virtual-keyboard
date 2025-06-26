@@ -98,8 +98,8 @@ flutter:
   #         weight: 700
   #
   fonts:
-    - family: MongolianBaiZheng
+    - family: OnonSoninSans
       fonts:
-        - asset: assets/fonts/MongolianBaiZheng.ttf
+        - asset: assets/fonts/OnonSoninSans.ttf
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

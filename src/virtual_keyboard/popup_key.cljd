@@ -19,9 +19,12 @@
     .child (m/Text (utils/key-text state vkey)
                    .style
                   ;;  (if (:is-rotated virtual-key)
-                   (m/TextStyle .fontSize 24
+                   (m/TextStyle .fontSize (:keyboard/font-size info)
                                 .color (:keyboard/key-text-color info)
-                                .fontFamily "MongolianBaiZheng")
+                                .fontFamily (if is-rotated
+                                              (:keyboard/mongol-font-family info)
+                                              (:keyboard/english-font-family info))
+                                .fontWeight (:keyboard/font-weight info))
                     ;;  (:keyboard/text-style info))
                    ))
 ;;    (mgl/MongolText

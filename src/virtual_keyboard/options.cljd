@@ -17,6 +17,9 @@
    :keyboard/row-vertical-padding 4.0
    :keyboard/horizontal-key-padding 2.0
    :keyboard/font-size 26
+   :keyboard/mongol-font-family nil
+   :keyboard/english-font-family "Roboto"
+   :keyboard/font-weight (.w500 m/FontWeight)
    :keyboard/shift-click-text-color m.Colors/white
    :keyboard/shift-click-font-size 14
    :keyboard/key-container-color (-> m.Colors/grey .-shade100);;m.Colors/transparent

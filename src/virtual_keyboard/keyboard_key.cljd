@@ -1,6 +1,7 @@
 (ns virtual-keyboard.keyboard-key
   (:require
    ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.keyboard-overlay :as keyboard-overlay]
@@ -84,15 +85,18 @@
                 .child (m/Text (:id virtual-key)))
        (m/SizedBox))
      (m/Align .alignment (.center m/Alignment)
-              .child (m/RotatedBox
-                      .quarterTurns (if (true? (:is-rotated virtual-key)) 1 0)
-                      .child (m/Text (utils/key-text state virtual-key)
-                                     .style
-                                     (if (:is-rotated virtual-key)
-                                       (m/TextStyle .fontSize 24
-                                                    .color (:keyboard/key-text-color info)
-                                                    .fontFamily "MongolianBaiZheng")
-                                      ;;  (:text-style info)
-                                       (m/TextStyle .fontSize 24
-                                                    .color (:keyboard/key-text-color info)
-                                                    .fontFamily "Courier")))))])))
+              .child
+              (if (:is-rotated virtual-key)
+                (mgl/MongolText (utils/key-text state virtual-key)
+                                .style
+                                (m/TextStyle .fontSize (:keyboard/font-size info)
+                                             .color (:keyboard/key-text-color info)
+                                             ;;  .fontFamily (:keyboard/mongol-font-family info)
+                                             .fontFamily "OnonSoninSans"
+                                             .fontWeight (:keyboard/font-weight info)))
+                (m/Text (utils/key-text state virtual-key)
+                        .style
+                        (m/TextStyle .fontSize (:keyboard/font-size info)
+                                     .color (:keyboard/key-text-color info)
+                                     .fontFamily (:keyboard/english-font-family info)
+                                     .fontWeight (:keyboard/font-weight info)))))])))

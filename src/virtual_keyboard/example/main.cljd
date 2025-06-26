@@ -17,7 +17,7 @@
    (m/MaterialApp
     .title "Welcome to Flutter"
     .theme (m/ThemeData .primarySwatch m.Colors/blue
-                        .fontFamily "MongolianBaiZheng")
+                        .fontFamily "OnonSoninSans")
     .home
     ;; (example-emoji/basic)
     ;; (example-styled/styled)
