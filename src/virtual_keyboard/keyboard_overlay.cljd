@@ -31,7 +31,7 @@
                    .style
                    (m/TextStyle .fontSize 24
                                 .color (:keyboard/key-text-color info)
-                                .fontFamily "MongolianBaiZheng")))))
+                                .fontFamily "OnonSoninSans")))))
 
 (defn build-entry-bubble [^m/BuildContext ctx
                           info

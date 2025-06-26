@@ -13,8 +13,8 @@
   (f/widget
    :context ctx
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-         info (merge options/keyboard-option {:keyboard/mongol-font-family "MongolianBaiZheng"
-                                              :keyboard/font-size 26})
+         info (merge options/keyboard-option {:keyboard/mongol-font-family "OnonSoninSans"
+                                              :keyboard/font-size 16})
          state (atom (merge options/keyboard-state))]
    :bind {:state state :info info}
    :watch [{candidates-list :keyboard/candidates-list} state

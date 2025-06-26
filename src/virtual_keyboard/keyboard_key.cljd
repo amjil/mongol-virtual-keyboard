@@ -91,8 +91,7 @@
                                 .style
                                 (m/TextStyle .fontSize (:keyboard/font-size info)
                                              .color (:keyboard/key-text-color info)
-                                             ;;  .fontFamily (:keyboard/mongol-font-family info)
-                                             .fontFamily "OnonSoninSans"
+                                             .fontFamily (:keyboard/mongol-font-family info)
                                              .fontWeight (:keyboard/font-weight info)))
                 (m/Text (utils/key-text state virtual-key)
                         .style

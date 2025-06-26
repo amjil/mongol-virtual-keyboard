@@ -16,7 +16,7 @@
 
 (def candidates-style
   {:text-style (m/TextStyle .fontSize 20
-                            .fontFamily "MongolianBaiZheng"
+                            .fontFamily "OnonSoninSans"
                             .color m.Colors/white
                             .fontWeight (.w500 m/FontWeight))})
 
