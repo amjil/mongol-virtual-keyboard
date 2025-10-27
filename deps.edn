@@ -4,7 +4,7 @@
          :sha "9897c44ada44db2f7529e1bcbce746148f972711"}
         amjil/mongol-menu-bar
         {:git/url "https://github.com/amjil/mongol-menu-bar.git"
-         :sha "29d171da77c91818612d2942dd792488ffaddde2"}}
+         :sha "0d7192fe6ccc1704ff1724b585213420ef736955"}}
        
  :aliases {:cljd {:main-opts ["-m" "cljd.build"]}}
  :cljd/opts {:kind :flutter
