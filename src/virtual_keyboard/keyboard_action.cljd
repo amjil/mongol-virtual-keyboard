@@ -315,7 +315,8 @@
               [text])
       (control/insert-text text-with-space)
       (control/replace-word text-with-space)))
-  (let [candidates (get @keyboard-candidates/next text)]
+  (let [candidates (->> (get @keyboard-candidates/next text)
+                        (filter #(not (nil? (first %)))))]
     (if (empty? candidates)
       (swap! state assoc :keyboard/candidates-list [])
       (swap! state assoc :keyboard/candidates-list (map first (sort-by #(int/parse (last %)) > candidates))))))
