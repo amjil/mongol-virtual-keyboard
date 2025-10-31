@@ -104,3 +104,22 @@
         (service.TextInput/updateEditingValue @editing-value)))
     (catch Exception e
       (dart:core/print (str "Error in insert-text: " e)))))
+      
+(defn update-selection [offset]
+  (try
+    (when-not (nil? @editing-value)
+      (let [^service/TextEditingValue editing-val @editing-value
+            text (.-text editing-val)
+            selection (.-selection editing-val)
+            new-start (+ (.-start selection) offset)]
+        (reset! editing-value
+                (.copyWith editing-val
+                           .text text
+                           .selection
+                           (.copyWith selection
+                                      .baseOffset new-start 
+                                      .extentOffset new-start)))
+        (service.TextInput/updateEditingValue @editing-value)))
+    (catch Exception e
+          (dart:core/print (str "Error in insert-text: " e)))))
+      
