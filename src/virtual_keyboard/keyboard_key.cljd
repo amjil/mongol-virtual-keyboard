@@ -82,7 +82,8 @@
               (not (some #{(:id virtual-key)} ["ng" "-" "_"]))
               (not-empty (:id virtual-key)))
        (m/Align .alignment m.Alignment/topLeft
-                .child (m/Text (:id virtual-key)))
+                .child (m/Text (:id virtual-key)
+                               .style (m/TextStyle .color (:keyboard/keytext-color info))))
        (m/SizedBox))
      (m/Align .alignment (.center m/Alignment)
               .child
