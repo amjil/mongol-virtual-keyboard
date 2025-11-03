@@ -1,9 +1,13 @@
 (ns virtual-keyboard.keyboard
   (:require
+   ["package:flutter/material.dart" :as m]
    [cljd.flutter :as f]
+   [menu-bar.menu :as menu]
    [virtual-keyboard.keyboard-builder :as builder]
    [virtual-keyboard.keyboard-layouts :as layouts]
-   [virtual-keyboard.keyboard-rows :as rows]))
+   [virtual-keyboard.keyboard-action :as action]
+   [virtual-keyboard.keyboard-rows :as rows]
+   [virtual-keyboard.options :as options]))
 
 (defn keyboard [{:keys [custom-fns]}]
   (f/widget
@@ -30,3 +34,19 @@
                     true en-other-special-keys
                     en-special-keys)
              false en-keys)))))
+
+
+(defn candidates [style]
+  (f/widget
+   :context ctx
+   :get [:info :state]
+   :let [width (-> m/MediaQuery (.of ctx) .-size .-width)]
+   :watch [{candidates-list :keyboard/candidates-list} state]
+   (m/Positioned
+    .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
+    .right (/ width 4)
+    .child
+    (menu/menu {:bar {:elavation 10}
+                :item {:on-tap (fn [x] (action/on-candidates-clicked x state))
+                       :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m.Colors/black))}}
+               (take 60 candidates-list)))))

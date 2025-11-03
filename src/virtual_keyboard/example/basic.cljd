@@ -14,6 +14,7 @@
    :context ctx
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
          info (merge options/keyboard-option {:keyboard/mongol-font-family "OnonSoninSans"
+                                              :keyboard/key-container-color m/Colors.grey.shade500
                                               :keyboard/font-size 16})
          state (atom (merge options/keyboard-state))]
    :bind {:state state :info info}
@@ -49,14 +50,7 @@
           .color (-> m/Colors .grey .-shade300)
           .child
           (keyboard/keyboard {:custom-fns {}})))))])
-    (m/Positioned
-     .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
-     .right (/ width 4)
-     .child
-     (menu/menu {:bar {:elavation 10}
-                 :font-config {:font-family "OnonSoninSans"}
-                 :item {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x state))}}
-                candidates-list))]))
+    (keyboard/candidates nil)]))
 
 (defn basic []
   (control/set-control)
