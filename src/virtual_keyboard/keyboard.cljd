@@ -55,13 +55,21 @@
    :context ctx
    :get [:info :state]
    :let [width (-> m/MediaQuery (.of ctx) .-size .-width)]
+   :managed [controller (m/ScrollController)]
    :watch [{candidates-list :keyboard/candidates-list} state]
    (m/Positioned
     .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
     .right (/ width 4)
     .child
-    (menu/menu {:bar {:elavation 10}
-                :item {:on-tap (fn [x] (action/on-candidates-clicked x state))
+    (menu/menu {:bar {:elavation 10
+                      :scroll controller}
+                :item {:on-tap (fn [x]
+
+                                 (action/on-candidates-clicked x state)
+                                 (.animateTo controller
+                                             0
+                                             .duration (Duration .milliseconds 50)
+                                             .curve m/Curves.easeOut))
                        :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m.Colors/black))}}
                (take 60 candidates-list)))))
 
