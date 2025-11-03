@@ -1,0 +1,42 @@
+(ns virtual-keyboard.keyboard-rows
+  (:require 
+   ["package:flutter/material.dart" :as m]
+   [cljd.flutter :as f]
+   [virtual-keyboard.options :as options]))
+
+(declare keyboard-row-keys)
+
+(defn keyboard-rows [rows]
+  (f/widget
+   :context ctx
+   :get {:value-of [:info]}
+   (let [width (-> m/MediaQuery (.of ctx) .-size .-width)]
+     (m/Container
+      .height (+ options/keyboard-default-height (* (count rows) (+ 4 (or (:keyboard/row-vertical-padding info) 4))))
+      .width width
+      .child (m/Column
+              .mainAxisAlignment (.center m/MainAxisAlignment)
+              .crossAxisAlignment (.center m/CrossAxisAlignment)
+              .children (keyboard-row-keys info rows))))))
+
+(defn keyboard-row-keys [info items]
+  (doall
+   (map
+    (fn [x]
+      (f/widget
+       (m/Material
+        .color m.Colors/transparent)
+       .child
+       (m/Padding
+        .padding
+        (.symmetric
+         m/EdgeInsets
+         .vertical (:keyboard/row-vertical-padding info)
+         .horizontal 1))
+       .child
+       (m/Row
+        .mainAxisAlignment (.spaceAround m/MainAxisAlignment)
+        .crossAxisAlignment (.center m/CrossAxisAlignment)
+        .children x)))
+
+    items)))
