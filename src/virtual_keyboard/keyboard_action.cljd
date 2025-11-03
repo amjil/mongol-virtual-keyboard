@@ -320,3 +320,6 @@
     (if (empty? candidates)
       (swap! state assoc :keyboard/candidates-list [])
       (swap! state assoc :keyboard/candidates-list (map first (sort-by #(int/parse (last %)) > candidates))))))
+
+(defn clear-candidates [state]
+  (swap! state assoc :keyboard/candidates-list []))
