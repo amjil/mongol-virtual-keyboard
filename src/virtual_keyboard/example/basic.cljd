@@ -4,10 +4,8 @@
    ["package:mongol/mongol.dart" :as mgl]
    [cljd.flutter :as f]
    [virtual-keyboard.keyboard :as keyboard]
-   [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.input-control :as control]
-   [virtual-keyboard.options :as options]
-   [menu-bar.menu :as menu]))
+   [virtual-keyboard.options :as options]))
 
 (defn basic-body []
   (f/widget
@@ -18,8 +16,6 @@
                                               :keyboard/font-size 16})
          state (atom (merge options/keyboard-state))]
    :bind {:state state :info info}
-   :watch [{candidates-list :keyboard/candidates-list} state
-           visible control/visible]
    (m/SafeArea)
    .child
    (m/Center)
@@ -38,18 +34,7 @@
                  (dart:core/print "onTap TextField"))
         .style (m/TextStyle .fontSize 20)
         .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
-      (m/Visibility
-       .visible visible
-       .child
-       (m/FocusScope
-        .canRequestFocus false
-        .child
-        (m/TextFieldTapRegion
-         .child
-         (m/Container
-          .color (-> m/Colors .grey .-shade300)
-          .child
-          (keyboard/keyboard {:custom-fns {}})))))])
+      (keyboard/keyboard {:custom-fns {}})])
     (keyboard/candidates nil)]))
 
 (defn basic []

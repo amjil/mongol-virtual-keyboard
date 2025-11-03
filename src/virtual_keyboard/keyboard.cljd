@@ -7,33 +7,47 @@
    [virtual-keyboard.keyboard-layouts :as layouts]
    [virtual-keyboard.keyboard-action :as action]
    [virtual-keyboard.keyboard-rows :as rows]
+   [virtual-keyboard.input-control :as control]
    [virtual-keyboard.options :as options]))
 
 (defn keyboard [{:keys [custom-fns]}]
   (f/widget
    :get {:value-of [:state]}
+   :context ctx
    :let [mg-keys (builder/keyboard-layout-builder layouts/mg-layout custom-fns)
          en-keys (builder/keyboard-layout-builder layouts/en-layout custom-fns)
          en-special-keys (builder/keyboard-layout-builder layouts/en-special-layout custom-fns)
          en-other-special-keys (builder/keyboard-layout-builder layouts/en-other-special-layout custom-fns)
          mg-special-keys (builder/keyboard-layout-builder layouts/mg-special-layout custom-fns)
-         mg-other-special-keys (builder/keyboard-layout-builder layouts/mg-other-special-layout custom-fns)]
+         mg-other-special-keys (builder/keyboard-layout-builder layouts/mg-other-special-layout custom-fns)
+
+         theme (-> m/Theme (.of ctx))
+         color-scheme (.-colorScheme theme)]
    :watch [{layout-index :keyboard/layout-index
             is-special-enabled :keyboard/is-special-enabled
             is-other-special-enabled :keyboard/is-other-special-enabled}
-           state]
-   (rows/keyboard-rows
-    (condp = layout-index
-      0 (condp = is-special-enabled
+           state
+           visible control/visible]
+   (m/Visibility
+    .visible visible
+    .child
+    (m/TextFieldTapRegion
+     .child
+     (m/Container
+      .color (.-surfaceVariant color-scheme)
+      .child
+      (rows/keyboard-rows
+       (condp = layout-index
+         0 (condp = is-special-enabled
              true (condp = is-other-special-enabled
                     true mg-other-special-keys
                     mg-special-keys)
              false mg-keys)
-      1 (condp = is-special-enabled
+         1 (condp = is-special-enabled
              true (condp = is-other-special-enabled
                     true en-other-special-keys
                     en-special-keys)
-             false en-keys)))))
+             false en-keys))))))))
 
 
 (defn candidates [style]
@@ -50,3 +64,10 @@
                 :item {:on-tap (fn [x] (action/on-candidates-clicked x state))
                        :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m.Colors/black))}}
                (take 60 candidates-list)))))
+
+(defn toolbar [widget]
+  (f/widget 
+   :watch [visible control/visible]
+   (m/Visibility
+    .visible visible
+    .child widget)))
