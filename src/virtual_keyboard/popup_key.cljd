@@ -4,8 +4,7 @@
    [virtual-keyboard.utils :as utils]
    [cljd.flutter :as f]))
 
-(defn key-widget [info state vkey
-                  is-rotated]
+(defn key-widget [info vkey is-rotated]
   (f/widget
    (m/InkWell)
    (m/Container .color (:keyboard/long-press-container-color info)
@@ -16,7 +15,7 @@
    
    (m/RotatedBox
     .quarterTurns (if is-rotated 1 0)
-    .child (m/Text (utils/key-text state vkey)
+    .child (m/Text (utils/key-text vkey)
                    .style
                   ;;  (if (:is-rotated virtual-key)
                    (m/TextStyle .fontSize (:keyboard/font-size info)

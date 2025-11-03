@@ -5,6 +5,7 @@
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.keyboard-overlay :as keyboard-overlay]
+   [virtual-keyboard.keyboard-state :as state]
    [cljd.flutter :as f]))
 
 (declare
@@ -14,7 +15,7 @@
 (defn key-widget [virtual-key items-count rows-count custom-fns]
   (f/widget
    :context ctx
-   :get {:value-of [:info :state]}
+   :get {:value-of [:info]}
    :let [^m/OverlayState overlay (.of m/Overlay ctx)]
    (m/Expanded)
    .child
@@ -41,13 +42,13 @@
     .highlightColor (-> m.Colors/grey .-shade200 (.withOpacity 0.3))
     .onTap
     (fn []
-      (keyboard-action/on-key-press virtual-key state custom-fns))
+      (keyboard-action/on-key-press virtual-key custom-fns))
     .onTapDown (fn [_]
-                 (keyboard-overlay/insert-overlay-bubble state ctx info virtual-key))
+                 (keyboard-overlay/insert-overlay-bubble ctx info virtual-key))
     .onTapUp (fn [_]
-               (keyboard-overlay/remove-overlay state))
+               (keyboard-overlay/remove-overlay))
     .onTapCancel (fn []
-                   (keyboard-overlay/remove-overlay state)))
+                   (keyboard-overlay/remove-overlay)))
 
    .child
    (m/LongPressDraggable
@@ -56,14 +57,14 @@
     .data (:text virtual-key)
     .onDragStarted
     (fn []
-      (keyboard-overlay/insert-overlay-popup state ctx info virtual-key))
+      (keyboard-overlay/insert-overlay-popup ctx info virtual-key))
     .onDragEnd
     (fn [_]
-      (keyboard-overlay/remove-overlay state))
+      (keyboard-overlay/remove-overlay))
     .onDraggableCanceled
     (fn [_ _]
       ;; improve drag canceled action
-      (keyboard-overlay/remove-overlay state))
+      (keyboard-overlay/remove-overlay))
     .feedback
     (m/Card
      .elevation 12
@@ -78,7 +79,7 @@
    .child
    (m/Stack
     .children
-    [(if (and (zero? (:keyboard/layout-index @state))
+    [(if (and (zero? (:keyboard/layout-index @state/state))
               (not (some #{(:id virtual-key)} ["ng" "-" "_"]))
               (not-empty (:id virtual-key)))
        (m/Align .alignment m.Alignment/topLeft
@@ -88,13 +89,13 @@
      (m/Align .alignment (.center m/Alignment)
               .child
               (if (:is-rotated virtual-key)
-                (mgl/MongolText (utils/key-text state virtual-key)
+                (mgl/MongolText (utils/key-text virtual-key)
                                 .style
                                 (m/TextStyle .fontSize (:keyboard/font-size info)
                                              .color (:keyboard/key-text-color info)
                                              .fontFamily (:keyboard/mongol-font-family info)
                                              .fontWeight (:keyboard/font-weight info)))
-                (m/Text (utils/key-text state virtual-key)
+                (m/Text (utils/key-text virtual-key)
                         .style
                         (m/TextStyle .fontSize (:keyboard/font-size info)
                                      .color (:keyboard/key-text-color info)

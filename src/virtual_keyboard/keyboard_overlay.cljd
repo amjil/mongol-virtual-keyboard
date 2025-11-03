@@ -3,14 +3,15 @@
    ["package:flutter/material.dart" :as m]
    ["package:flutter/services.dart" :as service]
    ["package:mongol/mongol.dart" :as mgl]
+   [cljd.flutter :as f]
    [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.popup-key :as popup-key]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.popup-key-candidates :as candidates]
-   [cljd.flutter :as f]
+   [virtual-keyboard.keyboard-state :as state]
    [virtual-keyboard.input-control :as control]))
 
-(defn bubble-widget [^m/Size size info state virtual-key]
+(defn bubble-widget [^m/Size size info virtual-key]
   (f/widget
    (m/Material
     .elevation 10
@@ -27,17 +28,16 @@
                  (.all m/BorderRadius
                        (.circular m/Radius (:keyboard/key-cap-border-radius info)))))
    (if (:is-rotated virtual-key)
-     (mgl/MongolText (utils/key-text state virtual-key)
+     (mgl/MongolText (utils/key-text virtual-key)
                      .style (m/TextStyle .fontSize 18
                                          .color (:keyboard/key-text-color info)
                                          .fontFamily (:keyboard/mongol-font-family info)))
-     (m/Text (utils/key-text state virtual-key)
+     (m/Text (utils/key-text virtual-key)
              .style (m/TextStyle .fontSize 18
                                  .color (:keyboard/key-text-color info))))))
 
 (defn build-entry-bubble [^m/BuildContext ctx
                           info
-                          state
                           virtual-key]
   (let [^m/RenderBox box (.findRenderObject ctx)
         size (.-size box)
@@ -48,30 +48,29 @@
                  .top (- (.-dy offset) (* 1 (.-height size)))
                  .left (+ (.-dx offset) (/ (.-width size) 2) (- (/ (* 1 (.-width size)) 2)))
                  .child
-                 (bubble-widget size info state virtual-key))))))
+                 (bubble-widget size info virtual-key))))))
 
 (defn remove-overlay
-  [state]
-  (when-not (nil? (:keyboard/entry @state))
-    (let [^m/OverlayEntry entry (:keyboard/entry @state)]
+  []
+  (when-not (nil? (:keyboard/entry @state/state))
+    (let [^m/OverlayEntry entry (:keyboard/entry @state/state)]
       (when-not (nil? entry)
         (.remove entry))
-      (swap! state assoc :keyboard/entry nil))))
+      (swap! state/state assoc :keyboard/entry nil))))
 
 (defn insert-overlay-bubble
-  [state
-   ^m/BuildContext ctx
+  [^m/BuildContext ctx
    info
    current-key]
-  (remove-overlay state)
-  (let [^m/OverlayEntry entry (build-entry-bubble ctx info state current-key)]
-    (swap! state assoc :keyboard/entry nil)
+  (remove-overlay)
+  (let [^m/OverlayEntry entry (build-entry-bubble ctx info current-key)]
+    (swap! state/state assoc :keyboard/entry nil)
     (.insert (.of m/Overlay ctx) entry)
-    (swap! state assoc :keyboard/entry entry)))
+    (swap! state/state assoc :keyboard/entry entry)))
 
 
 ;;;;
-(defn overlay-popup-widget [^m/Size size info state additional-keys is-rotated]
+(defn overlay-popup-widget [^m/Size size info additional-keys is-rotated]
   (f/widget
    :context ctx
    (m/GestureDetector)
@@ -93,17 +92,16 @@
              .child
              (m/DragTarget
               .builder (fn [_ _ _]
-                         (popup-key/key-widget info state vkey is-rotated))
+                         (popup-key/key-widget info vkey is-rotated))
               .onAccept (fn [_]
                           (keyboard-action/on-key-press
-                           (assoc vkey :key-type :string) state nil))))))
+                           (assoc vkey :key-type :string) nil))))))
          additional-keys))
    ))
 
 
 (defn build-entry-popup [^m/BuildContext ctx
                          info
-                         state
                          additional-keys
                          is-rotated]
   (let [^m/RenderBox box (.findRenderObject ctx)
@@ -121,12 +119,11 @@
                          (.-dx offset)
                          nil)
                  .child
-                 (overlay-popup-widget size info state additional-keys is-rotated))))))
+                 (overlay-popup-widget size info additional-keys is-rotated))))))
 
 
 (defn insert-overlay-popup
-  [state
-   ^m/BuildContext ctx
+  [^m/BuildContext ctx
    info
    virtual-key]
   (let [^service/TextEditingValue editing-value @control/editing-value
@@ -137,8 +134,8 @@
     (if (zero? (count additional-keys))
       nil
       (do
-        (remove-overlay state)
-        (let [^m/OverlayEntry entry (build-entry-popup ctx info state additional-keys (:is-rotated virtual-key))]
-          (swap! state assoc :keyboard/entry nil)
+        (remove-overlay)
+        (let [^m/OverlayEntry entry (build-entry-popup ctx info additional-keys (:is-rotated virtual-key))]
+          (swap! state/state assoc :keyboard/entry nil)
           (.insert (.of m/Overlay ctx) entry)
-          (swap! state assoc :keyboard/entry entry))))))
+          (swap! state/state assoc :keyboard/entry entry))))))

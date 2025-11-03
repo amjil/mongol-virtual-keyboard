@@ -1,0 +1,5 @@
+(ns virtual-keyboard.keyboard-state
+  (:require 
+   [virtual-keyboard.options :as options]))
+
+(def state (atom (merge options/keyboard-state)))

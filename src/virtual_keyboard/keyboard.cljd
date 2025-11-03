@@ -7,12 +7,12 @@
    [virtual-keyboard.keyboard-layouts :as layouts]
    [virtual-keyboard.keyboard-action :as action]
    [virtual-keyboard.keyboard-rows :as rows]
+   [virtual-keyboard.keyboard-state :as state]
    [virtual-keyboard.input-control :as control]
    [virtual-keyboard.options :as options]))
 
 (defn keyboard [{:keys [custom-fns]}]
   (f/widget
-   :get {:value-of [:state]}
    :context ctx
    :let [mg-keys (builder/keyboard-layout-builder layouts/mg-layout custom-fns)
          en-keys (builder/keyboard-layout-builder layouts/en-layout custom-fns)
@@ -26,7 +26,7 @@
    :watch [{layout-index :keyboard/layout-index
             is-special-enabled :keyboard/is-special-enabled
             is-other-special-enabled :keyboard/is-other-special-enabled}
-           state
+           state/state
            visible control/visible]
    (m/Visibility
     .visible visible
@@ -53,10 +53,10 @@
 (defn candidates [style]
   (f/widget
    :context ctx
-   :get [:info :state]
+   :get [:info]
    :let [width (-> m/MediaQuery (.of ctx) .-size .-width)]
    :managed [controller (m/ScrollController)]
-   :watch [{candidates-list :keyboard/candidates-list} state]
+   :watch [{candidates-list :keyboard/candidates-list} state/state]
    (m/Positioned
     .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
     .right (/ width 4)
@@ -65,7 +65,7 @@
                       :scroll controller}
                 :item {:on-tap (fn [x]
 
-                                 (action/on-candidates-clicked x state)
+                                 (action/on-candidates-clicked x)
                                  (.animateTo controller
                                              0
                                              .duration (Duration .milliseconds 50)

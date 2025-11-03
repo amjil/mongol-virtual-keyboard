@@ -3,11 +3,12 @@
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
    ["package:vibration/vibration.dart" :as vibrate]
+   [cljd.flutter :as f]
    [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
    [virtual-keyboard.options :as options]
-   [cljd.flutter :as f]
    [virtual-keyboard.input-control :as control]
    [virtual-keyboard.utils :as utils]
+   [virtual-keyboard.keyboard-state :as state]
    [virtual-keyboard.popup-key-candidates :as candidates]))
 
 (declare on-key-press
@@ -16,7 +17,7 @@
 (defn action-widget [vkey items-count rows-count custom-fns]
   (f/widget
    :context ctx
-   :get {:value-of [:info :state]}
+   :get {:value-of [:info]}
    :let [width (-> m/MediaQuery (.of ctx) .-size .-width)
          height (:keyboard/height info)
          key-height (/ height rows-count)
@@ -59,7 +60,7 @@
         (dart:core/print "long press")
         nil)
       .onLongPressUp
-      (fn [] (swap! state assoc :keyboard/long-press false))
+      (fn [] (swap! state/state assoc :keyboard/long-press false))
       .child
       (action-key-container
        {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
@@ -77,7 +78,7 @@
       {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
        :height key-height
        :child
-       (if (= :single-line (:keyboard/return-mode @state))
+       (if (= :single-line (:keyboard/return-mode @state/state))
          (m/Center
           .child
           (m/Text
@@ -186,7 +187,7 @@
        :child (m/Center
                .child
                (m/Text
-                (nth (:keyboard/layout-names info) (:keyboard/layout-index @state))
+                (nth (:keyboard/layout-names info) (:keyboard/layout-index @state/state))
                 .style
                 (m/TextStyle .fontWeight (.w600 m/FontWeight)
                              .color (:keyboard/key-text-color info)
@@ -211,7 +212,7 @@
   [{width :width height :height child :child}
    vkey custom-fns]
   (f/widget
-   :get {:value-of [:info :state]}
+   :get {:value-of [:info]}
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
     .height height
@@ -222,19 +223,19 @@
      .color (:keyboard/action-keys-container-color info)
      .child
      (m/InkWell
-      .onTap #(on-key-press vkey state custom-fns)
+      .onTap #(on-key-press vkey custom-fns)
       .child child)))))
 
 (defn on-key-press
-  [vkey state custom-fns]
-  (when (true? (:keyboard/is-vibrate-on @state))
+  [vkey custom-fns]
+  (when (true? (:keyboard/is-vibrate-on @state/state))
     (let [has-vibrate (await (.hasVibrator vibrate/Vibration))]
       (when (true? has-vibrate)
-        (.vibrate vibrate/Vibration .duration (:keyboard/vibrate-duration @state)))))
+        (.vibrate vibrate/Vibration .duration (:keyboard/vibrate-duration @state/state)))))
   (condp = (:key-type vkey)
     :string
     (let [new-str (cond
-                    (and (:keyboard/is-shift-enabled @state)
+                    (and (:keyboard/is-shift-enabled @state/state)
                          (some? (:caps-text vkey)))
                     (:caps-text vkey)
 
@@ -244,7 +245,7 @@
       (let [last-word (utils/get-current-word (.-text @control/editing-value)
                                               (.-selection @control/editing-value))
             candidates (get @keyboard-candidates/data last-word)]
-        (swap! state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
+        (swap! state/state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
 
     :action
     (condp = (:action vkey)
@@ -256,11 +257,11 @@
         (let [last-word (utils/get-current-word (.-text @control/editing-value)
                                                 (.-selection @control/editing-value))
               candidates (get @keyboard-candidates/data last-word)]
-          (swap! state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
+          (swap! state/state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
 
       :return
-      (if (= :single-line (:keyboard/return-mode @state))
-        (let [callback (:keyboard/return-callback @state)]
+      (if (= :single-line (:keyboard/return-mode @state/state))
+        (let [callback (:keyboard/return-callback @state/state)]
           (when-not (nil? callback)
             (callback)))
         (control/insert-text "\n"))
@@ -268,32 +269,32 @@
       :space
       (do
         (control/insert-text " ")
-        (swap! state assoc :keyboard/candidates-list []))
+        (swap! state/state assoc :keyboard/candidates-list []))
 
       :spacer-block
       (do
         (control/insert-text " ")
-        (swap! state assoc :keyboard/candidates-list []))
+        (swap! state/state assoc :keyboard/candidates-list []))
 
       :small-spacer-block
       (do
         (control/insert-text " ")
-        (swap! state assoc :keyboard/candidates-list []))
+        (swap! state/state assoc :keyboard/candidates-list []))
 
       :shift
-      (swap! state assoc :keyboard/is-shift-enabled (not (:keyboard/is-shift-enabled @state)))
+      (swap! state/state assoc :keyboard/is-shift-enabled (not (:keyboard/is-shift-enabled @state/state)))
 
       :abc
-      (let [layout-index (get @state :keyboard/layout-index)]
-        (swap! state assoc :keyboard/layout-index (mod (inc layout-index) (count (:keyboard/layout-names options/keyboard-option))))
-        (swap! state assoc :keyboard/is-special-enabled false)
-        (swap! state assoc :keyboard/is-other-special-enabled false))
+      (let [layout-index (get @state/state :keyboard/layout-index)]
+        (swap! state/state assoc :keyboard/layout-index (mod (inc layout-index) (count (:keyboard/layout-names options/keyboard-option))))
+        (swap! state/state assoc :keyboard/is-special-enabled false)
+        (swap! state/state assoc :keyboard/is-other-special-enabled false))
 
       :special-characters
-      (swap! state assoc :keyboard/is-special-enabled (not (:keyboard/is-special-enabled @state)))
+      (swap! state/state assoc :keyboard/is-special-enabled (not (:keyboard/is-special-enabled @state/state)))
 
       :other-special-characters
-      (swap! state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state)))
+      (swap! state/state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state/state)))
 
       :suffix-candidates
       (do
@@ -305,10 +306,10 @@
             (control/delete-text)))
         (keyboard-candidates/suffix-candidates (.-text @control/editing-value)
                                                (.-selection @control/editing-value)
-                                               state)))))
+                                               state/state)))))
 
 (defn on-candidates-clicked
-  [text state]
+  [text]
   (let [text-with-space (str text " ")]
     (if (some (into #{}
                     keyboard-candidates/suffix-candidatges-for-full)
@@ -318,8 +319,8 @@
   (let [candidates (->> (get @keyboard-candidates/next text)
                         (filter #(not (nil? (first %)))))]
     (if (empty? candidates)
-      (swap! state assoc :keyboard/candidates-list [])
-      (swap! state assoc :keyboard/candidates-list (map first (sort-by #(int/parse (last %)) > candidates))))))
+      (swap! state/state assoc :keyboard/candidates-list [])
+      (swap! state/state assoc :keyboard/candidates-list (map first (sort-by #(int/parse (last %)) > candidates))))))
 
-(defn clear-candidates [state]
-  (swap! state assoc :keyboard/candidates-list []))
+(defn clear-candidates []
+  (swap! state/state assoc :keyboard/candidates-list []))

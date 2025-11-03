@@ -5,17 +5,15 @@
    [cljd.flutter :as f]
    [virtual-keyboard.keyboard :as keyboard]
    [virtual-keyboard.input-control :as control]
-   [virtual-keyboard.options :as options]))
+   [virtual-keyboard.options :as options]
+   [virtual-keyboard.keyboard-action :as keyboard-action]))
 
 (defn basic-body []
   (f/widget
-   :context ctx
-   :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-         info (merge options/keyboard-option {:keyboard/mongol-font-family "OnonSoninSans"
+   :let [info (merge options/keyboard-option {:keyboard/mongol-font-family "OnonSoninSans"
                                               :keyboard/key-container-color m/Colors.grey.shade500
-                                              :keyboard/font-size 16})
-         state (atom (merge options/keyboard-state))]
-   :bind {:state state :info info}
+                                              :keyboard/font-size 16})]
+   :bind {:info info}
    (m/SafeArea)
    .child
    (m/Center)
@@ -30,7 +28,7 @@
         .maxLines 500
         .autofocus true
         .onTap (fn []
-                 (swap! state assoc :keyboard/candidates-list [])
+                 (keyboard-action/clear-candidates)
                  (dart:core/print "onTap TextField"))
         .style (m/TextStyle .fontSize 20)
         .decoration (m/InputDecoration .border (m/OutlineInputBorder))))

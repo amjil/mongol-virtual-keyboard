@@ -4,7 +4,8 @@
    ["package:flutter/services.dart" :as services]
    ["package:mongol_code/mongol_code.dart" :as code]
    ["package:mongol/mongol.dart" :as mgl]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [virtual-keyboard.keyboard-state :as state]))
 
 (defn get-key-button-size [ctx]
   (let [screen-width (-> m/MediaQuery (.of ctx) .-size .-width)
@@ -13,12 +14,12 @@
         height (* screen-height (if (> screen-height 800) 0.059 0.07))]
     [width height]))
 
-(defn key-text [state vkey]
+(defn key-text [vkey]
   (cond 
     (some? (:display vkey))
     (:display vkey)
     
-    (and (:keyboard/is-shift-enabled @state)
+    (and (:keyboard/is-shift-enabled @state/state)
          (some? (:caps-text vkey)))
     (:caps-text vkey)
     
