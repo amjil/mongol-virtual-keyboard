@@ -250,19 +250,19 @@
     :action
     (condp = (:action vkey)
       :backspace
-      (do
-        (when-let [custom-backspace (:on-backspace custom-fns)]
-          (custom-backspace))
-        (control/delete-text)
-        (let [last-word (utils/get-current-word (.-text @control/editing-value)
-                                                (.-selection @control/editing-value))
-              candidates (get @keyboard-candidates/data last-word)]
-          (swap! state/state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
+      (if-let [custom-backspace (:on-backspace custom-fns)]
+        (custom-backspace)
+        (do
+          (control/delete-text)
+          (let [last-word (utils/get-current-word (.-text @control/editing-value)
+                                                  (.-selection @control/editing-value))
+                candidates (get @keyboard-candidates/data last-word)]
+            (swap! state/state assoc :keyboard/candidates-list (map first (sort-by last > candidates))))))
+
 
       :return
-      (do
-        (when-let [custom-fn (:on-return custom-fns)]
-          (custom-fn))
+      (if-let [custom-fn (:on-return custom-fns)]
+        (custom-fn)
         (if (= :single-line (:keyboard/return-mode @state/state))
           (let [callback (:keyboard/return-callback @state/state)]
             (when-not (nil? callback)
