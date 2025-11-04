@@ -54,7 +54,8 @@
   (f/widget
    :context ctx
    :get [:info]
-   :let [width (-> m/MediaQuery (.of ctx) .-size .-width)]
+   :let [width (-> m/MediaQuery (.of ctx) .-size .-width)
+         theme (-> m/Theme (.of ctx))]
    :managed [controller (m/ScrollController)]
    :watch [{candidates-list :keyboard/candidates-list} state/state]
    (m/Positioned
@@ -62,6 +63,7 @@
     .right (/ width 4)
     .child
     (menu/menu {:bar {:elavation 10
+                      :background-color (-> theme .-colorScheme .-secondaryContainer)
                       :scroll controller}
                 :item {:on-tap (fn [x]
 
@@ -70,7 +72,7 @@
                                              0
                                              .duration (Duration .milliseconds 50)
                                              .curve m/Curves.easeOut))
-                       :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m.Colors/black))}}
+                       :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}}
                (take 60 candidates-list)))))
 
 (defn toolbar [widget]
