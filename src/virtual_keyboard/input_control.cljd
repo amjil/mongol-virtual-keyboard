@@ -115,7 +115,8 @@
                          .selection
                          (.copyWith selection
                                     .baseOffset (count text)
-                                    .extentOffset (count text)))))
+                                    .extentOffset (count text))))
+      (service.TextInput/updateEditingValue @editing-value))
     (catch Exception e
       (dart:core/print (str "Error in reset-text: " e)))))
       
