@@ -251,9 +251,9 @@
     (condp = (:action vkey)
       :backspace
       (do
-        (if-let [custom-backspace (:on-backspace custom-fns)]
-          (custom-backspace)
-          (control/delete-text))
+        (when-let [custom-backspace (:on-backspace custom-fns)]
+          (custom-backspace))
+        (control/delete-text)
         (let [last-word (utils/get-current-word (.-text @control/editing-value)
                                                 (.-selection @control/editing-value))
               candidates (get @keyboard-candidates/data last-word)]
