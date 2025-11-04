@@ -260,11 +260,14 @@
           (swap! state/state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
 
       :return
-      (if (= :single-line (:keyboard/return-mode @state/state))
-        (let [callback (:keyboard/return-callback @state/state)]
-          (when-not (nil? callback)
-            (callback)))
-        (control/insert-text "\n"))
+      (do
+        (when-let [custom-fn (:on-return custom-fns)]
+          (custom-fn))
+        (if (= :single-line (:keyboard/return-mode @state/state))
+          (let [callback (:keyboard/return-callback @state/state)]
+            (when-not (nil? callback)
+              (callback)))
+          (control/insert-text "\n")))
 
       :space
       (do
