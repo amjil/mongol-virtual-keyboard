@@ -50,6 +50,9 @@
              false en-keys))))))))
 
 
+(defn get-height [info]
+  (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info)))))
+
 (defn candidates [style]
   (f/widget
    :context ctx
@@ -59,7 +62,7 @@
    :managed [controller (m/ScrollController)]
    :watch [{candidates-list :keyboard/candidates-list} state/state]
    (m/Positioned
-    .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
+    .bottom (get-height info)
     .right (/ width 4)
     .child
     (menu/menu {:bar {:elavation 10
