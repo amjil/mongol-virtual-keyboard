@@ -56,13 +56,12 @@
 (defn candidates [style]
   (f/widget
    :context ctx
-   :get [:info]
    :let [width (-> m/MediaQuery (.of ctx) .-size .-width)
          theme (-> m/Theme (.of ctx))]
    :managed [controller (m/ScrollController)]
    :watch [{candidates-list :keyboard/candidates-list} state/state]
    (m/Positioned
-    .bottom (get-height info)
+    .bottom 10
     .right (/ width 4)
     .child
     (menu/menu {:bar {:elavation 10
