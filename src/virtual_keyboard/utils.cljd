@@ -42,3 +42,84 @@
       (if (empty? last-word)
         ""
         last-word))))
+        
+
+;; copied from mongol_code.dart
+(defn is-mongolian
+  [code]
+  (or
+   (and
+     (>= code code/Mongol.a)
+     (<= code code/Mongol.chi))
+   (and 
+     (>= code code/Mongol.nirugu)
+     (<= code code/Mongol.mvs))))
+
+;; copied from mongol_code.dart
+(defn get-location [before after]
+  (cond
+    (empty? before)
+    code.Location/isol
+    
+    (and (some? before)
+      (is-mongolian (last (map int before)))
+      (empty? after)) 
+    code.Location/medi
+
+    (and (some? before)
+       (is-mongolian (last (map int before)))
+       (some? after)
+       (is-mongolian (first (map int after))))
+    code.Location/medi
+
+    (and (some? before)
+         (not 
+          (is-mongolian (last (map int before))))
+         (some? after)
+         (is-mongolian (first (map int after))))
+    code.Location/init
+
+
+    (and (some? before)
+         (is-mongolian (last (map int before))))
+    code.Location/fina
+
+    :else
+    code.Location/isol))
+    
+;; copied from mongol_code.dart
+(defn is-mvs-preceding-char
+  [code]
+  (or 
+    (= code code/Mongol.na)
+    (= code code/Mongol.qa)
+    (= code code/Mongol.ga)
+    (= code code/Mongol.ma)
+    (= code code/Mongol.la)
+    (= code code/Mongol.ja)
+    (= code code/Mongol.ya)
+    (= code code/Mongol.ra)
+    (= code code/Mongol.wa)
+    (= code code/Mongol.o)
+    (= code code/Mongol.u)
+    (= code code/Mongol.oe)
+    (= code code/Mongol.ue)))
+   
+;; copied from mongol_code.dart
+(defn is-vowel [code]
+  (and
+    (>= code code/Mongol.a)
+    (<= code code/Mongol.ee)))
+    
+;; copied from mongol_code.dart
+(defn get-gender [word]
+  (cond 
+    (.isMasculineVowel code/Mongol word)
+    code/Gender.masculine
+    
+    (.isFeminineVowel code/Mongol word)
+    code/Gender.feminine
+    
+    :else 
+    code/Gender.neuter)) 
+  

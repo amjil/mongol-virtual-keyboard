@@ -36,19 +36,19 @@
 (defn suffix-candidates-for-word
   [word gender]
   (let [last-char (if (empty? word) 0 (int (last word)))]
-    [(code.Suffix/getSuffixYinUnU gender last-char)
-     (code.Suffix/getSuffixTuDu gender last-char)
-     (code.Suffix/getSuffixTaganDagan gender last-char)
-     (code.Suffix/getSuffixTaqiDaqi gender last-char)
-     (code.Suffix/getSuffixYiI last-char)
-     (code.Suffix/getSuffixBarIyar gender last-char)
-     (code.Suffix/getSuffixBanIyan gender last-char)
-     (code.Suffix/getSuffixAchaEche gender)
-     (code.Suffix/getSuffixTaiTei gender)
-     (code.Suffix/getSuffixUu gender)
-     (code.Suffix/getSuffixUd gender)
-     (code.Suffix/getSuffixNugud gender)
-     (code.Suffix/getSuffixChu gender)]))
+    [(code.Suffix/yinUnU gender last-char)
+     (code.Suffix/tuDu gender last-char)
+     (code.Suffix/taganDagan gender last-char)
+     (code.Suffix/taqiDaqi gender last-char)
+     (code.Suffix/yiI last-char)
+     (code.Suffix/barIyar gender last-char)
+     (code.Suffix/banIyan gender last-char)
+     (code.Suffix/achaEche gender)
+     (code.Suffix/taiTei gender)
+     (code.Suffix/uu gender)
+     (code.Suffix/ud gender)
+     (code.Suffix/suffixNugud gender)
+     (code.Suffix/suffixChu gender)]))
 
 (defn suffix-candidates 
   [text 
@@ -61,8 +61,8 @@
            last-word (str/trim (utils/get-last-word substr))]
        (if (empty? last-word)
          (swap! state assoc :keyboard/candidates-list suffix-candidatges-for-full)
-         (if (code.MongolCode/isMongolian (int (last last-word)))
-           (let [gender (.getWordGender code/MongolCode last-word)]
+         (if (utils/is-mongolian (int (last last-word)))
+           (let [gender (utils/get-gender last-word)]
              (if (empty? last-word)
                (swap! state assoc :keyboard/candidates-list suffix-candidatges-for-full)
                (swap! state assoc :keyboard/candidates-list

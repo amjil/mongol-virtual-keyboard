@@ -2,7 +2,8 @@
   (:require
    ["package:mongol_code/mongol_code.dart" :as code]
    ["package:flutter/material.dart" :as m]
-   ["package:flutter/services.dart" :as service]))
+   ["package:flutter/services.dart" :as service]
+   [virtual-keyboard.utils :as utils]))
 
 (defn is-initial 
   [^service/TextEditingValue controller]
@@ -13,9 +14,9 @@
       true
       (let [before (subs text (max (- start 2) 0) start)
             after (subs text start (min (+ start 2) (count text)))
-            location (.getLocation code/MongolCode before after)] 
-        (or (= location code.Location/ISOLATE)
-            (= location code.Location/INITIAL))))))
+            location (utils/get-location before after)] 
+        (or (= location code.Location/isol)
+            (= location code.Location/init))))))
 
 (defn get-previous-char 
   [^service/TextEditingValue controller]
@@ -25,156 +26,157 @@
       nil
       (.codeUnitAt (subs text (dec cursor) cursor) 0))))
 
-(defn- popup-candidates-for-e 
+(defn- popup-candidates-for-e
   [^service/TextEditingValue controller]
   (let [previous-char (get-previous-char controller)]
+    (dart:core/print (str "previous-char" (int previous-char)))
     (cond-> []
       (and (not (is-initial controller))
            (some? previous-char)
-           (.isMvsPrecedingChar code/MongolCode previous-char)
-           (not= previous-char (String/fromCharCode code.Unicode/QA))
-           (not= previous-char (String/fromCharCode code.Unicode/GA)))
+           (utils/is-mvs-preceding-char previous-char)
+           (not= previous-char (String/fromCharCode code.Mongol/qa))
+           (not= previous-char (String/fromCharCode code.Mongol/ga)))
       (concat
-       [{:text (String/fromCharCodes [code.Unicode/MVS code.Unicode/E])
-         :display (String/fromCharCodes [code.Unicode/ZWJ previous-char code.Unicode/MVS code.Unicode/E])}])
+       [{:text (String/fromCharCodes [code.Mongol/mvs code.Mongol/e])
+         :display (String/fromCharCodes [code.Mongol/nirugu previous-char code.Mongol/mvs code.Mongol/e])}])
 
       (not (is-initial controller))
       (concat
-       [{:text (String/fromCharCodes [code.Unicode/E code.Unicode/FVS1])
-         :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/E code.Unicode/FVS1])}]))))
+       [{:text (String/fromCharCodes [code.Mongol/e code.Mongol/fvs1])
+         :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/e code.Mongol/fvs1])}]))))
 
 (defn- popup-candidates-for-t
   [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
-    (concat [{:text (String/fromCharCodes [code.Unicode/TA code.Unicode/FVS1])
-              :display (String/fromCharCodes [code.Unicode/MONGOLIAN_NIRUGU code.Unicode/TA code.Unicode/FVS1 code.Unicode/ZWJ])}])))
+    (concat [{:text (String/fromCharCodes [code.Mongol/ta code.Mongol/fvs1])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ta code.Mongol/fvs1 code.Mongol/nirugu])}])))
 
 (defn- popup-candidates-for-y
   [^service/TextEditingValue controller]
   (cond-> []
     (is-initial controller)
-    (concat [{:text (String/fromCharCodes [code.Unicode/YA code.Unicode/FVS1])
-              :display (String/fromCharCodes [code.Unicode/YA code.Unicode/FVS1 code.Unicode/ZWJ])}])))
+    (concat [{:text (String/fromCharCodes [code.Mongol/ya code.Mongol/fvs1])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ya code.Mongol/fvs1 code.Mongol/nirugu])}])))
 
 (defn- popup-candidates-for-u
   [^service/TextEditingValue controller]
   (if (is-initial controller)
-    [{:text (String/fromCharCodes [code.Unicode/UE code.Unicode/FVS1])}]
+    [{:text (String/fromCharCodes [code.Mongol/ue code.Mongol/fvs1])}]
 
-    [{:text (String/fromCharCodes [code.Unicode/UE code.Unicode/FVS1])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/UE code.Unicode/FVS1 code.Unicode/ZWJ])}
-     {:text (String/fromCharCodes [code.Unicode/UE code.Unicode/FVS2])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/UE code.Unicode/FVS2 code.Unicode/ZWJ])}
-     {:text (String/fromCharCodes [code.Unicode/UE code.Unicode/FVS1])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/UE code.Unicode/FVS1])}]))
+    [{:text (String/fromCharCodes [code.Mongol/ue code.Mongol/fvs1])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ue code.Mongol/fvs1 code.Mongol/nirugu])}
+     {:text (String/fromCharCodes [code.Mongol/ue code.Mongol/fvs2])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ue code.Mongol/fvs2 code.Mongol/nirugu])}
+     {:text (String/fromCharCodes [code.Mongol/ue code.Mongol/fvs1])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ue code.Mongol/fvs1 code.Mongol/nirugu])}]))
 
 (defn- popup-candidates-for-i
   [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
-    (concat [{:text (String/fromCharCodes [code.Unicode/I code.Unicode/FVS1])
-              :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/I code.Unicode/FVS1 code.Unicode/ZWJ])}])
+    (concat [{:text (String/fromCharCodes [code.Mongol/i code.Mongol/fvs1])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/i code.Mongol/fvs1 code.Mongol/nirugu])}])
 
     (and (not (is-initial controller))
-         (.isVowel code/MongolCode (get-previous-char controller)))
-    (concat [{:text (String/fromCharCodes [code.Unicode/I code.Unicode/FVS2])
-              :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/I code.Unicode/ZWJ])}])))
+         (utils/is-vowel (get-previous-char controller)))
+    (concat [{:text (String/fromCharCodes [code.Mongol/i code.Mongol/fvs2])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/i code.Mongol/nirugu])}])))
 
 (defn- popup-candidates-for-o
   [^service/TextEditingValue controller]
   (if (is-initial controller)
     []
-    [{:text (String/fromCharCodes [code.Unicode/OE code.Unicode/FVS2])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/OE code.Unicode/FVS2 code.Unicode/ZWJ])}
-     {:text (String/fromCharCodes [code.Unicode/OE code.Unicode/FVS1])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/OE code.Unicode/FVS1])}]))
+    [{:text (String/fromCharCodes [code.Mongol/oe code.Mongol/fvs2])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/oe code.Mongol/fvs2 code.Mongol/nirugu])}
+     {:text (String/fromCharCodes [code.Mongol/oe code.Mongol/fvs1])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/oe code.Mongol/fvs1])}]))
 
 (defn- popup-candidates-for-a
   [^service/TextEditingValue controller]
   (if (is-initial controller)
-    [{:text (String/fromCharCodes [code.Unicode/A code.Unicode/FVS1])}]
+    [{:text (String/fromCharCodes [code.Mongol/a code.Mongol/fvs1])}]
     
     (let [previous-char (get-previous-char controller)]
       (cond-> []
-        (.isMvsPrecedingChar code/MongolCode previous-char)
+        (utils/is-mvs-preceding-char previous-char)
         (concat
-         [{:text (String/fromCharCodes [code.Unicode/MVS code.Unicode/A])
-           :display (String/fromCharCodes [code.Unicode/ZWJ previous-char code.Unicode/MVS code.Unicode/A])}])
+         [{:text (String/fromCharCodes [code.Mongol/mvs code.Mongol/a])
+           :display (String/fromCharCodes [code.Mongol/nirugu previous-char code.Mongol/mvs code.Mongol/a])}])
 
         true
         (concat
-         [{:text (String/fromCharCodes [code.Unicode/A code.Unicode/FVS1])
-           :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/A code.Unicode/FVS1 code.Unicode/ZWJ])}
-          {:text (String/fromCharCodes [code.Unicode/A code.Unicode/FVS1])
-           :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/A code.Unicode/FVS1])}])))))
+         [{:text (String/fromCharCodes [code.Mongol/a code.Mongol/fvs1])
+           :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/a code.Mongol/fvs1 code.Mongol/nirugu])}
+          {:text (String/fromCharCodes [code.Mongol/a code.Mongol/fvs1])
+           :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/a code.Mongol/fvs1])}])))))
 
 
 (defn- popup-candidates-for-s
   [^service/TextEditingValue controller]
   (if (is-initial controller)
     []
-    [{:text (String/fromCharCodes [code.Unicode/SA code.Unicode/FVS1])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/SA code.Unicode/FVS1])}]))
+    [{:text (String/fromCharCodes [code.Mongol/sa code.Mongol/fvs1])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/sa code.Mongol/fvs1])}]))
 
 (defn- popup-candidates-for-d
   [^service/TextEditingValue controller]
   (if (is-initial controller)
     (let [previous-char (get-previous-char controller)
-          text (if (= previous-char (String/fromCharCode code.Unicode/NNBS))
-                    (String/fromCharCode code.Unicode/DA)
-                    (String/fromCharCodes [code.Unicode/DA code.Unicode/FVS1]))]
-      [{:text (str text (String/fromCharCode code.Unicode/DA))}])
-    [{:text (String/fromCharCodes [code.Unicode/DA code.Unicode/FVS1])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/DA code.Unicode/FVS1])}]))
+          text (if (= previous-char (String/fromCharCode code.Mongol/mvs))
+                    (String/fromCharCode code.Mongol/da)
+                    (String/fromCharCodes [code.Mongol/da code.Mongol/fvs1]))]
+      [{:text (str text (String/fromCharCode code.Mongol/da))}])
+    [{:text (String/fromCharCodes [code.Mongol/da code.Mongol/fvs1])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/da code.Mongol/fvs1])}]))
 
 (defn- popup-candidates-for-g
   [^service/TextEditingValue controller]
   (if (is-initial controller)
     []
-    [{:text (String/fromCharCodes [code.Unicode/GA code.Unicode/FVS1])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/GA code.Unicode/FVS1])}
-     {:text (String/fromCharCodes [code.Unicode/GA code.Unicode/FVS2])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/GA code.Unicode/FVS2])}
-     {:text (String/fromCharCodes [code.Unicode/GA code.Unicode/FVS3])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/GA code.Unicode/FVS3 code.Unicode/ZWJ])}]))
+    [{:text (String/fromCharCodes [code.Mongol/ga code.Mongol/fvs1])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ga code.Mongol/fvs1])}
+     {:text (String/fromCharCodes [code.Mongol/ga code.Mongol/fvs2])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ga code.Mongol/fvs2])}
+     {:text (String/fromCharCodes [code.Mongol/ga code.Mongol/fvs3])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ga code.Mongol/fvs3 code.Mongol/nirugu])}]))
 
 (defn- popup-candidates-for-c
   [^service/TextEditingValue controller]
   (if (is-initial controller)
     []
-    [{:text (String/fromCharCodes [code.Unicode/O code.Unicode/FVS1])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/O code.Unicode/FVS1 code.Unicode/ZWJ])}
-     {:text (String/fromCharCodes [code.Unicode/O code.Unicode/FVS1])
-      :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/O code.Unicode/FVS1])}]))
+    [{:text (String/fromCharCodes [code.Mongol/o code.Mongol/fvs1])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/o code.Mongol/fvs1 code.Mongol/nirugu])}
+     {:text (String/fromCharCodes [code.Mongol/o code.Mongol/fvs1])
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/o code.Mongol/fvs1])}]))
 
 (defn- popup-candidates-for-v
   [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
-    (concat [{:text (String/fromCharCodes [code.Unicode/U code.Unicode/FVS1])
-              :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/U code.Unicode/FVS1 code.Unicode/ZWJ])}
-             {:text (String/fromCharCodes [code.Unicode/U code.Unicode/FVS1])
-              :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/U code.Unicode/FVS1])}])))
+    (concat [{:text (String/fromCharCodes [code.Mongol/u code.Mongol/fvs1])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs1 code.Mongol/nirugu])}
+             {:text (String/fromCharCodes [code.Mongol/u code.Mongol/fvs1])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs1])}])))
 
 (defn- popup-candidates-for-n
   [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
-    (concat [{:text (String/fromCharCodes [code.Unicode/NA code.Unicode/ZWJ])
-              :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/NA code.Unicode/ZWJ])}
-             {:text (String/fromCharCodes [code.Unicode/NA code.Unicode/FVS1])
-              :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/U code.Unicode/FVS1 code.Unicode/ZWJ])}
-             {:text (String/fromCharCodes [code.Unicode/NA code.Unicode/FVS2])
-              :display (String/fromCharCodes [code.Unicode/ZWJ code.Unicode/U code.Unicode/FVS2 code.Unicode/ZWJ])}])))
+    (concat [{:text (String/fromCharCodes [code.Mongol/na code.Mongol/nirugu])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/na code.Mongol/nirugu])}
+             {:text (String/fromCharCodes [code.Mongol/na code.Mongol/fvs1])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs1 code.Mongol/nirugu])}
+             {:text (String/fromCharCodes [code.Mongol/na code.Mongol/fvs2])
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs2 code.Mongol/nirugu])}])))
 
 (defn popup-candidates
   [^service/TextEditingValue controller char]
   (condp = char
-    "q" [{:text (String/fromCharCode code.Unicode/CHI)}]
+    "q" [{:text (String/fromCharCode code.Mongol/chi)}]
     "w" []
     "e" (popup-candidates-for-e controller)
-    "r" [{:text (String/fromCharCode code.Unicode/ZRA)}]
+    "r" [{:text (String/fromCharCode code.Mongol/zra)}]
     "t" (popup-candidates-for-t controller)
     "y" (popup-candidates-for-y controller)
     "u" (popup-candidates-for-u controller)
@@ -186,17 +188,17 @@
     "d" (popup-candidates-for-d controller)
     "f" []
     "g" (popup-candidates-for-g controller)
-    "h" [{:text (String/fromCharCode code.Unicode/HAA)}]
-    "j" [{:text (String/fromCharCode code.Unicode/ZHI)}]
+    "h" [{:text (String/fromCharCode code.Mongol/haa)}]
+    "j" [{:text (String/fromCharCode code.Mongol/zhi)}]
     "k" []
-    "l" [{:text (String/fromCharCode code.Unicode/LHA)}]
+    "l" [{:text (String/fromCharCode code.Mongol/lha)}]
     "ng" []
-    "z" [{:text (String/fromCharCode code.Unicode/TSA)}]
+    "z" [{:text (String/fromCharCode code.Mongol/tsa)}]
     "x" []
     "c" (popup-candidates-for-c controller)
     "v" (popup-candidates-for-v controller)
     "b" []
     "n" (popup-candidates-for-n controller)
     "m" []
-    "!" [{:text (String/fromCharCode code.Unicode/DOUBLE_EXCLAMATION_MARK)}]
-    "?" [{:text (String/fromCharCode code.Unicode/DOUBLE_QUESTION_MARK)}]))
+    "!" [{:text (String/fromCharCode code.Mongol/exclamationQuestion)}]
+    "?" [{:text (String/fromCharCode code.Mongol/questionExclamation)}]))
