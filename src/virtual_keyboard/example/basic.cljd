@@ -10,30 +10,28 @@
 
 (defn basic-body []
   (f/widget
-   :let [info (merge options/keyboard-option {:keyboard/mongol-font-family "OnonSoninSans"
+   :let [info (merge options/keyboard-option {:keyboard/mongol-font-family "OyunQaganTig"
                                               :keyboard/key-container-color m/Colors.grey.shade500
                                               :keyboard/font-size 16})]
    :bind {:info info}
    (m/SafeArea)
-   .child
    (m/Center)
-   .child
-   (m/Stack)
-   .children
-   [(m/Column
-     .children
-     [(m/Expanded
-       .child
-       (mgl/MongolTextField
-        .maxLines 500
-        .autofocus true
-        .onTap (fn []
-                 (keyboard-action/clear-candidates)
-                 (dart:core/print "onTap TextField"))
-        .style (m/TextStyle .fontSize 20)
-        .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
-      (keyboard/keyboard {:custom-fns {}})])
-    (keyboard/candidates nil)]))
+   (m/Column
+    .children
+    [(m/Expanded
+      .child
+      (m/Stack
+       .children
+       [(mgl/MongolTextField
+         .maxLines 500
+         .autofocus true
+         .onTap (fn []
+                  (keyboard-action/clear-candidates)
+                  (dart:core/print "onTap TextField"))
+         .style (m/TextStyle .fontSize 20)
+         .decoration (m/InputDecoration .border (m/OutlineInputBorder)))
+       (keyboard/candidates nil)]))
+     (keyboard/keyboard {:custom-fns {}})])))
 
 (defn basic []
   (control/set-control)
