@@ -7,7 +7,7 @@
 (defn key-widget [info vkey is-rotated]
   (f/widget
    (m/InkWell)
-   (m/Container .color (:keyboard/long-press-container-color info)
+   (m/Container .color (:keyboard/key-container-color info)
                 .height (:keyboard/height info)
                 .alignment m.Alignment/center)
    (m/Padding .padding
