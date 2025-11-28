@@ -177,8 +177,7 @@
                                      .maxHeight (/ (:keyboard/height info) 4))
                        .child
                        (popup-key/key-widget info vkey is-rotated)))))
-                 additional-keys))
-   ))
+                 additional-keys))))
 
 
 (defn build-entry-popup [^m/BuildContext ctx

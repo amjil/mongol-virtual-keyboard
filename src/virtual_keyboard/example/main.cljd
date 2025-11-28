@@ -9,10 +9,12 @@
    [virtual-keyboard.keyboard-candidates :as kc]
    [virtual-keyboard.zip-utils :as zip-utils]))
 
-(defn main []
+(defn ^:async main []
   (m.WidgetsFlutterBinding/ensureInitialized)
-  (zip-utils/read-json-from-asset-zip kc/data "assets/data.zip")
-  (zip-utils/read-json-from-asset-zip kc/next "assets/next.zip")
+  ;; Load assets in parallel to improve startup speed
+  (zip-utils/load-assets-parallel
+        [[kc/data "assets/data.zip"]
+         [kc/next "assets/next.zip"]])
   (f/run
    (m/MaterialApp
     .title "Welcome to Flutter"

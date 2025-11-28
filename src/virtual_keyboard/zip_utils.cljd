@@ -1,30 +1,64 @@
 (ns virtual-keyboard.zip-utils
   (:require
    ["dart:io" :as io]
+   ["dart:async" :as async]
    ["dart:convert" :as convert]
    ["package:flutter/services.dart" :refer [rootBundle]]
-   ["package:archive/archive.dart" :as archive]))
+   ["package:archive/archive.dart" :as archive]
+   ["package:path_provider/path_provider.dart" :as path-provider]
+   [clojure.string :as str]))
 
-(defn- process-file-content [^String file-name file-content-bytes]
-  (let [content-string (.decode convert/utf8 file-content-bytes)]
-    (if (.endsWith file-name ".json")
-      (try
-        (convert/jsonDecode content-string)
-        (catch Exception e
-          (dart:core/print (str "Error in process-file-content: " e))))
-      {})))
+(defn- ^:async get-cache-file-path [asset-path]
+  (let [cache-dir (await (path-provider/getApplicationCacheDirectory))
+        cache-file-name (str (str/replace asset-path "/" "_") ".json")
+        cache-file (io/File (str (.-path cache-dir) "/" cache-file-name))]
+    cache-file))
 
+(defn- load-from-cache [cache-file]
+  (try
+    (when (.existsSync cache-file)
+      (let [content-string (.readAsStringSync cache-file)
+            content (convert/jsonDecode content-string)]
+        content))
+    (catch Exception e
+      (dart:core/print (str "Error reading cache: " e))
+      nil)))
+
+(defn- save-to-cache [cache-file content]
+  (try
+    (.writeAsStringSync cache-file (convert/jsonEncode content))
+    (catch Exception e
+      (dart:core/print (str "Error saving cache: " e)))))
 
 (defn ^:async read-json-from-asset-zip [asset-atom asset-path]
-  (-> (.load rootBundle asset-path)
-      (.then (fn [byte-data]
-               (let [bytes (.buffer.asUint8List byte-data)
-                     ar (.decodeBytes (archive/ZipDecoder.) bytes)
-                     target-file (first ar)]
-                 (if target-file
-                   (let [content (.-content target-file)
-                         content-string (convert/utf8.decode content)
-                         content (convert/json.decode content-string)]
-                     (reset! asset-atom content))
-                   (throw (Exception. "JSON file not found")))
-                 (dart:core/print "xxxx11111"))))))
+  (let [cache-file (await (get-cache-file-path asset-path))
+        cached-content (load-from-cache cache-file)]
+    (if cached-content
+      ;; Load from cache
+      (reset! asset-atom cached-content)
+      ;; Load from zip file and cache
+      (let [result (await
+                    (-> (.load rootBundle asset-path)
+                        (.then (fn [byte-data]
+                                 (let [bytes (.buffer.asUint8List byte-data)
+                                       ar (.decodeBytes (archive/ZipDecoder.) bytes)
+                                       target-file (first ar)]
+                                   (if target-file
+                                     (let [content (.-content target-file)
+                                           content-string (convert/utf8.decode content)
+                                           content (convert/jsonDecode content-string)]
+                                       (reset! asset-atom content)
+                                       (save-to-cache cache-file content)
+                                       content)
+                                     (throw (Exception. "JSON file not found"))))))))]
+        result))))
+
+(defn ^:async load-assets-parallel
+  "Load multiple assets in parallel to improve loading speed.
+   asset-configs is a vector of [asset-atom asset-path] pairs.
+   Example: [[kc/data \"assets/data.zip\"] [kc/next \"assets/next.zip\"]]"
+  [asset-configs]
+  (let [futures (map (fn [[asset-atom asset-path]]
+                       (read-json-from-asset-zip asset-atom asset-path))
+                     asset-configs)]
+    (await (async/Future.wait futures))))
