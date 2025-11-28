@@ -15,7 +15,6 @@
    :context ctx
    :get {:value-of [:info]}
    (m/Expanded)
-   .child
    (m/Padding
     .padding
     (.symmetric
@@ -23,7 +22,6 @@
      .horizontal
      (:keyboard/horizontal-key-padding info)
      .vertical 0))
-   .child
    (m/Container
     .clipBehavior (.hardEdge m/Clip)
     .height (/ (:keyboard/height info) rows-count)
@@ -31,9 +29,7 @@
                  .borderRadius
                  (.all m/BorderRadius
                        (.circular m/Radius (:keyboard/key-cap-border-radius info)))))
-   .child
    (m/Material .color (:keyboard/key-container-color info))
-   .child
    (m/InkWell
     .splashColor (-> m.Colors/black (.withOpacity 0.1))
     .highlightColor (-> m.Colors/grey .-shade200 (.withOpacity 0.3))
@@ -48,56 +44,56 @@
                (keyboard-overlay/remove-overlay-bubble))
     .onTapCancel (fn []
                    (keyboard-overlay/remove-overlay-bubble))
-    .child
-    (m/GestureDetector
-     .onLongPressStart
-     (fn [^gesture/LongPressStartDetails details]
-       (keyboard-overlay/remove-overlay-bubble)
-       (keyboard-overlay/insert-overlay-popup ctx info virtual-key)
-       (keyboard-overlay/set-drag-start-x (.-globalPosition details))
-       (keyboard-overlay/set-drag-dx 0))
-     .onLongPressMoveUpdate
-     (fn [^gesture/LongPressMoveUpdateDetails details]
-       (let [current-position (.-globalPosition details)
-             start-position (keyboard-overlay/get-drag-start-x)]
-         (when start-position
-           (let [dx (- (.-dx current-position) (.-dx start-position))]
-             (keyboard-overlay/set-drag-dx dx)
-             (keyboard-overlay/update-overlay-selection)))))
-     .onLongPressEnd
-     (fn [^gesture/LongPressEndDetails _]
-       (let [selected-key (keyboard-overlay/get-selected-key)]
-         (when selected-key
-           (keyboard-action/on-key-press
-            (assoc selected-key :key-type :string) nil))
-         (keyboard-overlay/remove-overlay-popup)
-         (keyboard-overlay/clear-drag-state)))
-     .onLongPressCancel
-     (fn []
-       (keyboard-overlay/remove-overlay-popup)
-       (keyboard-overlay/clear-drag-state))
-     .child
-     (m/Stack
-      .children
-      [(if (and (zero? (:keyboard/layout-index @state/state))
-                (not (some #{(:id virtual-key)} ["ng" "-" "_"]))
-                (not-empty (:id virtual-key)))
-         (m/Align .alignment m.Alignment/topLeft
-                  .child (m/Text (:id virtual-key)
-                                 .style (m/TextStyle .color (:keyboard/key-text-color info))))
-         (m/SizedBox))
-       (m/Align .alignment (.center m/Alignment)
-                .child
-                (if (:is-rotated virtual-key)
-                  (mgl/MongolText (utils/key-text virtual-key)
-                                  .style
-                                  (m/TextStyle .fontSize (:keyboard/font-size info)
-                                               .color (:keyboard/key-text-color info)
-                                               .fontFamily (:keyboard/mongol-font-family info)
-                                               .fontWeight (:keyboard/font-weight info)))
-                  (m/Text (utils/key-text virtual-key)
-                          .style
-                          (m/TextStyle .fontSize (:keyboard/font-size info)
-                                       .color (:keyboard/key-text-color info)
-                                       .fontFamily (:keyboard/english-font-family info)
-                                       .fontWeight (:keyboard/font-weight info)))))])))))
+    .enableFeedback false)
+   (m/GestureDetector
+    .behavior m.HitTestBehavior/opaque
+    .onLongPressStart
+    (fn [^gesture/LongPressStartDetails details]
+      (keyboard-overlay/remove-overlay-bubble)
+      (keyboard-overlay/insert-overlay-popup ctx info virtual-key)
+      (keyboard-overlay/set-drag-start-x (.-globalPosition details))
+      (keyboard-overlay/set-drag-dx 0))
+    .onLongPressMoveUpdate
+    (fn [^gesture/LongPressMoveUpdateDetails details]
+      (let [current-position (.-globalPosition details)
+            start-position (keyboard-overlay/get-drag-start-x)]
+        (when start-position
+          (let [dx (- (.-dx current-position) (.-dx start-position))]
+            (keyboard-overlay/set-drag-dx dx)
+            (keyboard-overlay/update-overlay-selection)))))
+    .onLongPressEnd
+    (fn [^gesture/LongPressEndDetails _]
+      (let [selected-key (keyboard-overlay/get-selected-key)]
+        (when selected-key
+          (keyboard-action/on-key-press
+           (assoc selected-key :key-type :string) nil))
+        (keyboard-overlay/remove-overlay-popup)
+        (keyboard-overlay/clear-drag-state)))
+    .onLongPressCancel
+    (fn []
+      (keyboard-overlay/remove-overlay-popup)
+      (keyboard-overlay/clear-drag-state)))
+   (m/Stack
+    .children
+    [(if (and (zero? (:keyboard/layout-index @state/state))
+              (not (some #{(:id virtual-key)} ["ng" "-" "_"]))
+              (not-empty (:id virtual-key)))
+       (m/Align .alignment m.Alignment/topLeft
+                .child (m/Text (:id virtual-key)
+                               .style (m/TextStyle .color (:keyboard/key-text-color info))))
+       (m/SizedBox))
+     (m/Align .alignment (.center m/Alignment)
+              .child
+              (if (:is-rotated virtual-key)
+                (mgl/MongolText (utils/key-text virtual-key)
+                                .style
+                                (m/TextStyle .fontSize (:keyboard/font-size info)
+                                             .color (:keyboard/key-text-color info)
+                                             .fontFamily (:keyboard/mongol-font-family info)
+                                             .fontWeight (:keyboard/font-weight info)))
+                (m/Text (utils/key-text virtual-key)
+                        .style
+                        (m/TextStyle .fontSize (:keyboard/font-size info)
+                                     .color (:keyboard/key-text-color info)
+                                     .fontFamily (:keyboard/english-font-family info)
+                                     .fontWeight (:keyboard/font-weight info)))))])))
