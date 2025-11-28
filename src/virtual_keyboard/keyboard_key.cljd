@@ -30,21 +30,6 @@
                  (.all m/BorderRadius
                        (.circular m/Radius (:keyboard/key-cap-border-radius info)))))
    (m/Material .color (:keyboard/key-container-color info))
-   (m/InkWell
-    .splashColor (-> m.Colors/black (.withOpacity 0.1))
-    .highlightColor (-> m.Colors/grey .-shade200 (.withOpacity 0.3))
-    .onTap
-    (fn []
-      (keyboard-overlay/remove-overlay-bubble)
-      (keyboard-action/on-key-press virtual-key custom-fns))
-    .onTapDown (fn [_]
-                 (keyboard-overlay/remove-overlay-popup)
-                 (keyboard-overlay/insert-overlay-bubble ctx info virtual-key))
-    .onTapUp (fn [_]
-               (keyboard-overlay/remove-overlay-bubble))
-    .onTapCancel (fn []
-                   (keyboard-overlay/remove-overlay-bubble))
-    .enableFeedback false)
    (m/GestureDetector
     .behavior m.HitTestBehavior/opaque
     .onLongPressStart
@@ -73,6 +58,21 @@
     (fn []
       (keyboard-overlay/remove-overlay-popup)
       (keyboard-overlay/clear-drag-state)))
+   (m/InkWell
+    .splashColor (-> m.Colors/black (.withOpacity 0.1))
+    .highlightColor (-> m.Colors/grey .-shade200 (.withOpacity 0.3))
+    .onTap
+    (fn []
+      (keyboard-overlay/remove-overlay-bubble)
+      (keyboard-action/on-key-press virtual-key custom-fns))
+    .onTapDown (fn [_]
+                 (keyboard-overlay/remove-overlay-popup)
+                 (keyboard-overlay/insert-overlay-bubble ctx info virtual-key))
+    .onTapUp (fn [_]
+               (keyboard-overlay/remove-overlay-bubble))
+    .onTapCancel (fn []
+                   (keyboard-overlay/remove-overlay-bubble))
+    .enableFeedback false)
    (m/Stack
     .children
     [(if (and (zero? (:keyboard/layout-index @state/state))
