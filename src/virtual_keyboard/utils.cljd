@@ -30,7 +30,11 @@
   (if (empty? text)
     nil
     (-> text
+        (str/replace #"᠂" " ")
+        (str/replace #"᠃" " ")
         (str/split #" ")
+        last
+        (str/split #"\n")
         last)))
 
 (defn get-current-word [text ^services/TextSelection selection]
