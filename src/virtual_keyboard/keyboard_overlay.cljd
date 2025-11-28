@@ -4,11 +4,9 @@
    ["package:flutter/services.dart" :as service]
    ["package:mongol/mongol.dart" :as mgl]
    [cljd.flutter :as f]
-   [virtual-keyboard.keyboard-action :as keyboard-action]
    [virtual-keyboard.popup-key :as popup-key]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.popup-key-candidates :as candidates]
-   [virtual-keyboard.keyboard-state :as state]
    [virtual-keyboard.input-control :as control]))
 
 (defn bubble-widget [^m/Size size info virtual-key]
@@ -50,53 +48,136 @@
                  .child
                  (bubble-widget size info virtual-key))))))
 
-(defn remove-overlay
+(def state (atom {}))
+
+;; State management functions
+(defn set-drag-start-x
+  "Set drag start position"
+  [position]
+  (swap! state assoc :keyboard/drag-start-x position))
+
+(defn set-drag-dx
+  "Set drag distance"
+  [dx]
+  (swap! state assoc :keyboard/drag-dx dx))
+
+(defn get-drag-start-x
+  "Get drag start position"
   []
-  (when-not (nil? (:keyboard/entry @state/state))
-    (let [^m/OverlayEntry entry (:keyboard/entry @state/state)]
+  (:keyboard/drag-start-x @state))
+
+(defn clear-drag-state
+  "Clear drag-related state"
+  []
+  (swap! state dissoc :keyboard/drag-start-x :keyboard/drag-dx))
+
+;; Remove bubble overlay
+(defn remove-overlay-bubble
+  []
+  (when-not (nil? (:keyboard/bubble-entry @state))
+    (let [^m/OverlayEntry entry (:keyboard/bubble-entry @state)]
       (when-not (nil? entry)
         (.remove entry))
-      (swap! state/state assoc :keyboard/entry nil))))
+      (swap! state assoc :keyboard/bubble-entry nil))))
+
+;; Remove popup overlay
+(defn remove-overlay-popup
+  []
+  (when-not (nil? (:keyboard/popup-entry @state))
+    (let [^m/OverlayEntry entry (:keyboard/popup-entry @state)]
+      (when-not (nil? entry)
+        (.remove entry))
+      (swap! state assoc :keyboard/popup-entry nil)))
+  (swap! state dissoc :keyboard/popup-keys :keyboard/popup-is-rotated :keyboard/info :keyboard/drag-dx :keyboard/drag-start-x))
+
+;; Compatibility function: remove all overlays
+(defn remove-overlay
+  []
+  (remove-overlay-bubble)
+  (remove-overlay-popup))
+
+(defn get-selected-key-index
+  "Calculate selected key index based on drag distance dx"
+  [dx additional-keys _info]
+  (if (or (zero? (count additional-keys)) (nil? dx))
+    nil
+    (let [key-width 30  ;; Estimated key width, can be adjusted based on actual situation
+          key-spacing 1
+          item-width (+ key-width key-spacing)
+          ;; dx is the offset relative to the start position, positive to the right, negative to the left
+          ;; When dx=0, select the first key (index 0), drag right to select subsequent keys
+          ;; Calculate index offset: positive to the right, negative to the left
+          index-offset (int (/ dx item-width))
+          ;; Calculate from the first key (index 0)
+          final-index (max 0 (+ 0 index-offset))]
+      (min (dec (count additional-keys)) final-index))))
+
+(defn get-selected-key
+  "Get currently selected key"
+  []
+  (let [drag-dx (:keyboard/drag-dx @state)
+        additional-keys (:keyboard/popup-keys @state)
+        info (:keyboard/info @state)]
+    (when (and drag-dx additional-keys info (not (zero? (count additional-keys))))
+      (let [index (get-selected-key-index drag-dx additional-keys info)]
+        (when (and (some? index) (>= index 0) (< index (count additional-keys)))
+          (nth additional-keys index))))))
+
+(defn update-overlay-selection
+  "Update overlay selection state"
+  []
+  (when-not (nil? (:keyboard/popup-entry @state))
+    (let [^m/OverlayEntry entry (:keyboard/popup-entry @state)]
+      (when-not (nil? entry)
+        (.markNeedsBuild entry)))))
 
 (defn insert-overlay-bubble
   [^m/BuildContext ctx
    info
    current-key]
-  (remove-overlay)
+  (remove-overlay-bubble)
   (let [^m/OverlayEntry entry (build-entry-bubble ctx info current-key)]
-    (swap! state/state assoc :keyboard/entry nil)
+    (swap! state assoc :keyboard/bubble-entry nil)
     (.insert (.of m/Overlay ctx) entry)
-    (swap! state/state assoc :keyboard/entry entry)))
+    (swap! state assoc :keyboard/bubble-entry entry)))
 
 
 ;;;;
-(defn overlay-popup-widget [^m/Size size info additional-keys is-rotated]
+(defn overlay-popup-widget [^m/Size _size info additional-keys is-rotated]
   (f/widget
-   :context ctx
    (m/GestureDetector)
    (m/Card
     .elevation 10)
    (m/Container
-    .color (-> m/Theme (.of ctx) .-colorScheme .-primaryContainer))
+    .color (:keyboard/key-container-color info))
    (m/Wrap
     .direction m.Axis/horizontal
     .runSpacing 2
     .spacing 1
     .children
-    (map (fn [vkey]
-           (m/Card
-            .child
-            (m/ConstrainedBox
-             .constraints (m/BoxConstraints
-                           .maxHeight (/ (:keyboard/height info) 4))
-             .child
-             (m/DragTarget
-              .builder (fn [_ _ _]
-                         (popup-key/key-widget info vkey is-rotated))
-              .onAccept (fn [_]
-                          (keyboard-action/on-key-press
-                           (assoc vkey :key-type :string) nil))))))
-         additional-keys))
+    (map-indexed (fn [index vkey]
+                   (let [drag-dx (or (:keyboard/drag-dx @state) 0)
+                         selected-index (get-selected-key-index drag-dx additional-keys info)
+                         is-selected (= index selected-index)
+                         base-color (:keyboard/key-container-color info)
+                         selected-color (if base-color
+                                       (-> base-color (.withOpacity 0.7))
+                                       (-> m.Colors/grey .-shade300 (.withOpacity 0.5)))]
+                     (m/Card
+                      .color (if is-selected selected-color nil)
+                      .elevation (if is-selected 4 2)
+                      .shape (if is-selected
+                              (m/RoundedRectangleBorder
+                               .borderRadius (.all m/BorderRadius (.circular m/Radius (:keyboard/key-cap-border-radius info)))
+                               .side (m/BorderSide .color m.Colors/blue .width 2))
+                              nil)
+                      .child
+                      (m/ConstrainedBox
+                       .constraints (m/BoxConstraints
+                                     .maxHeight (/ (:keyboard/height info) 4))
+                       .child
+                       (popup-key/key-widget info vkey is-rotated)))))
+                 additional-keys))
    ))
 
 
@@ -130,12 +211,18 @@
         additional-keys
         (if (true? (:is-rotated virtual-key))
           (candidates/popup-candidates editing-value (:id virtual-key))
-          (get popup-key/en-popup-keys (keyword (:text virtual-key))))]
+          (get popup-key/en-popup-keys (keyword (:text virtual-key))))
+        is-rotated (:is-rotated virtual-key)]
     (if (zero? (count additional-keys))
       nil
       (do
-        (remove-overlay)
-        (let [^m/OverlayEntry entry (build-entry-popup ctx info additional-keys (:is-rotated virtual-key))]
-          (swap! state/state assoc :keyboard/entry nil)
+        (remove-overlay-popup)
+        (swap! state assoc
+               :keyboard/popup-keys additional-keys
+               :keyboard/popup-is-rotated is-rotated
+               :keyboard/info info
+               :keyboard/drag-dx 0)
+        (let [^m/OverlayEntry entry (build-entry-popup ctx info additional-keys is-rotated)]
+          (swap! state assoc :keyboard/popup-entry nil)
           (.insert (.of m/Overlay ctx) entry)
-          (swap! state/state assoc :keyboard/entry entry))))))
+          (swap! state assoc :keyboard/popup-entry entry))))))
