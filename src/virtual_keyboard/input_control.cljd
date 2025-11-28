@@ -120,6 +120,11 @@
     (catch Exception e
       (dart:core/print (str "Error in reset-text: " e)))))
       
+(defn get-text []
+  (if (nil? @editing-value)
+    ""
+    (.-text @editing-value)))
+      
 (defn update-selection [offset]
   (try
     (when-not (nil? @editing-value)
