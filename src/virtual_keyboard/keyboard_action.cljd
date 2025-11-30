@@ -2,8 +2,10 @@
   (:require
    ["package:flutter/material.dart" :as m]
    ["package:mongol/mongol.dart" :as mgl]
+   ["package:mongol_code/mongol_code.dart" :as code]
    ["package:vibration/vibration.dart" :as vibrate]
    [cljd.flutter :as f]
+   [clojure.string :as str]
    [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
    [virtual-keyboard.options :as options]
    [virtual-keyboard.input-control :as control]
@@ -244,8 +246,11 @@
       (control/insert-text new-str)
       (let [last-word (utils/get-current-word (.-text @control/editing-value)
                                               (.-selection @control/editing-value))
-            candidates (get @keyboard-candidates/data last-word)]
-        (swap! state/state assoc :keyboard/candidates-list (map first (sort-by last > candidates)))))
+            candidates (->> (get @keyboard-candidates/data last-word) 
+                            (sort-by last >)
+                            (map first)
+                            (remove #(str/starts-with? % (str (char code/Mongol.mvs)))))]
+        (swap! state/state assoc :keyboard/candidates-list candidates)))
 
     :action
     (condp = (:action vkey)
