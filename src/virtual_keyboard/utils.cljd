@@ -32,6 +32,8 @@
     (-> text
         (str/replace #"᠂" " ")
         (str/replace #"᠃" " ")
+        (str/replace #"\*" " ")
+        (str/replace #"\[" " ")
         (str/split #" ")
         last
         (str/split #"\n")
