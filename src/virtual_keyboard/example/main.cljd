@@ -7,14 +7,17 @@
    [virtual-keyboard.example.styled :as example-styled]
   ;;  [virtual-keyboard.example.emoji :as example-emoji]
    [virtual-keyboard.keyboard-candidates :as kc]
-   [virtual-keyboard.zip-utils :as zip-utils]))
+   [virtual-keyboard.zip-utils :as zip-utils]
+   [virtual-keyboard.fst-reader :as fst-reader]))
 
 (defn ^:async main []
   (m.WidgetsFlutterBinding/ensureInitialized)
   ;; Load assets in parallel to improve startup speed
   (zip-utils/load-assets-parallel
-        [[kc/data "assets/data.zip"]
-         [kc/next "assets/next.zip"]])
+        [[kc/next "assets/next.zip"]])
+         
+  (await (fst-reader/ensure-loaded))
+  
   (f/run
    (m/MaterialApp
     .title "Welcome to Flutter"

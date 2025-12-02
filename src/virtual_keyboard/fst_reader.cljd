@@ -1,0 +1,123 @@
+(ns virtual-keyboard.fst-reader
+  (:require
+   ["dart:typed_data" :as u]
+   ["package:flutter/services.dart" :refer [rootBundle]]
+   ["dart:convert" :as convert]))
+
+;; -----------------------------
+;; 1️⃣ Utility functions
+;; -----------------------------
+
+(defn read-u32 [^u/ByteData buf offset]
+  (.getUint32 buf offset u/Endian.little))
+
+(defn read-u64 [^u/ByteData buf offset]
+  (.getUint64 buf offset u/Endian.little))
+
+(defn read-bytes [^u/Uint8List buf offset len]
+  (.sublist buf offset (+ offset len)))
+
+;; -----------------------------
+;; 2️⃣ token table
+;; -----------------------------
+(defn ^:async load-token-table [path]
+  (let [byte-data (await (.load rootBundle path))
+        count (read-u32 byte-data 0)
+        tokens (loop [i 0 acc []]
+                 (if (< i count)
+                   (recur (inc i) (conj acc (char (read-u32 byte-data (+ 4 (* i 4))))))
+                   acc))]
+    {:tokens tokens
+     :token->char (into {} (map vector (range 0 count) tokens))}))
+
+;; -----------------------------
+;; 3️⃣ dict
+;; -----------------------------
+(defn ^:async load-dict [bin-path idx-path]
+  (let [bin-data (await (.load rootBundle bin-path))
+        idx-data (await (.load rootBundle idx-path))
+        count (/ (.-length idx-data) 8)]
+    {:bin bin-data :idx idx-data :count count}))
+
+(defn dict-get-word [dict word-id token->char]
+  (let [offset (read-u64 (:idx dict) (* 8 word-id))
+        len (read-u32 (:bin dict) offset)
+        bin-uint8 (.buffer.asUint8List (:bin dict))
+        bytes (.sublist bin-uint8 (+ offset 4) (+ offset 4 len))]
+    (apply str (map #(get token->char % "?") bytes))))
+
+;; -----------------------------
+;; 4️⃣ words.fst (MapFst)
+;; -----------------------------
+(defn ^:async load-fst [path]
+  (let [byte-data (await (.load rootBundle path))
+        bytes (.buffer.asUint8List byte-data)]
+    {:data bytes}))
+
+(defn fst-get [_fst _key-bytes]
+  ;; Simplified version: iterate each line key:value
+  ;; For real FST, can use offset index or binary search
+  nil)
+
+;; -----------------------------
+;; 5️⃣ lists.bin + lists.idx
+;; -----------------------------
+(defn ^:async load-lists [bin-path idx-path]
+  (let [bin-data (await (.load rootBundle bin-path))
+        idx-data (await (.load rootBundle idx-path))
+        count (/ (.-length idx-data) 8)]
+    {:bin bin-data :idx idx-data :count count}))
+
+(defn lists-get-word-ids [lists key-id]
+  (let [offset (read-u64 (:idx lists) (* 8 key-id))
+        count (read-u32 (:bin lists) offset)
+        ids (loop [i 0 acc []]
+              (if (< i count)
+                (recur (inc i) (conj acc (read-u32 (:bin lists) (+ offset 4 (* i 4)))))
+                acc))]
+    ids))
+
+;; -----------------------------
+;; 6️⃣ keys.fst (MapFst)
+;; -----------------------------
+(defn ^:async load-keys [path]
+  (let [str-data (await (.loadString rootBundle path))
+        m (convert/jsonDecode str-data)]
+    (into {} (map (fn [[k v]] [k (int v)]) m))))
+
+
+(defn keys-get-id [keys-map key]
+  ;; Simple lookup: get key->id mapping from the loaded map
+  (get keys-map key))
+
+;; -----------------------------
+;; 7️⃣ Query key → candidate word list
+;; -----------------------------
+(defn get-candidates [key keys-map lists dict token-table]
+  (let [key-id (keys-get-id keys-map key)]
+    (if (nil? key-id)
+      ;; If key not found, return empty list
+      []
+      (let [word-ids (lists-get-word-ids lists key-id)]
+        (map #(dict-get-word dict % (:token->char token-table)) word-ids)))))
+
+;; Lazy-loaded variables - will be initialized on first access
+(defonce token-table (atom nil))
+(defonce dict (atom nil))
+(defonce lists (atom nil))
+(defonce keys-map (atom nil))
+
+(defn ^:async ensure-loaded []
+  (when (nil? @token-table)
+    (reset! token-table (await (load-token-table "assets/fst/token_table.bin"))))
+  (when (nil? @dict)
+    (reset! dict (await (load-dict "assets/fst/dict.bin" "assets/fst/dict.idx"))))
+  (when (nil? @lists)
+    (reset! lists (await (load-lists "assets/fst/lists.bin" "assets/fst/lists.idx"))))
+  (when (nil? @keys-map)
+    (reset! keys-map (await (load-keys "assets/fst/keys.json")))))
+
+;; Convenience function that uses the atom values
+(defn ^:async get-candidates-async [key]
+  (await (ensure-loaded))
+  (get-candidates key @keys-map @lists @dict @token-table))

@@ -56,7 +56,7 @@
 (defn ^:async load-assets-parallel
   "Load multiple assets in parallel to improve loading speed.
    asset-configs is a vector of [asset-atom asset-path] pairs.
-   Example: [[kc/data \"assets/data.zip\"] [kc/next \"assets/next.zip\"]]"
+   Example: [[kc/next \"assets/next.zip\"]]"
   [asset-configs]
   (let [futures (map (fn [[asset-atom asset-path]]
                        (read-json-from-asset-zip asset-atom asset-path))
