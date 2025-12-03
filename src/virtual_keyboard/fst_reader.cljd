@@ -7,7 +7,6 @@
 ;; -----------------------------
 ;; 1️⃣ Utility functions
 ;; -----------------------------
-
 (defn read-u32 [^u/ByteData buf offset]
   (.getUint32 buf offset u/Endian.little))
 
@@ -39,25 +38,18 @@
         count (/ (.-length idx-data) 8)]
     {:bin bin-data :idx idx-data :count count}))
 
+;; -----------------------------
+;; 4️⃣ words.fst (MapFst)
+;; -----------------------------
 (defn dict-get-word [dict word-id token->char]
   (let [offset (read-u64 (:idx dict) (* 8 word-id))
         len (read-u32 (:bin dict) offset)
         bin-uint8 (.buffer.asUint8List (:bin dict))
-        bytes (.sublist bin-uint8 (+ offset 4) (+ offset 4 len))]
-    (apply str (map #(get token->char % "?") bytes))))
-
-;; -----------------------------
-;; 4️⃣ words.fst (MapFst)
-;; -----------------------------
-(defn ^:async load-fst [path]
-  (let [byte-data (await (.load rootBundle path))
-        bytes (.buffer.asUint8List byte-data)]
-    {:data bytes}))
-
-(defn fst-get [_fst _key-bytes]
-  ;; Simplified version: iterate each line key:value
-  ;; For real FST, can use offset index or binary search
-  nil)
+        bytes (.sublist bin-uint8 (+ offset 4) (+ offset 4 len))
+        sb (dart:core/StringBuffer.)]
+    (doseq [b bytes]
+      (.write sb (get token->char b "?")))
+    (.toString sb)))
 
 ;; -----------------------------
 ;; 5️⃣ lists.bin + lists.idx
@@ -71,11 +63,10 @@
 (defn lists-get-word-ids [lists key-id]
   (let [offset (read-u64 (:idx lists) (* 8 key-id))
         count (read-u32 (:bin lists) offset)
-        ids (loop [i 0 acc []]
-              (if (< i count)
-                (recur (inc i) (conj acc (read-u32 (:bin lists) (+ offset 4 (* i 4)))))
-                acc))]
-    ids))
+        ;; Use vec + for instead of loop + conj
+        word-ids (vec (for [i (range count)]
+                        (read-u32 (:bin lists) (+ offset 4 (* i 4)))))]
+    word-ids))
 
 ;; -----------------------------
 ;; 6️⃣ keys.fst (MapFst)
@@ -91,15 +82,48 @@
   (get keys-map key))
 
 ;; -----------------------------
-;; 7️⃣ Query key → candidate word list
+;; 7️⃣ Query key → candidate word list (High Performance Version)
 ;; -----------------------------
+;; Maximum cache entries, can be adjusted based on actual memory
+(defonce max-cache-size 1000)
+
+;; LRU cache structure: {:map {key candidates}, :order [key1 key2 ...]}
+(defonce lru-cache (atom {:map {} :order []}))
+
+(defn lru-get [key]
+  (let [{:keys [map]} @lru-cache
+        value (get map key)]
+    (when value
+      ;; Update access order: move key to the end
+      (swap! lru-cache update :order
+             (fn [o] (-> (remove #(= % key) o) (conj key)))))
+    value))
+
+(defn lru-put [key value]
+  (swap! lru-cache
+         (fn [{:keys [map order]}]
+           (let [new-map (assoc map key value)
+                 new-order (conj (remove #(= % key) order) key)]
+             ;; Exceed capacity, remove the oldest
+             (if (> (count new-order) max-cache-size)
+               (let [oldest (first new-order)]
+                 {:map (dissoc new-map oldest)
+                  :order (vec (rest new-order))})
+               {:map new-map :order new-order})))))
+
+
 (defn get-candidates [key keys-map lists dict token-table]
-  (let [key-id (keys-get-id keys-map key)]
-    (if (nil? key-id)
-      ;; If key not found, return empty list
-      []
-      (let [word-ids (lists-get-word-ids lists key-id)]
-        (map #(dict-get-word dict % (:token->char token-table)) word-ids)))))
+  (if-let [cached (lru-get key)]
+    cached
+    (let [key-id (keys-get-id keys-map key)]
+      (if (nil? key-id)
+        []
+        (let [word-ids (lists-get-word-ids lists key-id)
+              token->char (:token->char token-table)
+              candidates (vec (map #(dict-get-word dict % token->char) word-ids))]
+          ;; Write to LRU cache
+          (lru-put key candidates)
+          candidates)))))
 
 ;; Lazy-loaded variables - will be initialized on first access
 (defonce token-table (atom nil))
