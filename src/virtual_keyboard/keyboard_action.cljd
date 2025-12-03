@@ -319,9 +319,8 @@
 (defn on-candidates-clicked
   [text]
   (let [text-with-space (str text " ")]
-    (if (some (into #{}
-                    keyboard-candidates/suffix-candidatges-for-full)
-              [text])
+    (if (some #{text}
+              (into [] keyboard-candidates/all-suffixes))
       (control/insert-text text-with-space)
       (control/replace-word text-with-space)))
   (let [candidates (->> (get @keyboard-candidates/next text)

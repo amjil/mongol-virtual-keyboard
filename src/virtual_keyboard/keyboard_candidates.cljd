@@ -8,6 +8,35 @@
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.options :as options]
    [clojure.string :as str]))
+   
+(def all-suffixes
+  [code.Suffix/YIN 
+   code.Suffix/UN code.Suffix/UEN
+   code.Suffix/U code.Suffix/UE
+   code.Suffix/I code.Suffix/YI
+   code.Suffix/DU code.Suffix/DUE
+   code.Suffix/TU code.Suffix/TUE
+   code.Suffix/DUR code.Suffix/DUER
+   code.Suffix/TUR code.Suffix/TUER
+   code.Suffix/DAQI code.Suffix/DEQI
+   code.Suffix/TAQI code.Suffix/TEQI
+   code.Suffix/ACHA code.Suffix/ECHE
+   code.Suffix/BAR code.Suffix/BER
+   code.Suffix/IYAR code.Suffix/IYER
+   code.Suffix/TAI code.Suffix/TEI
+   code.Suffix/LUGA code.Suffix/LUEGE 
+   code.Suffix/BAN code.Suffix/BEN
+   code.Suffix/IYAN code.Suffix/IYEN 
+   code.Suffix/YUGAN code.Suffix/YUEGEN 
+   code.Suffix/DAGAN code.Suffix/DEGEN 
+   code.Suffix/TAGAN code.Suffix/TEGEN 
+   code.Suffix/ACHAGAN code.Suffix/ECHEGEN 
+   code.Suffix/UD code.Suffix/UED
+   code.Suffix/NUGUD code.Suffix/NUEGUED
+   code.Suffix/NAR code.Suffix/NER
+   code.Suffix/UU code.Suffix/UEUE
+   code.Suffix/DA code.Suffix/DE
+   code.Suffix/CHU code.Suffix/CHUE])
 
 (def suffix-candidatges-for-full
   [code.Suffix/YIN 
