@@ -11,15 +11,24 @@
    [:special-characters :abc :suffix-candidates "᠂" :small-spacer-block "᠃" :return]])
 
 (def mg-special-layout
-  [["1" "2" "3" "4" "5" "6" "7" "8" "9" "0"]
+  [[(str (char code.Mongol/digitOne)) 
+    (str (char code.Mongol/digitTwo)) 
+    (str (char code.Mongol/digitThree)) 
+    (str (char code.Mongol/digitFour)) 
+    (str (char code.Mongol/digitFive)) 
+    (str (char code.Mongol/digitSix)) 
+    (str (char code.Mongol/digitSeven)) 
+    (str (char code.Mongol/digitEight)) 
+    (str (char code.Mongol/digitNine)) 
+    (str (char code.Mongol/digitZero))]
    ["@" "#" "€" "_" "&" (str (char code.Mongol/fullwidthHyphenMinus)) (str (char code.Mongol/plus)) (str (char code.Mongol/fullwidthLeftParenthesis)) (str (char code.Mongol/fullwidthRightParenthesis)) "/"]
-   [:other-special-characters (str (char code.Mongol/referenceMark)) "\"" (str (char code.Mongol/verticalComma)) (str (char code.Mongol/verticalColon)) (str (char code.Mongol/fullwidthSemicolon)) (str (char code.Mongol/fullwidthExclamation)) (str (char code.Mongol/fullwidthQuestion)) :backspace]
+   [:other-special-characters (str (char code.Mongol/referenceMark)) (str (char code.Mongol/fourDots)) (str (char code.Mongol/verticalComma)) (str (char code.Mongol/verticalColon)) (str (char code.Mongol/fullwidthSemicolon)) (str (char code.Mongol/fullwidthExclamation)) (str (char code.Mongol/fullwidthQuestion)) :backspace]
    [:special-characters :abc "," :spacer-block "." :return]])
 
 (def mg-other-special-layout
   [[(str (char code.Mongol/tilde)) "\"" "|" (str (char code.Mongol/middleDot)) "√" "∏" "÷" (str (char code.Mongol/punctuationX)) "¶" "△"]
    ["£" "¥" "$" "¢" (str (char code.Mongol/exclamationQuestion)) (str (char code.Mongol/questionExclamation)) (str (char code.Mongol/equals)) "❴" "❵" "\\"]
-   [:other-special-characters (str (char code.Mongol/percent)) "©" "®" "™" "✓" (str (char code.Mongol/fullwidthLeftSquareBracket)) (str (char code.Mongol/fullwidthRightSquareBracket)) :backspace]
+   [:other-special-characters (str (char code.Mongol/manchuComma)) (str (char code/Mongol.sibeSyllableBoundaryMarker)) (str (char code.Mongol/todoSoftHyphen)) (str (char code.Mongol/ellipsis)) (str (char code.Mongol/birga)) (str (char code.Mongol/fullwidthLeftSquareBracket)) (str (char code.Mongol/fullwidthRightSquareBracket)) :backspace]
    [:special-characters :abc "," :spacer-block "." :return]])
 
 (def en-layout 
