@@ -18,7 +18,7 @@
 
 (def mg-other-special-layout
   [[(str (char code.Mongol/tilde)) "\"" "|" (str (char code.Mongol/middleDot)) "√" "∏" "÷" (str (char code.Mongol/punctuationX)) "¶" "△"]
-   ["£" "¥" "$" "¢" "ˆ" "˚" (str (char code.Mongol/equals)) "❴" "❵" "\\"]
+   ["£" "¥" "$" "¢" (str (char code.Mongol/exclamationQuestion)) (str (char code.Mongol/questionExclamation)) (str (char code.Mongol/equals)) "❴" "❵" "\\"]
    [:other-special-characters (str (char code.Mongol/percent)) "©" "®" "™" "✓" (str (char code.Mongol/fullwidthLeftSquareBracket)) (str (char code.Mongol/fullwidthRightSquareBracket)) :backspace]
    [:special-characters :abc "," :spacer-block "." :return]])
 
