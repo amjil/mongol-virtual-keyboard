@@ -1,4 +1,6 @@
-(ns virtual-keyboard.keyboard-layouts)
+(ns virtual-keyboard.keyboard-layouts
+  (:require 
+   ["package:mongol_code/mongol_code.dart" :as code]))
 
 (def mg-layout 
   [["ᠴ᠊" "ᠸ᠊" "ᠡ" "ᠷ᠊" "ᠲ᠊" "ᠶ᠊" "ᠦ᠊" "ᠢ" "ᠥ" "ᠫ᠊"]
@@ -11,7 +13,7 @@
 (def mg-special-layout
   [["1" "2" "3" "4" "5" "6" "7" "8" "9" "0"]
    ["@" "#" "€" "_" "&" "-" "+" "(" ")" "/"]
-   [:other-special-characters "*" "\"" "'" ":" ";" "!" "?" :backspace]
+   [:other-special-characters "*" "\"" (str (char code.Mongol/verticalComma)) ":" (str (char code.Mongol/fullwidthSemicolon)) (str (char code.Mongol/fullwidthExclamation)) (str (char code.Mongol/fullwidthQuestion)) :backspace]
    [:special-characters :abc "," :spacer-block "." :return]])
 
 (def mg-other-special-layout
