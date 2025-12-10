@@ -125,14 +125,18 @@
     
 ;; copied from mongol_code.dart
 (defn get-gender [word]
-  (let [vower-char (first (filter is-vowel (map int word)))]
-    (cond
-      (.isMasculineVowel code/Mongol vower-char)
-      code/Gender.masculine
+  (let [vower-char (first (filter #(and (is-vowel %)
+                                        (not= code/Mongol.i %))
+                                  (map int word)))]
+    (if (nil? vower-char)
+      code/Gender.neuter
+      (cond
+        (.isMasculineVowel code/Mongol vower-char)
+        code/Gender.masculine
 
-      (.isFeminineVowel code/Mongol vower-char)
-      code/Gender.feminine
+        (.isFeminineVowel code/Mongol vower-char)
+        code/Gender.feminine
 
-      :else
-      code/Gender.neuter))) 
+        :else
+        code/Gender.neuter))))
   
