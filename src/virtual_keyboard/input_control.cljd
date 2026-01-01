@@ -104,10 +104,90 @@
         (service.TextInput/updateEditingValue @editing-value)))
     (catch Exception e
       (dart:core/print (str "Error in insert-text: " e)))))
-          
+      
 (defn delete-last-word []
   (when-not (nil? @editing-value)
-    (replace-word "")))
+    (let [^service/TextEditingValue editing-val @editing-value
+          text (.-text editing-val)
+          selection (.-selection editing-val)
+          select-len (- (.-end selection) (.-start selection))]
+      (cond
+        (> select-len 0)
+        ;; 如果有选中文本，删除选中的文本
+        (let [new-text (.replaceRange text
+                                      (.-start selection)
+                                      (.-end selection)
+                                      "")]
+          (reset! editing-value
+                  (.copyWith editing-val
+                             .text new-text
+                             .selection
+                             (.copyWith selection
+                                        .baseOffset (.-start selection)
+                                        .extentOffset (.-start selection))))
+          (service.TextInput/updateEditingValue @editing-value))
+
+        (zero? (.-start selection))
+        ;; 如果光标在开头，不做任何操作
+        nil
+
+        :else
+        ;; 删除当前位置的一个整字或连续空格
+        (let [cursor-pos (.-start selection)
+              char-before (when (> cursor-pos 0)
+                            (subs text (dec cursor-pos) cursor-pos))
+              is-space? (and char-before
+                            (or (= char-before " ")
+                                (= char-before "\t")
+                                (= char-before "\n")))]
+          (if is-space?
+            ;; 如果是空格，删除所有连续的空格
+            (let [delete-start (loop [pos (dec cursor-pos)]
+                                (if (and (>= pos 0)
+                                        (let [ch (subs text pos (inc pos))]
+                                          (or (= ch " ")
+                                              (= ch "\t")
+                                              (= ch "\n"))))
+                                  (recur (dec pos))
+                                  (inc pos)))
+                  delete-end cursor-pos
+                  new-text (.replaceRange text delete-start delete-end "")]
+              (reset! editing-value
+                      (.copyWith editing-val
+                                 .text new-text
+                                 .selection
+                                 (.copyWith selection
+                                            .baseOffset delete-start
+                                            .extentOffset delete-start)))
+              (service.TextInput/updateEditingValue @editing-value))
+            ;; 如果不是空格，删除整个字
+            (let [current-word (utils/get-current-word text selection)
+                  word-length (.-length current-word)]
+              (if (zero? word-length)
+                ;; 如果没有找到字，删除一个字符（向后兼容）
+                (let [new-start (dec cursor-pos)
+                      new-end cursor-pos
+                      new-text (.replaceRange text new-start new-end "")]
+                  (reset! editing-value
+                          (.copyWith editing-val
+                                     .text new-text
+                                     .selection
+                                     (.copyWith selection
+                                                .baseOffset new-start
+                                                .extentOffset new-start)))
+                  (service.TextInput/updateEditingValue @editing-value))
+                ;; 删除整个字
+                (let [delete-start (- cursor-pos word-length)
+                      delete-end cursor-pos
+                      new-text (.replaceRange text delete-start delete-end "")]
+                  (reset! editing-value
+                          (.copyWith editing-val
+                                     .text new-text
+                                     .selection
+                                     (.copyWith selection
+                                                .baseOffset delete-start
+                                                .extentOffset delete-start)))
+                  (service.TextInput/updateEditingValue @editing-value))))))))))
 
 (defn reset-text [text]
   (try

@@ -257,13 +257,8 @@
       (if-let [custom-backspace (:on-backspace custom-fns)]
         (custom-backspace)
         (do
-          (control/delete-text)
-          (let [last-word (utils/get-current-word (.-text @control/editing-value)
-                                                  (.-selection @control/editing-value))
-                candidates (await (fst-reader/get-candidates-async last-word))]
-                         
-            (swap! state/state assoc :keyboard/candidates-list candidates))))
-
+         (control/delete-last-word)
+         (swap! state/state assoc :keyboard/candidates-list [])))
 
       :return
       (if-let [custom-fn (:on-return custom-fns)]
