@@ -305,24 +305,28 @@
       (swap! state/state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state/state)))
 
       :suffix-candidates
-      (do
-        (let [selection (.-selection @control/editing-value)
-              last-word (utils/get-current-word (.-text @control/editing-value)
-                                                selection)]
-          (when (and (pos? (.-start selection))
-                     (empty? last-word))
-            (control/delete-text)))
-        (keyboard-candidates/suffix-candidates (.-text @control/editing-value)
-                                               (.-selection @control/editing-value)
-                                               state/state)))))
+      (keyboard-candidates/suffix-candidates (.-text @control/editing-value)
+                                            (.-selection @control/editing-value)
+                                            state/state))))
 
 (defn on-candidates-clicked
   [text]
   (let [text-with-space (str text " ")]
-    (if (some #{text}
-              (into [] keyboard-candidates/all-suffixes))
-      (control/insert-text text-with-space)
+    (cond 
+      (some #{text}
+            (into [] keyboard-candidates/all-suffixes))
+      (do 
+        (control/delete-text)
+        (control/insert-text text-with-space))
+      
+      (str/starts-with? text (str (char code/Mongol.mvs)))
+      (do 
+        (control/delete-text)
+        (control/insert-text text-with-space))
+    
+      :else
       (control/replace-word text-with-space)))
+
   (let [candidates (->> (get @keyboard-candidates/next text)
                         (filter #(not (nil? (first %)))))]
     (if (empty? candidates)

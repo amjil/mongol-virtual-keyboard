@@ -104,6 +104,10 @@
         (service.TextInput/updateEditingValue @editing-value)))
     (catch Exception e
       (dart:core/print (str "Error in insert-text: " e)))))
+          
+(defn delete-last-word []
+  (when-not (nil? @editing-value)
+    (replace-word "")))
 
 (defn reset-text [text]
   (try
