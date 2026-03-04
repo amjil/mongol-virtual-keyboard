@@ -7,5 +7,4 @@
          :sha "806a92930e27a67c5ec096892f498089816c7961"}}
 
  :aliases {:cljd {:main-opts ["-m" "cljd.build"]}}
- :cljd/opts {:kind :flutter
-             :main virtual-keyboard.example.main}}
+ :cljd/opts {:kind :flutter}}

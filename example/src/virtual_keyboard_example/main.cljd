@@ -1,0 +1,43 @@
+(ns virtual-keyboard-example.main
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
+   [cljd.flutter :as f]
+   [virtual-keyboard-example.basic :as example-basic]
+   [virtual-keyboard-example.styled :as example-styled]
+  ;;  [virtual-keyboard-example.emoji :as example-emoji]
+   [virtual-keyboard.keyboard-candidates :as kc]
+   [virtual-keyboard.zip-utils :as zip-utils]
+   [virtual-keyboard.fst-reader :as fst-reader]))
+
+(defn ^:async main []
+  (m.WidgetsFlutterBinding/ensureInitialized)
+  ;; Load assets in parallel to improve startup speed
+  (zip-utils/load-assets-parallel
+        [[kc/next "assets/next.zip"]])
+         
+  (await (fst-reader/ensure-loaded))
+  
+  (f/run
+   (m/MaterialApp
+    .title "Welcome to Flutter"
+    .themeMode m.ThemeMode/system
+    .theme (m/ThemeData .primarySwatch m.Colors/blue
+                        .brightness m/Brightness.dark
+                        .fontFamily "OyunQaganTig")
+    .home
+    ;; (example-emoji/basic)
+    ;; (example-styled/styled)
+    ;; (m/Scaffold
+    ;; ;;  .appBar (m/AppBar
+    ;; ;;           .title (m/Text "Mongolian Search Bar"))
+    ;;  .body
+    ;;  (m/Center
+    ;;   .child (mgl/MongolText
+    ;;           " ᠳᠠᠶᠠᠭᠠᠷ ᠰᠠᠶ᠋ᠢᠨ ᠪᠠᠶ᠋ᠢᠨ᠎ᠠ ᠊ᠤᠤ?"
+    ;;           .style (m/TextStyle
+    ;;                   .color m.Colors/blue
+    ;;                   ;; .fontFamily "MongolianBaiZheng"
+    ;;                   .fontSize 32.0))))
+    (example-basic/basic)
+    .debugShowCheckedModeBanner false)))

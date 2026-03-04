@@ -1,0 +1,79 @@
+(ns virtual-keyboard-example.styled
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
+   [cljd.flutter :as f]
+   [virtual-keyboard.keyboard :as keyboard]
+   [virtual-keyboard.keyboard-action :as keyboard-action]
+   [virtual-keyboard.options :as options]
+   [menu-bar.menu :as menu]))
+
+(declare body)
+
+(def keyboard-style 
+  {:key-cap-border-radius 6
+   :key-container-color (-> m/Colors .blueGrey .-shade400)})
+
+(def candidates-style
+  {:text-style (m/TextStyle .fontSize 20
+                            .fontFamily "OnonSoninSans"
+                            .color m.Colors/white
+                            .fontWeight (.w500 m/FontWeight))})
+
+(defn styled []
+  (f/widget
+   :context ctx
+   :managed [^m/TextEditingController text-controller (m/TextEditingController)]
+   :bind {:keyboard/text-controller text-controller}
+   (m/Scaffold
+    .resizeToAvoidBottomInset true
+    ;; .appBar (m/AppBar
+    ;;          .title (m/Text "Virtual Keyboard"))
+    .backgroundColor (-> m/Colors .grey .-shade50)
+    .body
+    (body))))
+
+(defn body []
+  (f/widget
+   :context ctx
+   :get [:keyboard/text-controller]
+   :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
+         height (-> m/MediaQuery (.of ctx) .-size .-height)
+         info (merge options/keyboard-option keyboard-style)
+         state (atom (merge options/keyboard-state
+                            {:keyboard/text-controller text-controller}))]
+   :bind {:info info :state state :context ctx}
+   :watch [{candidates-list :keyboard/candidates-list} state]
+   (m/SafeArea)
+   .child
+   (m/Center)
+   .child
+   (m/Stack)
+   .children
+   [(m/Column
+     .children
+     [(m/Expanded
+       .child
+       (mgl/MongolTextField
+        .controller text-controller
+        .maxLines 500
+        .autofocus true
+        .onTap (fn []
+                 (swap! state assoc :keyboard/candidates-list [])
+                 (dart:core/print "onTap TextField"))
+        .showCursor true
+        .readOnly true
+        .style (m/TextStyle .fontSize 26)
+        .decoration (m/InputDecoration .border (m/OutlineInputBorder))))
+      (m/Container
+       .color (-> m/Colors .grey .-shade300)
+       .child
+       (keyboard/keyboard {:custom-fns nil}))])
+    (m/Positioned
+     .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
+     .right (/ width 4)
+     .child
+     (menu/menu {:bar {:elavation 10}
+                 :item (merge {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x))}
+                             candidates-style)}
+                candidates-list))]))
