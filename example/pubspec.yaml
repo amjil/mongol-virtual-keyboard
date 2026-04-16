@@ -19,8 +19,6 @@ dependencies:
   uuid: ^4.5.1
   lifecycle: ^0.10.0
   path_provider: ^2.1.5
-  mongol_virtual_keyboard:
-    path: .clojuredart/deps/6bc7607e287fc13f3997012e8a57e372a9e9d572dd78aae7a740cbf2f3a43f42
 
 dev_dependencies:
   flutter_test:

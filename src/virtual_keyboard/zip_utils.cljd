@@ -9,7 +9,7 @@
    [clojure.string :as str]))
 
 (defn- ^:async get-cache-file-path [asset-path]
-  (let [cache-dir (await (path-provider/getApplicationCacheDirectory))
+  (let [cache-dir (await (path-provider/getApplicationDocumentsDirectory))
         cache-file-name (str (str/replace asset-path "/" "_") ".json")
         cache-file (io/File (str (.-path cache-dir) "/" cache-file-name))]
     cache-file))
