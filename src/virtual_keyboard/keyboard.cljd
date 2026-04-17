@@ -64,18 +64,20 @@
     .bottom 10
     .right (/ width 4)
     .child
-    (menu/menu {:bar {:elavation 10
-                      :background-color (-> theme .-colorScheme .-secondaryContainer)
-                      :scroll controller}
-                :item {:on-tap (fn [x]
-
-                                 (action/on-candidates-clicked x)
-                                 (.animateTo controller
-                                             0
-                                             .duration (Duration .milliseconds 50)
-                                             .curve m/Curves.easeOut))
-                       :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}}
-               (take 60 candidates-list)))))
+    (m/TextFieldTapRegion
+     .child
+     (menu/menu {:bar {:elavation 10
+                       :background-color (-> theme .-colorScheme .-secondaryContainer)
+                       :scroll controller}
+                 :item {:on-tap (fn [x]
+                                  (action/on-candidates-clicked x)
+                                  (.-value! control/visible true)
+                                  (.animateTo controller
+                                              0
+                                              .duration (Duration .milliseconds 50)
+                                              .curve m/Curves.easeOut))
+                        :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}}
+                (take 60 candidates-list))))))
 
 (defn candidates-panel [style]
   (f/widget
@@ -83,18 +85,20 @@
    :let [theme (-> m/Theme (.of ctx))]
    :managed [controller (m/ScrollController)]
    :watch [{candidates-list :keyboard/candidates-list} state/state]
-   (menu/menu {:bar {:elavation 10
-                     :background-color (-> theme .-colorScheme .-secondaryContainer)
-                     :scroll controller}
-               :item {:on-tap (fn [x]
-
-                                (action/on-candidates-clicked x)
-                                (.animateTo controller
-                                            0
-                                            .duration (Duration .milliseconds 50)
-                                            .curve m/Curves.easeOut))
-                      :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}}
-              (take 60 candidates-list))))
+   (m/TextFieldTapRegion
+    .child
+    (menu/menu {:bar {:elavation 10
+                      :background-color (-> theme .-colorScheme .-secondaryContainer)
+                      :scroll controller}
+                :item {:on-tap (fn [x]
+                                 (action/on-candidates-clicked x)
+                                 (.-value! control/visible true)
+                                 (.animateTo controller
+                                             0
+                                             .duration (Duration .milliseconds 50)
+                                             .curve m/Curves.easeOut))
+                       :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}}
+               (take 60 candidates-list)))))
 
 (defn toolbar [widget]
   (f/widget 

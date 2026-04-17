@@ -248,7 +248,10 @@
       (let [last-word (utils/get-current-word (.-text @control/editing-value)
                                               (.-selection @control/editing-value))
             candidates (->> (await (fst-reader/get-candidates-async last-word))
-                         (remove #(str/starts-with? % (str (char code/Mongol.mvs)))))]
+                            (remove #(str/starts-with? % (str (char code/Mongol.mvs))))
+                            vec)]
+        (dart:core/print
+         (str "candidate update - word: " last-word ", count: " (count candidates)))
         (swap! state/state assoc :keyboard/candidates-list candidates)))
 
     :action
@@ -304,7 +307,7 @@
                                             (.-selection @control/editing-value)
                                             state/state))))
 
-(defn on-candidates-clicked
+(defn ^:async on-candidates-clicked
   [text]
   (let [text-with-space (str text " ")]
     (cond 
@@ -322,11 +325,14 @@
       :else
       (control/replace-word text-with-space)))
 
-  (let [candidates (->> (get @keyboard-candidates/next text)
-                        (filter #(not (nil? (first %)))))]
-    (if (empty? candidates)
-      (swap! state/state assoc :keyboard/candidates-list [])
-      (swap! state/state assoc :keyboard/candidates-list (map first (sort-by #(int/parse (last %)) > candidates))))))
+  (if (fst-reader/remote-candidate-source?)
+    (let [next-words (await (fst-reader/get-next-words-remote text))]
+      (swap! state/state assoc :keyboard/candidates-list (vec next-words)))
+    (let [candidates (->> (get @keyboard-candidates/next text)
+                          (filter #(not (nil? (first %)))))]
+      (if (empty? candidates)
+        (swap! state/state assoc :keyboard/candidates-list [])
+        (swap! state/state assoc :keyboard/candidates-list (vec (map first (sort-by #(dart:core/int.parse (last %)) > candidates))))))))
 
 (defn clear-candidates []
   (swap! state/state assoc :keyboard/candidates-list []))

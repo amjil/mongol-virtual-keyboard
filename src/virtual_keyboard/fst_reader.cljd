@@ -2,7 +2,10 @@
   (:require
    ["dart:typed_data" :as u]
    ["package:flutter/services.dart" :refer [rootBundle]]
-   ["dart:convert" :as convert]))
+   ["package:http/http.dart" :as http]
+   ["dart:convert" :as convert]
+   [clojure.string :as str]
+   [virtual-keyboard.options :as options]))
 
 ;; -----------------------------
 ;; 1️⃣ Utility functions
@@ -131,17 +134,115 @@
 (defonce lists (atom nil))
 (defonce keys-map (atom nil))
 
+(defn remote-candidate-source? []
+  (= (or (:keyboard/candidate-source options/keyboard-option)
+         options/candidate-source-default)
+     :remote-json))
+
+(defn candidate-uri []
+  (let [api-path (or options/candidate-api-path "")]
+    (if (str/starts-with? options/base-url "http")
+      (dart:core/Uri.parse
+       (str (str/replace options/base-url #"/+$" "")
+            "/"
+            (str/replace api-path #"^/+" "")))
+      (dart:core/Uri.http options/base-url (str/replace api-path #"^/+" "")))))
+
+(defn next-word-uri []
+  (let [api-path (or options/next-word-api-path "")]
+    (if (str/starts-with? options/base-url "http")
+      (dart:core/Uri.parse
+       (str (str/replace options/base-url #"/+$" "")
+            "/"
+            (str/replace api-path #"^/+" "")))
+      (dart:core/Uri.http options/base-url (str/replace api-path #"^/+" "")))))
+
+(defn ^:async post-word-json [uri key]
+  (await
+   (http/post
+    uri
+    .headers {"Content-Type" "application/json; charset=UTF-8"}
+    .body (convert/jsonEncode {"word" key}))))
+
+(defn normalize-candidates [decoded]
+  (let [raw (cond
+              (vector? decoded) decoded
+              (sequential? decoded) (vec decoded)
+              (map? decoded) (or (get decoded "candidates")
+                                 (get decoded :candidates)
+                                 [])
+              :else [])]
+    (vec (keep #(when (string? %) %) raw))))
+
+(defn extract-json-array-text [body field-name]
+  (let [pattern (re-pattern (str "\"" field-name "\"\\s*:\\s*(\\[[^\\]]*\\])"))]
+    (if-let [[_ array-text] (re-find pattern body)]
+      array-text
+      "[]")))
+
+(defn parse-string-array-from-json-text [array-text]
+  (vec
+   (map second
+        (re-seq #"\"((?:\\.|[^\"])*)\"" array-text))))
+
+(defn ^:async get-candidates-remote [key]
+  (if (str/blank? key)
+    []
+    (let [cached (lru-get key)]
+      (if (and cached (not (empty? cached)))
+        cached
+        (try
+          (let [uri (candidate-uri)
+                _ (dart:core/print (str "[candidate] request uri=" (.toString uri) ", word=" key))
+                result (await (post-word-json uri key))
+                status (.-statusCode result)]
+            (dart:core/print (str "[candidate] status=" status ", body=" (.-body result)))
+            (if (= status 200)
+              (let [body (.-body result)
+                    candidates-json (extract-json-array-text body "candidates")
+                    candidates (parse-string-array-from-json-text candidates-json)]
+                (dart:core/print (str "[candidate] parsed count=" (count candidates)))
+                (when-not (empty? candidates)
+                  (lru-put key candidates))
+                candidates)
+              []))
+          (catch Exception e
+            (dart:core/print (str "[candidate] request error: " e))
+            []))))))
+
+(defn ^:async get-next-words-remote [key]
+  (if (str/blank? key)
+    []
+    (try
+      (let [uri (next-word-uri)
+            _ (dart:core/print (str "[next-word] request uri=" (.toString uri) ", word=" key))
+            result (await (post-word-json uri key))
+            status (.-statusCode result)]
+        (dart:core/print (str "[next-word] status=" status ", body=" (.-body result)))
+        (if (= status 200)
+          (let [body (.-body result)
+                next-words-json (extract-json-array-text body "nextWords")]
+            (parse-string-array-from-json-text next-words-json))
+          []))
+      (catch Exception e
+        (dart:core/print (str "[next-word] request error: " e))
+        []))))
+
 (defn ^:async ensure-loaded []
-  (when (nil? @token-table)
-    (reset! token-table (await (load-token-table "assets/fst/token_table.bin"))))
-  (when (nil? @dict)
-    (reset! dict (await (load-dict "assets/fst/dict.bin" "assets/fst/dict.idx"))))
-  (when (nil? @lists)
-    (reset! lists (await (load-lists "assets/fst/lists.bin" "assets/fst/lists.idx"))))
-  (when (nil? @keys-map)
-    (reset! keys-map (await (load-keys "assets/fst/keys.json")))))
+  (when-not (remote-candidate-source?)
+    (when (nil? @token-table)
+      (reset! token-table (await (load-token-table "assets/fst/token_table.bin"))))
+    (when (nil? @dict)
+      (reset! dict (await (load-dict "assets/fst/dict.bin" "assets/fst/dict.idx"))))
+    (when (nil? @lists)
+      (reset! lists (await (load-lists "assets/fst/lists.bin" "assets/fst/lists.idx"))))
+    (when (nil? @keys-map)
+      (reset! keys-map (await (load-keys "assets/fst/keys.json"))))))
 
 ;; Convenience function that uses the atom values
 (defn ^:async get-candidates-async [key]
-  (await (ensure-loaded))
-  (get-candidates key @keys-map @lists @dict @token-table))
+  (if (remote-candidate-source?)
+    (await (get-candidates-remote key))
+    (do
+      (await (ensure-loaded))
+      (get-candidates key @keys-map @lists @dict @token-table))))

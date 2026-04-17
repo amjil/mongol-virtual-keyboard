@@ -1,6 +1,7 @@
 (ns virtual-keyboard.options
   (:require 
-   ["package:flutter/material.dart" :as m]))
+   ["package:flutter/material.dart" :as m]
+   ["package:flutter/foundation.dart" :refer [kIsWeb]]))
 
 (def font-name "OnonSoninSans")
 
@@ -10,6 +11,9 @@
 (def keyboard-key-type [:action :normal])
 
 (def base-url "localhost:3003")
+(def candidate-api-path "/api/next_word/candidates")
+(def next-word-api-path "/api/next_word/list")
+(def candidate-source-default (if kIsWeb :remote-json :local-fst))
 
 (def keyboard-option 
   {;;  :width nil
@@ -40,6 +44,7 @@
    :keyboard/is-shift-enabled false
    :keyboard/is-special-enabled false
    :keyboard/is-other-special-enabled false
+   :keyboard/candidates-list []
    :keyboard/entry nil
    :keyboard/layout-index 0
    :keyboard/is-vibrate-on false

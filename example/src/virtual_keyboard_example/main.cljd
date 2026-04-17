@@ -1,10 +1,9 @@
 (ns virtual-keyboard-example.main
   (:require
    ["package:flutter/material.dart" :as m]
-   ["package:mongol/mongol.dart" :as mgl]
+   ["package:flutter/foundation.dart" :refer [kIsWeb]]
    [cljd.flutter :as f]
    [virtual-keyboard-example.basic :as example-basic]
-   [virtual-keyboard-example.styled :as example-styled]
   ;;  [virtual-keyboard-example.emoji :as example-emoji]
    [virtual-keyboard.keyboard-candidates :as kc]
    [virtual-keyboard.zip-utils :as zip-utils]
@@ -12,11 +11,11 @@
 
 (defn ^:async main []
   (m.WidgetsFlutterBinding/ensureInitialized)
-  ;; Load assets in parallel to improve startup speed
-  (zip-utils/load-assets-parallel
-        [[kc/next "assets/next.zip"]])
-         
-  (await (fst-reader/ensure-loaded))
+  (when-not kIsWeb
+    ;; Keep native startup behavior; web uses remote candidate API.
+    (zip-utils/load-assets-parallel
+          [[kc/next "assets/next.zip"]])
+    (await (fst-reader/ensure-loaded)))
   
   (f/run
    (m/MaterialApp
