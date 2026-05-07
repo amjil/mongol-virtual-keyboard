@@ -2,141 +2,48 @@
   (:require
    ["package:flutter/material.dart" :as m]
    ["package:flutter/services.dart" :as services]
-   ["package:mongol_code/mongol_code.dart" :as code]
-   ["package:mongol/mongol.dart" :as mgl]
    [clojure.string :as str]
+   [ime-core.linguistics :as linguistics]
    [virtual-keyboard.keyboard-state :as state]))
 
-(defn get-key-button-size [ctx]
+;; 1. UI Size Calculation
+(defn get-key-button-size
+  "Calculates the appropriate dimensions for a keyboard key based on screen size."
+  [ctx]
   (let [screen-width (-> m/MediaQuery (.of ctx) .-size .-width)
         screen-height (-> m/MediaQuery (.of ctx) .-size .-height)
         width (* screen-width (if (> screen-width 350) 0.084 0.082))
         height (* screen-height (if (> screen-height 800) 0.059 0.07))]
     [width height]))
 
-(defn key-text [vkey]
-  (cond 
+;; 2. Key Display Resolution
+(defn key-text
+  "Resolves the correct text to display on a virtual key, 
+   respecting shift state and explicit display overrides."
+  [vkey]
+  (cond
     (some? (:display vkey))
     (:display vkey)
-    
+
     (and (:keyboard/is-shift-enabled @state/state)
          (some? (:caps-text vkey)))
     (:caps-text vkey)
-    
-    :else 
+
+    :else
     (:text vkey)))
 
-(defn get-last-word [text]
-  (if (empty? text)
-    nil
-    (-> text
-        (str/replace #"᠂" " ")
-        (str/replace #"᠃" " ")
-        (str/replace #"\*" " ")
-        (str/replace #"\[" " ")
-        (str/split #" ")
-        last
-        (str/split #"\n")
-        last)))
-
-(defn get-current-word [text ^services/TextSelection selection]
-  (if (empty? text)
+;; 3. Cursor Context Extraction
+(defn get-current-word
+  "Extracts the word immediately preceding the cursor in the TextField.
+   Delegates string analysis to the core linguistics engine."
+  [^String text ^services/TextSelection selection]
+  (if (str/blank? text)
     ""
     (let [back-count 30
+          ;; Extract up to 'back-count' characters right before the cursor
           substr (subs text (max 0 (- (.-start selection) back-count)) (.-end selection))
-          last-word (str/trim (get-last-word substr))]
+          ;; Delegate to the core engine to find the exact boundary of the last word
+          last-word (linguistics/get-last-word substr)]
       (if (empty? last-word)
         ""
         last-word))))
-        
-
-;; copied from mongol_code.dart
-(defn is-mongolian
-  [code]
-  (if (nil? code)
-    false
-    (or
-     (and
-       (>= code code/Mongol.a)
-       (<= code code/Mongol.chi))
-     (and 
-       (>= code code/Mongol.nirugu)
-       (<= code code/Mongol.mvs)))))
-
-;; copied from mongol_code.dart
-(defn get-location [before after]
-  (cond
-    (empty? before)
-    code.Location/isol
-    
-    (and (some? before)
-      (is-mongolian (last (map int before)))
-      (empty? after)) 
-    code.Location/medi
-
-    (and (some? before)
-       (is-mongolian (last (map int before)))
-       (some? after)
-       (is-mongolian (first (map int after))))
-    code.Location/medi
-
-    (and (some? before)
-         (not 
-          (is-mongolian (last (map int before))))
-         (some? after)
-         (is-mongolian (first (map int after))))
-    code.Location/init
-
-
-    (and (some? before)
-         (is-mongolian (last (map int before))))
-    code.Location/fina
-
-    :else
-    code.Location/isol))
-    
-;; copied from mongol_code.dart
-(defn is-mvs-preceding-char
-  [code]
-  (if (nil? code)
-    false
-    (or 
-      (= code code/Mongol.na)
-      (= code code/Mongol.qa)
-      (= code code/Mongol.ga)
-      (= code code/Mongol.ma)
-      (= code code/Mongol.la)
-      (= code code/Mongol.ja)
-      (= code code/Mongol.ya)
-      (= code code/Mongol.ra)
-      (= code code/Mongol.wa)
-      (= code code/Mongol.o)
-      (= code code/Mongol.u)
-      (= code code/Mongol.oe)
-      (= code code/Mongol.ue))))
-   
-;; copied from mongol_code.dart
-(defn is-vowel [code]
-  (if (nil? code)
-    false
-    (and
-      (>= code code/Mongol.a)
-      (<= code code/Mongol.ee))))
-    
-;; copied from mongol_code.dart
-(defn get-gender [word]
-  (let [vower-char (first (filter #(and (is-vowel %)
-                                        (not= code/Mongol.i %))
-                                  (map int word)))]
-    (if (nil? vower-char)
-      code/Gender.neuter
-      (cond
-        (.isMasculineVowel code/Mongol vower-char)
-        code/Gender.masculine
-
-        (.isFeminineVowel code/Mongol vower-char)
-        code/Gender.feminine
-
-        :else
-        code/Gender.neuter))))
-  

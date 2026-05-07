@@ -4,21 +4,24 @@
    ["package:flutter/foundation.dart" :refer [kIsWeb]]
    [cljd.flutter :as f]
    [virtual-keyboard-example.basic :as example-basic]
+   [virtual-keyboard.options :as options]
   ;;  [virtual-keyboard-example.emoji :as example-emoji]
-   [virtual-keyboard.keyboard-candidates :as kc]
-   [virtual-keyboard.zip-utils :as zip-utils]
-   [virtual-keyboard.fst-reader :as fst-reader]))
+   [ime-core.remote-api :as remote]
+   [ime-core.fst-engine :as fst-engine]
+   [ime-core.next-word :as next-word]))
 
 (defn ^:async main []
   (m.WidgetsFlutterBinding/ensureInitialized)
+
+  (remote/set-config! {:base-url options/base-url
+                       :candidate-api-path options/candidate-api-path
+                       :next-word-api-path options/next-word-api-path})
+
   (when-not kIsWeb
-    ;; Keep native startup behavior; web uses remote candidate API.
-    (zip-utils/load-assets-parallel
-          [[kc/next "assets/next.zip"]])
-    (await (fst-reader/ensure-loaded)))
+    (await (next-word/ensure-loaded))
+    (await (fst-engine/ensure-loaded))) 
   
-  (f/run
-   (m/MaterialApp
+  (f/run (m/MaterialApp
     .title "Welcome to Flutter"
     .themeMode m.ThemeMode/system
     .theme (m/ThemeData .primarySwatch m.Colors/blue

@@ -6,13 +6,20 @@
    ["package:vibration/vibration.dart" :as vibrate]
    [cljd.flutter :as f]
    [clojure.string :as str]
-   [virtual-keyboard.keyboard-candidates :as keyboard-candidates]
+   [ime-core.fst-engine :as fst-engine]
+   [ime-core.next-word :as next-word]
+   [ime-core.linguistics :as linguistics]
    [virtual-keyboard.options :as options]
    [virtual-keyboard.input-control :as control]
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.keyboard-state :as state]
-   [virtual-keyboard.fst-reader :as fst-reader]
    [virtual-keyboard.popup-key-candidates :as candidates]))
+
+;; Helper to determine whether to use remote API based on options
+(defn use-remote? []
+  (= (or (:keyboard/candidate-source options/keyboard-option)
+         options/candidate-source-default)
+     :remote-json))
 
 (declare on-key-press
          action-key-container)
@@ -25,41 +32,18 @@
          height (:keyboard/height info)
          key-height (/ height rows-count)
          key-base-width (/ width 10)]
-  ;;  (m/Flexible)
-  ;;  .child
    (m/Padding
     .padding
     (.symmetric
      m/EdgeInsets
      .horizontal (:keyboard/horizontal-key-padding info)
      .vertical 0))
-  ;;  .child
-  ;;  (m/Container
-  ;;   .alignment (.center m/Alignment)
-  ;;   .height key-height
-  ;;   .decoration
-  ;;   (m/BoxDecoration
-  ;;    .color (:keyboard/action-keys-container-color info)
-  ;;    .borderRadius
-  ;;    (.all m/BorderRadius
-  ;;          (.circular m/Radius
-  ;;                     (:keyboard/key-cap-border-radius info))))
-  ;;   ;; .width double/infinity
-  ;;   )
-
    .child
    (condp = (:action vkey)
      :backspace
      (m/GestureDetector
       .onLongPress
       (fn []
-        ;; (swap! state assoc :keyboard/long-press true)
-        ;; (.periodic
-        ;;  a/Timer
-        ;;  (Duration .milliseconds 300);options/back-space-event-period)
-        ;;  (fn [^a/Timer timer] (if (true? (:keyboard/long-press @state))
-        ;;                         (on-key-press vkey state)
-        ;;                         (.cancel timer))))
         (dart:core/print "long press")
         nil)
       .onLongPressUp
@@ -107,7 +91,6 @@
                         .color (:keyboard/shift-click-text-color info)
                         .fontWeight (.w700 m/FontWeight)
                         .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
-      ;;  :child (m/Icon (.space_bar m/Icons) .color (:keyboard/action-text-color info))} info)
 
      :special-characters
      (action-key-container
@@ -197,7 +180,6 @@
                              .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
 
      :empty
-    ;;  (.shrink m/SizedBox)
      (m/Container
       .width
       (- (* 0.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))))))
@@ -247,7 +229,8 @@
       (control/insert-text new-str)
       (let [last-word (utils/get-current-word (.-text @control/editing-value)
                                               (.-selection @control/editing-value))
-            candidates (->> (await (fst-reader/get-candidates-async last-word))
+            ;; Query the Core Engine for dictionary candidates
+            candidates (->> (await (fst-engine/get-candidates-async last-word {:use-remote? (use-remote?)}))
                             (remove #(str/starts-with? % (str (char code/Mongol.mvs))))
                             vec)]
         (dart:core/print
@@ -303,16 +286,22 @@
       (swap! state/state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state/state)))
 
       :suffix-candidates
-      (keyboard-candidates/suffix-candidates (.-text @control/editing-value)
-                                            (.-selection @control/editing-value)
-                                            state/state))))
+      (let [val @control/editing-value
+            text (.-text val)
+            sel (.-selection val)
+            ;; Limit extraction to 30 characters before cursor for performance
+            back-count 30
+            text-before-cursor (subs text (max 0 (- (.-start sel) back-count)) (.-start sel))
+            ;; Call core linguistics engine for grammatical suffixes
+            candidates (linguistics/get-suffix-candidates text-before-cursor)]
+        (swap! state/state assoc :keyboard/candidates-list candidates)))))
 
 (defn ^:async on-candidates-clicked
   [text]
   (let [text-with-space (str text " ")]
     (cond 
-      (some #{text}
-            (into [] keyboard-candidates/all-suffixes))
+      ;; Check against linguistics core suffixes
+      (some #{text} linguistics/all-suffixes)
       (do 
         (control/delete-text)
         (control/insert-text text-with-space))
@@ -325,14 +314,11 @@
       :else
       (control/replace-word text-with-space)))
 
-  (if (fst-reader/remote-candidate-source?)
-    (let [next-words (await (fst-reader/get-next-words-remote text))]
-      (swap! state/state assoc :keyboard/candidates-list (vec next-words)))
-    (let [candidates (->> (get @keyboard-candidates/next text)
-                          (filter #(not (nil? (first %)))))]
-      (if (empty? candidates)
-        (swap! state/state assoc :keyboard/candidates-list [])
-        (swap! state/state assoc :keyboard/candidates-list (vec (map first (sort-by #(dart:core/int.parse (last %)) > candidates))))))))
+  ;; Fetch Next-Word predictions purely through the unified Core Engine
+  (let [next-words (await (next-word/get-predictions-async text {:use-remote? (use-remote?)}))]
+    (if (empty? next-words)
+      (swap! state/state assoc :keyboard/candidates-list [])
+      (swap! state/state assoc :keyboard/candidates-list (vec next-words)))))
 
 (defn clear-candidates []
   (swap! state/state assoc :keyboard/candidates-list []))
