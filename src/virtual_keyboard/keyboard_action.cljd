@@ -22,7 +22,12 @@
      :remote-json))
 
 (declare on-key-press
-         action-key-container)
+         action-key-container
+         clear-candidates)
+
+;; Bumped on clear / new query so in-flight next-word results cannot
+;; refill the panel after Return splits a block.
+(defonce ^:private !candidate-gen (atom 0))
 
 (defn action-widget [vkey items-count rows-count custom-fns]
   (f/widget
@@ -229,13 +234,15 @@
       (control/insert-text new-str)
       (let [last-word (utils/get-current-word (.-text @control/editing-value)
                                               (.-selection @control/editing-value))
+            gen (swap! !candidate-gen inc)
             ;; Query the Core Engine for dictionary candidates
             candidates (->> (await (fst-engine/get-candidates-async last-word {:use-remote? (use-remote?)}))
                             (remove #(str/starts-with? % (str (char code/Mongol.mvs))))
                             vec)]
         (dart:core/print
          (str "candidate update - word: " last-word ", count: " (count candidates)))
-        (swap! state/state assoc :keyboard/candidates-list candidates)))
+        (when (= gen @!candidate-gen)
+          (swap! state/state assoc :keyboard/candidates-list candidates))))
 
     :action
     (condp = (:action vkey)
@@ -244,31 +251,33 @@
         (custom-backspace)
         (do
          (control/delete-last-word)
-         (swap! state/state assoc :keyboard/candidates-list [])))
+         (clear-candidates)))
 
       :return
-      (if-let [custom-fn (:on-return custom-fns)]
-        (custom-fn)
-        (if (= :single-line (:keyboard/return-mode @state/state))
-          (let [callback (:keyboard/return-callback @state/state)]
-            (when-not (nil? callback)
-              (callback)))
-          (control/insert-text "\n")))
+      (do
+        (clear-candidates)
+        (if-let [custom-fn (:on-return custom-fns)]
+          (custom-fn)
+          (if (= :single-line (:keyboard/return-mode @state/state))
+            (let [callback (:keyboard/return-callback @state/state)]
+              (when-not (nil? callback)
+                (callback)))
+            (control/insert-text "\n"))))
 
       :space
       (do
         (control/insert-text " ")
-        (swap! state/state assoc :keyboard/candidates-list []))
+        (clear-candidates))
 
       :spacer-block
       (do
         (control/insert-text " ")
-        (swap! state/state assoc :keyboard/candidates-list []))
+        (clear-candidates))
 
       :small-spacer-block
       (do
         (control/insert-text " ")
-        (swap! state/state assoc :keyboard/candidates-list []))
+        (clear-candidates))
 
       :shift
       (swap! state/state assoc :keyboard/is-shift-enabled (not (:keyboard/is-shift-enabled @state/state)))
@@ -315,10 +324,13 @@
       (control/replace-word text-with-space)))
 
   ;; Fetch Next-Word predictions purely through the unified Core Engine
-  (let [next-words (await (next-word/get-predictions-async text {:use-remote? (use-remote?)}))]
-    (if (empty? next-words)
-      (swap! state/state assoc :keyboard/candidates-list [])
-      (swap! state/state assoc :keyboard/candidates-list (vec next-words)))))
+  (let [gen (swap! !candidate-gen inc)
+        next-words (await (next-word/get-predictions-async text {:use-remote? (use-remote?)}))]
+    (when (= gen @!candidate-gen)
+      (if (empty? next-words)
+        (swap! state/state assoc :keyboard/candidates-list [])
+        (swap! state/state assoc :keyboard/candidates-list (vec next-words))))))
 
 (defn clear-candidates []
+  (swap! !candidate-gen inc)
   (swap! state/state assoc :keyboard/candidates-list []))
