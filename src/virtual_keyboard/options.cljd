@@ -6,7 +6,16 @@
 (def font-name "OnonSoninSans")
 
 (def keyboard-default-height 240)
+(def keyboard-default-row-count 4)
 (def back-space-event-period 250)
+
+(defn keyboard-height
+  "Total keyboard height for the given style info and row count."
+  ([info]
+   (keyboard-height info keyboard-default-row-count))
+  ([info row-count]
+   (+ keyboard-default-height
+      (* row-count (+ 4 (or (:keyboard/row-vertical-padding info) 4))))))
 
 (def keyboard-key-type [:action :normal])
 

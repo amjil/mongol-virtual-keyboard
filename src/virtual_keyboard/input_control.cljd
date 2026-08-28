@@ -88,12 +88,13 @@
             selection (.-selection editing-val)
             last-word (utils/get-current-word text selection)
             last-word-length (.-length last-word)
+            replace-start (max 0 (- (.-start selection) last-word-length))
             new-text (.replaceRange text
-                                    (- (.-start selection) last-word-length)
+                                    replace-start
                                     (.-end selection)
                                     t)
             tlen (.-length t)
-            new-start (+ (- (.-start selection) last-word-length) tlen)]
+            new-start (+ replace-start tlen)]
         (reset! editing-value
                 (.copyWith editing-val
                            .text new-text
@@ -103,7 +104,7 @@
                                       .extentOffset new-start)))
         (service.TextInput/updateEditingValue @editing-value)))
     (catch Exception e
-      (dart:core/print (str "Error in insert-text: " e)))))
+      (dart:core/print (str "Error in replace-word: " e)))))
       
 (defn delete-last-word []
   (when-not (nil? @editing-value)
@@ -177,7 +178,7 @@
                                                 .extentOffset new-start)))
                   (service.TextInput/updateEditingValue @editing-value))
                 ;; 删除整个字
-                (let [delete-start (- cursor-pos word-length)
+                (let [delete-start (max 0 (- cursor-pos word-length))
                       delete-end cursor-pos
                       new-text (.replaceRange text delete-start delete-end "")]
                   (reset! editing-value
@@ -191,16 +192,17 @@
 
 (defn reset-text [text]
   (try
-    (let [^service/TextEditingValue editing-val @editing-value
-          selection (.-selection editing-val)]
-      (reset! editing-value
-              (.copyWith editing-val
-                         .text text
-                         .selection
-                         (.copyWith selection
-                                    .baseOffset (count text)
-                                    .extentOffset (count text))))
-      (service.TextInput/updateEditingValue @editing-value))
+    (when-not (nil? @editing-value)
+      (let [^service/TextEditingValue editing-val @editing-value
+            selection (.-selection editing-val)]
+        (reset! editing-value
+                (.copyWith editing-val
+                           .text text
+                           .selection
+                           (.copyWith selection
+                                      .baseOffset (count text)
+                                      .extentOffset (count text))))
+        (service.TextInput/updateEditingValue @editing-value)))
     (catch Exception e
       (dart:core/print (str "Error in reset-text: " e)))))
       
@@ -215,7 +217,8 @@
       (let [^service/TextEditingValue editing-val @editing-value
             text (.-text editing-val)
             selection (.-selection editing-val)
-            new-start (+ (.-start selection) offset)]
+            text-len (count text)
+            new-start (min text-len (max 0 (+ (.-start selection) offset)))]
         (reset! editing-value
                 (.copyWith editing-val
                            .text text
@@ -225,5 +228,5 @@
                                       .extentOffset new-start)))
         (service.TextInput/updateEditingValue @editing-value)))
     (catch Exception e
-          (dart:core/print (str "Error in insert-text: " e)))))
+      (dart:core/print (str "Error in update-selection: " e)))))
       

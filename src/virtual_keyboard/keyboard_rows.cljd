@@ -12,7 +12,7 @@
    :get {:value-of [:info]}
    (let [width (-> m/MediaQuery (.of ctx) .-size .-width)]
      (m/Container
-      .height (+ options/keyboard-default-height (* (count rows) (+ 4 (or (:keyboard/row-vertical-padding info) 4))))
+      .height (options/keyboard-height info (count rows))
       .width width
       .child (m/Column
               .mainAxisAlignment (.center m/MainAxisAlignment)

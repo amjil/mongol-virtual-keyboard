@@ -12,8 +12,7 @@
    [virtual-keyboard.options :as options]
    [virtual-keyboard.input-control :as control]
    [virtual-keyboard.utils :as utils]
-   [virtual-keyboard.keyboard-state :as state]
-   [virtual-keyboard.popup-key-candidates :as candidates]))
+   [virtual-keyboard.keyboard-state :as state]))
 
 ;; Helper to determine whether to use remote API based on options
 (defn use-remote? []
@@ -48,9 +47,7 @@
      :backspace
      (m/GestureDetector
       .onLongPress
-      (fn []
-        (dart:core/print "long press")
-        nil)
+      (fn [] nil)
       .onLongPressUp
       (fn [] (swap! state/state assoc :keyboard/long-press false))
       .child
@@ -232,17 +229,15 @@
                     :else
                     (:text vkey))]
       (control/insert-text new-str)
-      (let [last-word (utils/get-current-word (.-text @control/editing-value)
-                                              (.-selection @control/editing-value))
-            gen (swap! !candidate-gen inc)
-            ;; Query the Core Engine for dictionary candidates
-            candidates (->> (await (fst-engine/get-candidates-async last-word {:use-remote? (use-remote?)}))
-                            (remove #(str/starts-with? % (str (char code/Mongol.mvs))))
-                            vec)]
-        (dart:core/print
-         (str "candidate update - word: " last-word ", count: " (count candidates)))
-        (when (= gen @!candidate-gen)
-          (swap! state/state assoc :keyboard/candidates-list candidates))))
+      (when-let [editing-val @control/editing-value]
+        (let [last-word (utils/get-current-word (.-text editing-val)
+                                                (.-selection editing-val))
+              gen (swap! !candidate-gen inc)
+              candidates (->> (await (fst-engine/get-candidates-async last-word {:use-remote? (use-remote?)}))
+                              (remove #(str/starts-with? % (str (char code/Mongol.mvs))))
+                              vec)]
+          (when (= gen @!candidate-gen)
+            (swap! state/state assoc :keyboard/candidates-list candidates)))))
 
     :action
     (condp = (:action vkey)
@@ -295,15 +290,16 @@
       (swap! state/state assoc :keyboard/is-other-special-enabled (not (:keyboard/is-other-special-enabled @state/state)))
 
       :suffix-candidates
-      (let [val @control/editing-value
-            text (.-text val)
-            sel (.-selection val)
-            ;; Limit extraction to 30 characters before cursor for performance
-            back-count 30
-            text-before-cursor (subs text (max 0 (- (.-start sel) back-count)) (.-start sel))
-            ;; Call core linguistics engine for grammatical suffixes
-            candidates (linguistics/get-suffix-candidates text-before-cursor)]
-        (swap! state/state assoc :keyboard/candidates-list candidates)))))
+      (when-let [val @control/editing-value]
+        (let [text (.-text val)
+              sel (.-selection val)
+              start (max 0 (.-start sel))
+              back-count 30
+              text-before-cursor (subs text (max 0 (- start back-count)) start)
+              candidates (linguistics/get-suffix-candidates text-before-cursor)]
+          (swap! state/state assoc :keyboard/candidates-list candidates)))
+      nil)
+    nil))
 
 (defn ^:async on-candidates-clicked
   [text]

@@ -1,46 +1,47 @@
 (ns virtual-keyboard.popup-key-candidates
   (:require
    ["package:mongol_code/mongol_code.dart" :as code]
-   ["package:flutter/material.dart" :as m]
    ["package:flutter/services.dart" :as service]
    [ime-core.linguistics :as linguistics]))
 
 (defn is-initial
-  [^service/TextEditingValue controller]
-  (let [text (.-text controller)
-        selection (-> controller .-selection)
-        start (.-start selection)]
-    (if (empty? text)
-      true
-      (let [before (subs text (max (- start 2) 0) start)
-            after (subs text start (min (+ start 2) (count text)))
-            location (linguistics/get-location before after)]
-        (or (= location code.Location/isol)
-            (= location code.Location/init))))))
+  [^service/TextEditingValue editing-value]
+  (if (nil? editing-value)
+    true
+    (let [text (.-text editing-value)
+          start (-> editing-value .-selection .-start)]
+      (if (or (empty? text) (neg? start))
+        true
+        (let [before (subs text (max (- start 2) 0) start)
+              after (subs text start (min (+ start 2) (count text)))
+              location (linguistics/get-location before after)]
+          (or (= location code.Location/isol)
+              (= location code.Location/init)))))))
 
 (defn get-previous-char
-  [^service/TextEditingValue controller]
-  (let [text (.-text controller)
-        cursor (-> controller .-selection .-baseOffset)]
-    (if (or (empty? text) (zero? cursor))
-      nil
-      (.codeUnitAt (subs text (dec cursor) cursor) 0))))
+  [^service/TextEditingValue editing-value]
+  (if (nil? editing-value)
+    nil
+    (let [text (.-text editing-value)
+          cursor (-> editing-value .-selection .-baseOffset)]
+      (if (or (empty? text) (nil? cursor) (<= cursor 0))
+        nil
+        (.codeUnitAt (subs text (dec cursor) cursor) 0)))))
 
 (defn- popup-candidates-for-e
-  [^service/TextEditingValue controller]
-  (let [previous-char (get-previous-char controller)]
-    (dart:core/print (str "previous-char" (int previous-char)))
+  [^service/TextEditingValue editing-value]
+  (let [previous-char (get-previous-char editing-value)]
     (cond-> []
-      (and (not (is-initial controller))
+      (and (not (is-initial editing-value))
            (some? previous-char)
            (linguistics/is-mvs-preceding-char? previous-char)
-           (not= previous-char (String/fromCharCode code.Mongol/qa))
-           (not= previous-char (String/fromCharCode code.Mongol/ga)))
+           (not= previous-char code.Mongol/qa)
+           (not= previous-char code.Mongol/ga))
       (concat
        [{:text (String/fromCharCodes [code.Mongol/mvs code.Mongol/e])
          :display (String/fromCharCodes [code.Mongol/nirugu previous-char code.Mongol/mvs code.Mongol/e])}])
 
-      (not (is-initial controller))
+      (not (is-initial editing-value))
       (concat
        [{:text (String/fromCharCodes [code.Mongol/e code.Mongol/fvs1])
          :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/e code.Mongol/fvs1])}]))))
@@ -67,9 +68,7 @@
     [{:text (String/fromCharCodes [code.Mongol/ue code.Mongol/fvs1])
       :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ue code.Mongol/fvs1 code.Mongol/nirugu])}
      {:text (String/fromCharCodes [code.Mongol/ue code.Mongol/fvs2])
-      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ue code.Mongol/fvs2 code.Mongol/nirugu])}
-     {:text (String/fromCharCodes [code.Mongol/ue code.Mongol/fvs1])
-      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ue code.Mongol/fvs1 code.Mongol/nirugu])}]))
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/ue code.Mongol/fvs2 code.Mongol/nirugu])}]))
 
 (defn- popup-candidates-for-i
   [^service/TextEditingValue controller]
@@ -107,9 +106,7 @@
         true
         (concat
          [{:text (String/fromCharCodes [code.Mongol/a code.Mongol/fvs1])
-           :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/a code.Mongol/fvs1 code.Mongol/nirugu])}
-          {:text (String/fromCharCodes [code.Mongol/a code.Mongol/fvs1])
-           :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/a code.Mongol/fvs1])}])))))
+           :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/a code.Mongol/fvs1 code.Mongol/nirugu])}])))))
 
 (defn- popup-candidates-for-s
   [^service/TextEditingValue controller]
@@ -120,14 +117,19 @@
 
 (defn- popup-candidates-for-d
   [^service/TextEditingValue controller]
-  (if (is-initial controller)
-    (let [previous-char (get-previous-char controller)
-          text (if (= previous-char (String/fromCharCode code.Mongol/mvs))
-                 (String/fromCharCode code.Mongol/da)
-                 (String/fromCharCodes [code.Mongol/da code.Mongol/fvs1]))]
-      [{:text (str text (String/fromCharCode code.Mongol/da))}])
-    [{:text (String/fromCharCodes [code.Mongol/da code.Mongol/fvs1])
-      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/da code.Mongol/fvs1])}]))
+  (let [previous-char (get-previous-char controller)]
+    (cond
+      (= previous-char code.Mongol/mvs)
+      [{:text (str (String/fromCharCode code.Mongol/da)
+                   (String/fromCharCode code.Mongol/da))}]
+
+      (is-initial controller)
+      [{:text (str (String/fromCharCodes [code.Mongol/da code.Mongol/fvs1])
+                   (String/fromCharCode code.Mongol/da))}]
+
+      :else
+      [{:text (String/fromCharCodes [code.Mongol/da code.Mongol/fvs1])
+        :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/da code.Mongol/fvs1])}])))
 
 (defn- popup-candidates-for-g
   [^service/TextEditingValue controller]
@@ -145,18 +147,14 @@
   (if (is-initial controller)
     []
     [{:text (String/fromCharCodes [code.Mongol/o code.Mongol/fvs1])
-      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/o code.Mongol/fvs1 code.Mongol/nirugu])}
-     {:text (String/fromCharCodes [code.Mongol/o code.Mongol/fvs1])
-      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/o code.Mongol/fvs1])}]))
+      :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/o code.Mongol/fvs1 code.Mongol/nirugu])}]))
 
 (defn- popup-candidates-for-v
   [^service/TextEditingValue controller]
   (cond-> []
     (not (is-initial controller))
     (concat [{:text (String/fromCharCodes [code.Mongol/u code.Mongol/fvs1])
-              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs1 code.Mongol/nirugu])}
-             {:text (String/fromCharCodes [code.Mongol/u code.Mongol/fvs1])
-              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs1])}])))
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs1 code.Mongol/nirugu])}])))
 
 (defn- popup-candidates-for-n
   [^service/TextEditingValue controller]
@@ -165,39 +163,42 @@
     (concat [{:text (String/fromCharCodes [code.Mongol/na code.Mongol/nirugu])
               :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/na code.Mongol/nirugu])}
              {:text (String/fromCharCodes [code.Mongol/na code.Mongol/fvs1])
-              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs1 code.Mongol/nirugu])}
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/na code.Mongol/fvs1 code.Mongol/nirugu])}
              {:text (String/fromCharCodes [code.Mongol/na code.Mongol/fvs2])
-              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/u code.Mongol/fvs2 code.Mongol/nirugu])}])))
+              :display (String/fromCharCodes [code.Mongol/nirugu code.Mongol/na code.Mongol/fvs2 code.Mongol/nirugu])}])))
 
 (defn popup-candidates
   [^service/TextEditingValue controller char]
-  (condp = char
-    "q" [{:text (String/fromCharCode code.Mongol/chi)}]
-    "w" []
-    "e" (popup-candidates-for-e controller)
-    "r" [{:text (String/fromCharCode code.Mongol/zra)}]
-    "t" (popup-candidates-for-t controller)
-    "y" (popup-candidates-for-y controller)
-    "u" (popup-candidates-for-u controller)
-    "i" (popup-candidates-for-i controller)
-    "o" (popup-candidates-for-o controller)
-    "p" []
-    "a" (popup-candidates-for-a controller)
-    "s" (popup-candidates-for-s controller)
-    "d" (popup-candidates-for-d controller)
-    "f" []
-    "g" (popup-candidates-for-g controller)
-    "h" [{:text (String/fromCharCode code.Mongol/haa)}]
-    "j" [{:text (String/fromCharCode code.Mongol/zhi)}]
-    "k" []
-    "l" [{:text (String/fromCharCode code.Mongol/lha)}]
-    "ng" []
-    "z" [{:text (String/fromCharCode code.Mongol/tsa)}]
-    "x" []
-    "c" (popup-candidates-for-c controller)
-    "v" (popup-candidates-for-v controller)
-    "b" []
-    "n" (popup-candidates-for-n controller)
-    "m" []
-    "!" [{:text (String/fromCharCode code.Mongol/exclamationQuestion)}]
-    "?" [{:text (String/fromCharCode code.Mongol/questionExclamation)}]))
+  (if (nil? controller)
+    []
+    (condp = char
+      "q" [{:text (String/fromCharCode code.Mongol/chi)}]
+      "w" []
+      "e" (popup-candidates-for-e controller)
+      "r" [{:text (String/fromCharCode code.Mongol/zra)}]
+      "t" (popup-candidates-for-t controller)
+      "y" (popup-candidates-for-y controller)
+      "u" (popup-candidates-for-u controller)
+      "i" (popup-candidates-for-i controller)
+      "o" (popup-candidates-for-o controller)
+      "p" []
+      "a" (popup-candidates-for-a controller)
+      "s" (popup-candidates-for-s controller)
+      "d" (popup-candidates-for-d controller)
+      "f" []
+      "g" (popup-candidates-for-g controller)
+      "h" [{:text (String/fromCharCode code.Mongol/haa)}]
+      "j" [{:text (String/fromCharCode code.Mongol/zhi)}]
+      "k" []
+      "l" [{:text (String/fromCharCode code.Mongol/lha)}]
+      "ng" []
+      "z" [{:text (String/fromCharCode code.Mongol/tsa)}]
+      "x" []
+      "c" (popup-candidates-for-c controller)
+      "v" (popup-candidates-for-v controller)
+      "b" []
+      "n" (popup-candidates-for-n controller)
+      "m" []
+      "!" [{:text (String/fromCharCode code.Mongol/exclamationQuestion)}]
+      "?" [{:text (String/fromCharCode code.Mongol/questionExclamation)}]
+      [])))

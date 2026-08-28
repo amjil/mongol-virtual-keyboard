@@ -37,21 +37,36 @@
       .color (.-surfaceVariant color-scheme)
       .child
       (rows/keyboard-rows
-       (condp = layout-index
-         0 (condp = is-special-enabled
-             true (condp = is-other-special-enabled
-                    true mg-other-special-keys
-                    mg-special-keys)
-             false mg-keys)
-         1 (condp = is-special-enabled
-             true (condp = is-other-special-enabled
-                    true en-other-special-keys
-                    en-special-keys)
-             false en-keys))))))))
+       (cond
+         (not= layout-index 1)
+         (cond
+           (and is-special-enabled is-other-special-enabled) mg-other-special-keys
+           is-special-enabled mg-special-keys
+           :else mg-keys)
+
+         :else
+         (cond
+           (and is-special-enabled is-other-special-enabled) en-other-special-keys
+           is-special-enabled en-special-keys
+           :else en-keys))))))))
 
 
 (defn get-height [info]
-  (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info)))))
+  (options/keyboard-height info))
+
+(defn- candidates-menu [style controller theme]
+  {:bar {:elavation 10
+         :background-color (-> theme .-colorScheme .-secondaryContainer)
+         :scroll controller}
+   :item {:on-tap (fn [x]
+                    (action/on-candidates-clicked x)
+                    (.-value! control/visible true)
+                    (when (.-hasClients controller)
+                      (.animateTo controller
+                                  0.0
+                                  .duration (Duration .milliseconds 50)
+                                  .curve m/Curves.easeOut)))
+          :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}})
 
 (defn candidates [style]
   (f/widget
@@ -66,17 +81,7 @@
     .child
     (m/TextFieldTapRegion
      .child
-     (menu/menu {:bar {:elavation 10
-                       :background-color (-> theme .-colorScheme .-secondaryContainer)
-                       :scroll controller}
-                 :item {:on-tap (fn [x]
-                                  (action/on-candidates-clicked x)
-                                  (.-value! control/visible true)
-                                  (.animateTo controller
-                                              0
-                                              .duration (Duration .milliseconds 50)
-                                              .curve m/Curves.easeOut))
-                        :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}}
+     (menu/menu (candidates-menu style controller theme)
                 (take 60 candidates-list))))))
 
 (defn candidates-panel [style]
@@ -87,17 +92,7 @@
    :watch [{candidates-list :keyboard/candidates-list} state/state]
    (m/TextFieldTapRegion
     .child
-    (menu/menu {:bar {:elavation 10
-                      :background-color (-> theme .-colorScheme .-secondaryContainer)
-                      :scroll controller}
-                :item {:on-tap (fn [x]
-                                 (action/on-candidates-clicked x)
-                                 (.-value! control/visible true)
-                                 (.animateTo controller
-                                             0
-                                             .duration (Duration .milliseconds 50)
-                                             .curve m/Curves.easeOut))
-                       :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}}
+    (menu/menu (candidates-menu style controller theme)
                (take 60 candidates-list)))))
 
 (defn toolbar [widget]
