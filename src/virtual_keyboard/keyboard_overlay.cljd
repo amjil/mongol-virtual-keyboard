@@ -8,42 +8,51 @@
    [virtual-keyboard.popup-key-candidates :as candidates]
    [virtual-keyboard.input-control :as control]))
 
+(defn- preview-size [^m/Size size]
+  [(* 1.45 (.-width size))
+   (* 1.65 (.-height size))])
+
 (defn bubble-widget [^m/Size size info virtual-key]
-  (f/widget
-   (m/Material
-    .elevation 10
-    .color (:keyboard/key-container-color info))
-   (m/Container
-    .clipBehavior (.hardEdge m/Clip)
-    ;; .width (* 1.5 (.-width size))
-    ;; .height (* 1.5 (.-height size))
-    .width (* 1 (.-width size))
-    .height (* 1 (.-height size))
-    .alignment m.Alignment/center
-    .decoration (m/BoxDecoration
-                 .borderRadius
-                 (.all m/BorderRadius
-                       (.circular m/Radius (:keyboard/key-cap-border-radius info)))))
-   (if (:is-rotated virtual-key)
-     (mgl/MongolText (utils/key-text virtual-key)
-                     .style (m/TextStyle .fontSize 18
-                                         .color (:keyboard/key-text-color info)
-                                         .fontFamily (:keyboard/mongol-font-family info)))
-     (m/Text (utils/key-text virtual-key)
-             .style (m/TextStyle .fontSize 18
-                                 .color (:keyboard/key-text-color info))))))
+  (let [[w h] (preview-size size)
+        radius (max 10.0 (* 1.8 (or (:keyboard/key-cap-border-radius info) 5.0)))]
+    (f/widget
+     (m/Material
+      .color m.Colors/transparent)
+     (m/Container
+      .width w
+      .height h
+      .alignment m.Alignment/center
+      .decoration (m/BoxDecoration
+                   .color (:keyboard/key-container-color info)
+                   .borderRadius (.all m/BorderRadius (.circular m/Radius radius))
+                   .boxShadow [(m/BoxShadow
+                                .color (or (:keyboard/key-shadow-color info)
+                                           (-> m.Colors/black (.withOpacity 0.28)))
+                                .offset (m/Offset. 0.0 3.0)
+                                .blurRadius 8.0
+                                .spreadRadius 0.0)]))
+     (if (:is-rotated virtual-key)
+       (mgl/MongolText (utils/key-text virtual-key)
+                       .style (m/TextStyle .fontSize 28
+                                           .color (:keyboard/key-text-color info)
+                                           .fontFamily (:keyboard/mongol-font-family info)))
+       (m/Text (utils/key-text virtual-key)
+               .style (m/TextStyle .fontSize 28
+                                   .fontWeight (.w400 m/FontWeight)
+                                   .color (:keyboard/key-text-color info)))))))
 
 (defn build-entry-bubble [^m/BuildContext ctx
                           info
                           virtual-key]
   (let [^m/RenderBox box (.findRenderObject ctx)
         size (.-size box)
-        offset (.localToGlobal box (.zero m/Offset))]
+        offset (.localToGlobal box (.zero m/Offset))
+        [w h] (preview-size size)]
     (m/OverlayEntry
      .builder (fn [_]
                 (m/Positioned
-                 .top (- (.-dy offset) (* 1 (.-height size)))
-                 .left (+ (.-dx offset) (/ (.-width size) 2) (- (/ (* 1 (.-width size)) 2)))
+                 .top (- (.-dy offset) h 4.0)
+                 .left (+ (.-dx offset) (/ (.-width size) 2) (- (/ w 2)))
                  .child
                  (bubble-widget size info virtual-key))))))
 
@@ -144,38 +153,33 @@
 ;;;;
 (defn overlay-popup-widget [^m/Size _size info additional-keys is-rotated]
   (f/widget
-   (m/GestureDetector)
-   (m/Card
-    .elevation 10)
+   (m/Material
+    .color m.Colors/transparent)
    (m/Container
-    .color (:keyboard/key-container-color info))
-   (m/Wrap
-    .direction m.Axis/horizontal
-    .runSpacing 2
-    .spacing 1
+    .padding (.all m/EdgeInsets 4.0)
+    .decoration (m/BoxDecoration
+                 .color (:keyboard/key-container-color info)
+                 .borderRadius (.all m/BorderRadius (.circular m/Radius 10.0))
+                 .boxShadow [(m/BoxShadow
+                              .color (or (:keyboard/key-shadow-color info)
+                                         (-> m.Colors/black (.withOpacity 0.28)))
+                              .offset (m/Offset. 0.0 3.0)
+                              .blurRadius 10.0
+                              .spreadRadius 0.0)]))
+   (m/Row
+    .mainAxisSize m.MainAxisSize/min
     .children
     (map-indexed (fn [index vkey]
                    (let [drag-dx (or (:keyboard/drag-dx @state) 0)
                          selected-index (get-selected-key-index drag-dx additional-keys info)
                          is-selected (= index selected-index)
-                         base-color (:keyboard/key-container-color info)
-                         selected-color (if base-color
-                                       (-> base-color (.withOpacity 0.7))
-                                       (-> m.Colors/grey .-shade300 (.withOpacity 0.5)))]
-                     (m/Card
-                      .color (if is-selected selected-color nil)
-                      .elevation (if is-selected 4 2)
-                      .shape (if is-selected
-                              (m/RoundedRectangleBorder
-                               .borderRadius (.all m/BorderRadius (.circular m/Radius (:keyboard/key-cap-border-radius info)))
-                               .side (m/BorderSide .color m.Colors/blue .width 2))
-                              nil)
-                      .child
-                      (m/ConstrainedBox
-                       .constraints (m/BoxConstraints
-                                     .maxHeight (/ (:keyboard/height info) 4))
-                       .child
-                       (popup-key/key-widget info vkey is-rotated)))))
+                         selected-color (or (:keyboard/selected-popup-color info)
+                                            m.Colors/blue)]
+                     (m/Container
+                      .decoration (m/BoxDecoration
+                                   .color (if is-selected selected-color m.Colors/transparent)
+                                   .borderRadius (.all m/BorderRadius (.circular m/Radius 6.0)))
+                      .child (popup-key/key-widget info vkey is-rotated is-selected))))
                  additional-keys))))
 
 

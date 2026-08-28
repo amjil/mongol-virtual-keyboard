@@ -70,7 +70,7 @@
        .child
        (keyboard/keyboard {:custom-fns nil}))])
     (m/Positioned
-     .bottom (+ options/keyboard-default-height (* 4 (+ 4 (:keyboard/row-vertical-padding info))))
+     .bottom (options/keyboard-height info)
      .right (/ width 4)
      .child
      (menu/menu {:bar {:elavation 10}

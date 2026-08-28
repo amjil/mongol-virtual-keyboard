@@ -14,6 +14,7 @@
 (defn keyboard [{:keys [custom-fns]}]
   (f/widget
    :context ctx
+   :get {:value-of [:info]}
    :let [mg-keys (builder/keyboard-layout-builder layouts/mg-layout custom-fns)
          en-keys (builder/keyboard-layout-builder layouts/en-layout custom-fns)
          en-special-keys (builder/keyboard-layout-builder layouts/en-special-layout custom-fns)
@@ -22,7 +23,10 @@
          mg-other-special-keys (builder/keyboard-layout-builder layouts/mg-other-special-layout custom-fns)
 
          theme (-> m/Theme (.of ctx))
-         color-scheme (.-colorScheme theme)]
+         color-scheme (.-colorScheme theme)
+         info (merge (options/system-style theme) info)
+         bottom-inset (-> m/MediaQuery (.of ctx) .-padding .-bottom)]
+   :bind {:info info}
    :watch [{layout-index :keyboard/layout-index
             is-special-enabled :keyboard/is-special-enabled
             is-other-special-enabled :keyboard/is-other-special-enabled}
@@ -34,7 +38,17 @@
     (m/TextFieldTapRegion
      .child
      (m/Container
-      .color (.-surfaceVariant color-scheme)
+      .decoration (m/BoxDecoration
+                   .color (or (:keyboard/background-color info)
+                              (.-surfaceVariant color-scheme))
+                   .border (m/Border.
+                            .top (m/BorderSide
+                                  .color (or (:keyboard/top-border-color info)
+                                             (-> m.Colors/black (.withOpacity 0.08)))
+                                  .width 0.5)))
+      .padding (.only m/EdgeInsets
+                      .top 6.0
+                      .bottom (if (pos? bottom-inset) bottom-inset 8.0))
       .child
       (rows/keyboard-rows
        (cond

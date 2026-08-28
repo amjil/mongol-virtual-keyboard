@@ -24,9 +24,12 @@
   (f/run (m/MaterialApp
     .title "Welcome to Flutter"
     .themeMode m.ThemeMode/system
-    .theme (m/ThemeData .primarySwatch m.Colors/blue
-                        .brightness m/Brightness.dark
+    .theme (m/ThemeData .brightness m.Brightness/light
+                        .useMaterial3 true
                         .fontFamily "OyunQaganTig")
+    .darkTheme (m/ThemeData .brightness m.Brightness/dark
+                            .useMaterial3 true
+                            .fontFamily "OyunQaganTig")
     .home
     ;; (example-emoji/basic)
     ;; (example-styled/styled)

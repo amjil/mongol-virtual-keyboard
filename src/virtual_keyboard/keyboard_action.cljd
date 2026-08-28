@@ -28,19 +28,53 @@
 ;; refill the panel after Return splits a block.
 (defonce ^:private !candidate-gen (atom 0))
 
+(defn- action-label-style
+  [info color]
+  (m/TextStyle
+   .color (or color (:keyboard/action-text-color info))
+   .fontFamily (:keyboard/english-font-family info)
+   .fontWeight (.w500 m/FontWeight)
+   .fontSize (or (:keyboard/shift-click-font-size info) 16)
+   .letterSpacing 0.2))
+
+(defn- action-label
+  [info label]
+  (m/Text
+   label
+   .textAlign (.center m/TextAlign)
+   .style (action-label-style info nil)))
+
+(defn- action-icon
+  [info icon]
+  (m/Icon icon
+          .size 22
+          .color (:keyboard/action-text-color info)))
+
 (defn action-widget [vkey items-count rows-count custom-fns]
   (f/widget
    :context ctx
    :get {:value-of [:info]}
+   :watch [{shift? :keyboard/is-shift-enabled
+            special? :keyboard/is-special-enabled
+            other-special? :keyboard/is-other-special-enabled
+            layout-index :keyboard/layout-index
+            return-mode :keyboard/return-mode}
+           state/state]
    :let [width (-> m/MediaQuery (.of ctx) .-size .-width)
          height (:keyboard/height info)
          key-height (/ height rows-count)
-         key-base-width (/ width 10)]
+         key-base-width (/ width 10)
+         pad (:keyboard/horizontal-key-padding info)
+         w (fn [factor] (- (* factor key-base-width) (* 2 pad)))
+         space-color (or (:keyboard/space-key-color info)
+                         (:keyboard/key-container-color info))
+         action-color (:keyboard/action-keys-container-color info)
+         done? (= :single-line return-mode)]
    (m/Padding
     .padding
     (.symmetric
      m/EdgeInsets
-     .horizontal (:keyboard/horizontal-key-padding info)
+     .horizontal pad
      .vertical 0))
    .child
    (condp = (:action vkey)
@@ -52,166 +86,133 @@
       (fn [] (swap! state/state assoc :keyboard/long-press false))
       .child
       (action-key-container
-       {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+       {:width (w 1.5)
         :height key-height
-        :child (m/Icon (.backspace m/Icons) .color (:keyboard/action-text-color info))} vkey custom-fns))
+        :color action-color
+        :child (action-icon info (.backspace_outlined m/Icons))} vkey custom-fns))
 
      :shift
      (action-key-container
-      {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 1.5)
        :height key-height
-       :child (m/Icon (.arrow_upward m/Icons) .color (:keyboard/action-text-color info))} vkey custom-fns)
+       :color (if shift?
+                (:keyboard/key-container-color info)
+                action-color)
+       :child (action-icon info (.arrow_upward m/Icons))} vkey custom-fns)
 
      :return
      (action-key-container
-      {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 1.5)
        :height key-height
+       :color (if done?
+                (or (:keyboard/return-key-color info) action-color)
+                action-color)
        :child
-       (if (= :single-line (:keyboard/return-mode @state/state))
-         (m/Center
-          .child
-          (m/Text
-           "done"
-           .textAlign (.center m/TextAlign)
-           .style (m/TextStyle
-                   .color (:keyboard/key-text-color info)
-                   .fontFamily "Courier"
-                   .fontWeight (.w700 m/FontWeight)
-                   .fontSize (:keyboard/shift-click-font-size info))))
-         (m/Icon (.keyboard_return m/Icons) .color (:keyboard/action-text-color info)))} vkey custom-fns)
+       (if done?
+         (m/Text
+          "done"
+          .textAlign (.center m/TextAlign)
+          .style (action-label-style info m.Colors/white))
+         (action-icon info (.keyboard_return m/Icons)))} vkey custom-fns)
 
      :space
      (action-key-container
-      {:width (- (* 5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 5)
        :height key-height
-       :child (m/Center
-               .child
-               (m/Text
-                "_____"
-                .textAlign (.center m/TextAlign)
-                .style (m/TextStyle
-                        .color (:keyboard/shift-click-text-color info)
-                        .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
+       :color space-color
+       :child (m/SizedBox)} vkey custom-fns)
 
      :special-characters
      (action-key-container
-      {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 1.25)
        :height key-height
-       :child (m/Center
-               .child
-               (m/Text
-                "?123"
-                .textAlign (.center m/TextAlign)
-                .style (m/TextStyle
-                        .color (:keyboard/key-text-color info)
-                        .fontFamily "Courier"
-                        .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
+       :color action-color
+       :child (action-label info (if special? "ABC" "123"))} vkey custom-fns)
 
      :small-special-characters
      (action-key-container
-      {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 1.25)
        :height key-height
-       :child (m/Center
-               .child
-               (m/Text
-                "?123"
-                .textAlign (.center m/TextAlign)
-                .style (m/TextStyle
-                        .color (:keyboard/key-text-color info)
-                        .fontFamily "Courier"
-                        .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
+       :color action-color
+       :child (action-label info (if special? "ABC" "123"))} vkey custom-fns)
 
      :suffix-candidates
      (action-key-container
-      {:width (- (* 1 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 1)
        :height key-height
-       :child (m/Center
-               .child
-               (mgl/MongolText
-                "ᠳᠠᠭᠠᠪᠤᠷᠢ"
-                .style (m/TextStyle
-                        .color (:keyboard/key-text-color info)
-                        .fontWeight (.w700 m/FontWeight)
-                        .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
+       :color action-color
+       :child
+       (mgl/MongolText
+        "ᠳᠠᠭᠠᠪᠤᠷᠢ"
+        .style (m/TextStyle
+                .color (:keyboard/action-text-color info)
+                .fontFamily (:keyboard/mongol-font-family info)
+                .fontWeight (.w500 m/FontWeight)
+                .fontSize (:keyboard/shift-click-font-size info)))} vkey custom-fns)
 
      :spacer-block
      (action-key-container
-      {:width (- (* 4 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 4)
        :height key-height
-       :child (m/Text "")} vkey custom-fns)
+       :color space-color
+       :child (m/SizedBox)} vkey custom-fns)
 
      :small-spacer-block
      (action-key-container
-      {:width (- (* 3 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 3)
        :height key-height
-       :child (m/Text "")} vkey custom-fns)
+       :color space-color
+       :child (m/SizedBox)} vkey custom-fns)
 
      :extra-small-spacer-block
      (action-key-container
       {:width (* key-base-width 1.5)
        :height key-height
-       :child (m/Text "")} vkey custom-fns)
+       :color space-color
+       :child (m/SizedBox)} vkey custom-fns)
 
      :other-special-characters
      (action-key-container
-      {:width (- (* 1.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 1.5)
        :height key-height
-       :child (m/Center
-               .child
-               (m/Text
-                "=\\\\<"
-                .style
-                (m/TextStyle .fontWeight (.w600 m/FontWeight)
-                             .color (:keyboard/key-text-color info)
-                             .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
+       :color action-color
+       :child (action-label info (if other-special? "123" "#+="))} vkey custom-fns)
 
      :abc
      (action-key-container
-      {:width (- (* 1.25 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))
+      {:width (w 1.25)
        :height key-height
-       :child (m/Center
-               .child
-               (m/Text
-                (nth (:keyboard/layout-names info) (:keyboard/layout-index @state/state))
-                .style
-                (m/TextStyle .fontWeight (.w600 m/FontWeight)
-                             .color (:keyboard/key-text-color info)
-                             .fontSize (:keyboard/shift-click-font-size info))))} vkey custom-fns)
+       :color action-color
+       :child (action-label info (nth (:keyboard/layout-names info) layout-index))} vkey custom-fns)
 
      :empty
      (m/Container
       .width
-      (- (* 0.5 key-base-width) (* 2 (:keyboard/horizontal-key-padding info)))))))
-
-(defn- key-box-decoration
-  [info]
-  (m/BoxDecoration
-   .color (:keyboard/action-keys-container-color info)
-   .borderRadius
-   (.all m/BorderRadius
-         (.circular m/Radius
-                    (:keyboard/key-cap-border-radius info)))))
+      (w 0.5)))))
 
 (defn action-key-container
-  [{width :width height :height child :child}
+  [{width :width height :height child :child color :color}
    vkey custom-fns]
   (f/widget
    :get {:value-of [:info]}
+   :let [radius (options/key-cap-radius info)
+         fill (or color (:keyboard/action-keys-container-color info))]
    (m/Container
-    .clipBehavior (.hardEdge m/Clip)
     .height height
     .width width
-    .decoration (key-box-decoration info)
+    .decoration (options/key-cap-decoration info fill)
     .child
     (m/Material
-     .color (:keyboard/action-keys-container-color info)
+     .color m.Colors/transparent
+     .borderRadius (.all m/BorderRadius (.circular m/Radius radius))
      .child
      (m/InkWell
+      .customBorder (m/RoundedRectangleBorder
+                     .borderRadius (.all m/BorderRadius (.circular m/Radius radius)))
+      .splashColor (-> m.Colors/black (.withOpacity 0.06))
+      .highlightColor (-> m.Colors/black (.withOpacity 0.05))
       .onTap #(on-key-press vkey custom-fns)
-      .child child)))))
+      .child (m/Center .child child))))))
 
 (defn ^:async on-key-press
   [vkey custom-fns]

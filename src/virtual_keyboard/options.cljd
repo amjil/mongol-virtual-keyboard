@@ -1,5 +1,5 @@
 (ns virtual-keyboard.options
-  (:require 
+  (:require
    ["package:flutter/material.dart" :as m]
    ["package:flutter/foundation.dart" :refer [kIsWeb]]))
 
@@ -14,8 +14,9 @@
   ([info]
    (keyboard-height info keyboard-default-row-count))
   ([info row-count]
-   (+ keyboard-default-height
-      (* row-count (+ 4 (or (:keyboard/row-vertical-padding info) 4))))))
+   (let [pad (or (:keyboard/row-vertical-padding info) 4.0)]
+     (+ keyboard-default-height
+        (* row-count (* 2 pad))))))
 
 (def keyboard-key-type [:action :normal])
 
@@ -24,27 +25,87 @@
 (def next-word-api-path "/api/next_word/list")
 (def candidate-source-default (if kIsWeb :remote-json :local-fst))
 
-(def keyboard-option 
-  {;;  :width nil
+(defn- ios-platform?
+  [platform]
+  (or (= platform m.TargetPlatform/iOS)
+      (= platform m.TargetPlatform/macOS)))
+
+(defn- argb
+  [a r g b]
+  (.fromARGB m/Color a r g b))
+
+(defn system-style
+  "iOS / Gboard-like visual tokens derived from the current theme."
+  [^m/ThemeData theme]
+  (let [dark? (= (.-brightness theme) m.Brightness/dark)
+        ios? (ios-platform? (.-platform theme))]
+    (merge
+     {:keyboard/key-cap-border-radius (if ios? 5.0 7.5)
+      :keyboard/horizontal-key-padding (if ios? 3.0 3.5)
+      :keyboard/row-vertical-padding (if ios? 5.0 6.0)
+      :keyboard/font-size 22
+      :keyboard/font-weight (.w400 m/FontWeight)
+      :keyboard/shift-click-font-size 16}
+     (if dark?
+       {:keyboard/background-color (argb 0xFF (if ios? 0x1C 0x2C) (if ios? 0x1C 0x2C) (if ios? 0x1E 0x2E))
+        :keyboard/key-container-color (argb 0xFF (if ios? 0x65 0x5F) (if ios? 0x65 0x5F) (if ios? 0x69 0x64))
+        :keyboard/action-keys-container-color (argb 0xFF (if ios? 0x3A 0x45) (if ios? 0x3A 0x45) (if ios? 0x3C 0x4A))
+        :keyboard/space-key-color (argb 0xFF (if ios? 0x65 0x5F) (if ios? 0x65 0x5F) (if ios? 0x69 0x64))
+        :keyboard/return-key-color (argb 0xFF (if ios? 0x0A 0x8A) (if ios? 0x84 0xB4) (if ios? 0xFF 0xF8))
+        :keyboard/key-text-color m.Colors/white
+        :keyboard/action-text-color m.Colors/white
+        :keyboard/hint-text-color (argb 0xFF 0xC7 0xC7 0xCC)
+        :keyboard/shift-click-text-color (argb 0x99 0xFF 0xFF 0xFF)
+        :keyboard/key-shadow-color (argb 0x66 0 0 0)
+        :keyboard/selected-popup-color (argb 0xFF (if ios? 0x0A 0x8A) (if ios? 0x84 0xB4) (if ios? 0xFF 0xF8))
+        :keyboard/top-border-color (-> m.Colors/white (.withOpacity 0.08))}
+       {:keyboard/background-color (argb 0xFF (if ios? 0xD1 0xE8) (if ios? 0xD5 0xEA) (if ios? 0xDB 0xED))
+        :keyboard/key-container-color m.Colors/white
+        :keyboard/action-keys-container-color (argb 0xFF (if ios? 0xAE 0xD0) (if ios? 0xB3 0xD4) (if ios? 0xBB 0xDA))
+        :keyboard/space-key-color m.Colors/white
+        :keyboard/return-key-color (argb 0xFF (if ios? 0x00 0x1A) (if ios? 0x7A 0x73) (if ios? 0xFF 0xE8))
+        :keyboard/key-text-color (argb 0xFF 0 0 0)
+        :keyboard/action-text-color (argb 0xFF 0 0 0)
+        :keyboard/hint-text-color (argb 0xFF 0x8E 0x8E 0x93)
+        :keyboard/shift-click-text-color (argb 0x8A 0 0 0)
+        :keyboard/key-shadow-color (if ios?
+                                     (argb 0xFF 0x89 0x8E 0x96)
+                                     (argb 0x33 0 0 0))
+        :keyboard/selected-popup-color (argb 0xFF (if ios? 0x00 0x1A) (if ios? 0x7A 0x73) (if ios? 0xFF 0xE8))
+        :keyboard/top-border-color (-> m.Colors/black (.withOpacity 0.08))}))))
+
+(defn key-cap-radius
+  [info]
+  (or (:keyboard/key-cap-border-radius info) 5.0))
+
+(defn key-cap-decoration
+  "Rounded key cap with the 1px bottom shadow used by system keyboards."
+  ([info]
+   (key-cap-decoration info nil))
+  ([info color]
+   (m/BoxDecoration
+    .color (or color (:keyboard/key-container-color info) m.Colors/white)
+    .borderRadius (.all m/BorderRadius
+                        (.circular m/Radius (key-cap-radius info)))
+    .boxShadow [(m/BoxShadow
+                 .color (or (:keyboard/key-shadow-color info)
+                            (-> m.Colors/black (.withOpacity 0.25)))
+                 .offset (m/Offset. 0.0 1.0)
+                 .blurRadius 0.5
+                 .spreadRadius 0.0)])))
+
+(def keyboard-option
+  {;; Geometry fallbacks; colors come from `system-style` unless overridden.
    :keyboard/height keyboard-default-height
-   :keyboard/row-vertical-padding 4.0
-   :keyboard/horizontal-key-padding 2.0
-   :keyboard/font-size 26
+   :keyboard/row-vertical-padding 5.0
+   :keyboard/horizontal-key-padding 3.0
+   :keyboard/font-size 22
    :keyboard/mongol-font-family "OnonSoninSans"
    :keyboard/english-font-family "Roboto"
-   :keyboard/font-weight (.w500 m/FontWeight)
-   :keyboard/shift-click-text-color m.Colors/white
-   :keyboard/shift-click-font-size 14
-   :keyboard/key-container-color (-> m.Colors/grey .-shade100);;m.Colors/transparent
-   :keyboard/long-press-container-color (-> m.Colors/grey .-shade100)
-   :keyboard/long-press-key-color m.Colors/orange
-   :keyboard/action-keys-container-color (-> m/Colors .-lightBlue .-shade900);m.Colors/transparent
-   :keyboard/key-cap-border-radius 0
+   :keyboard/font-weight (.w400 m/FontWeight)
+   :keyboard/shift-click-font-size 16
    :keyboard/shift-click-key-padding 4.0
    :keyboard/always-caps false
-   :keyboard/key-text-color m.Colors/black
-   :keyboard/action-text-color m.Colors/grey
-   ;; 
    :keyboard/layout-names ["MGL" "ABC"]
    :keyboard/include-secondary-key-in-popup true})
 

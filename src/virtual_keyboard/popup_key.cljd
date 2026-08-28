@@ -4,37 +4,23 @@
    [virtual-keyboard.utils :as utils]
    [cljd.flutter :as f]))
 
-(defn key-widget [info vkey is-rotated]
+(defn key-widget [info vkey is-rotated is-selected]
   (f/widget
-   (m/InkWell)
-   (m/Container .color (:keyboard/key-container-color info)
-                .height (:keyboard/height info)
-                .alignment m.Alignment/center)
-   (m/Padding .padding
-              (.symmetric m/EdgeInsets .vertical 16 .horizontal 6))
-   
+   (m/Padding
+    .padding
+    (.symmetric m/EdgeInsets .vertical 10 .horizontal 12))
    (m/RotatedBox
     .quarterTurns (if is-rotated 1 0)
     .child (m/Text (utils/key-text vkey)
                    .style
-                  ;;  (if (:is-rotated virtual-key)
-                   (m/TextStyle .fontSize (:keyboard/font-size info)
-                                .color (:keyboard/key-text-color info)
+                   (m/TextStyle .fontSize (or (:keyboard/font-size info) 22)
+                                .color (if is-selected
+                                         m.Colors/white
+                                         (:keyboard/key-text-color info))
                                 .fontFamily (if is-rotated
                                               (:keyboard/mongol-font-family info)
                                               (:keyboard/english-font-family info))
-                                .fontWeight (:keyboard/font-weight info))
-                    ;;  (:keyboard/text-style info))
-                   ))
-;;    (mgl/MongolText
-;;     (utils/key-text state vkey)
-;;     .style
-;;     (if (empty? (:keyboard/popup-text-style info))
-;;       (m/TextStyle .fontSize 24
-;;                    .color (.white m/Colors)
-;;                    .fontFamily "MongolianBaiZheng")
-;;       (:keyboard/text-style info)))
-   ))
+                                .fontWeight (:keyboard/font-weight info))))))
 
 (def en-popup-keys
   {:a [{:text "ª" :caps-text "ª"}

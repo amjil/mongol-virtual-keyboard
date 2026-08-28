@@ -10,11 +10,9 @@
 
 (defn basic-body []
   (f/widget
-   :let [info (merge options/keyboard-option {:keyboard/mongol-font-family "OyunQaganTig"
-                                              :keyboard/key-container-color m/Colors.grey.shade500
-                                              :keyboard/font-size 16})]
+   :let [info (merge options/keyboard-option {:keyboard/mongol-font-family "OyunQaganTig"})]
    :bind {:info info}
-   (m/SafeArea)
+   (m/SafeArea .bottom false)
    (m/Center)
    (m/Column
     .children

@@ -7,6 +7,7 @@
    [virtual-keyboard.utils :as utils]
    [virtual-keyboard.keyboard-overlay :as keyboard-overlay]
    [virtual-keyboard.keyboard-state :as state]
+   [virtual-keyboard.options :as options]
    [cljd.flutter :as f]))
 
 
@@ -23,13 +24,12 @@
      (:keyboard/horizontal-key-padding info)
      .vertical 0))
    (m/Container
-    .clipBehavior (.hardEdge m/Clip)
     .height (/ (:keyboard/height info) rows-count)
-    .decoration (m/BoxDecoration
-                 .borderRadius
-                 (.all m/BorderRadius
-                       (.circular m/Radius (:keyboard/key-cap-border-radius info)))))
-   (m/Material .color (:keyboard/key-container-color info))
+    .decoration (options/key-cap-decoration info))
+   (m/Material
+    .color m.Colors/transparent
+    .borderRadius (.all m/BorderRadius
+                        (.circular m/Radius (options/key-cap-radius info))))
    (m/GestureDetector
     .behavior m.HitTestBehavior/opaque
     .onLongPressStart
@@ -59,8 +59,11 @@
       (keyboard-overlay/remove-overlay-popup)
       (keyboard-overlay/clear-drag-state)))
    (m/InkWell
-    .splashColor (-> m.Colors/black (.withOpacity 0.1))
-    .highlightColor (-> m.Colors/grey .-shade200 (.withOpacity 0.3))
+    .customBorder (m/RoundedRectangleBorder
+                   .borderRadius (.all m/BorderRadius
+                                       (.circular m/Radius (options/key-cap-radius info))))
+    .splashColor (-> m.Colors/black (.withOpacity 0.06))
+    .highlightColor (-> m.Colors/black (.withOpacity 0.05))
     .onTap
     (fn []
       (keyboard-overlay/remove-overlay-bubble)
@@ -79,8 +82,15 @@
               (not (some #{(:id virtual-key)} ["ng" "-" "_"]))
               (not-empty (:id virtual-key)))
        (m/Align .alignment m.Alignment/topLeft
-                .child (m/Text (:id virtual-key)
-                               .style (m/TextStyle .color (:keyboard/key-text-color info))))
+                .child (m/Padding
+                        .padding (.only m/EdgeInsets .top 3.0 .left 4.0)
+                        .child (m/Text (:id virtual-key)
+                                       .style (m/TextStyle
+                                               .fontSize 9
+                                               .height 1.0
+                                               .fontWeight (.w400 m/FontWeight)
+                                               .color (or (:keyboard/hint-text-color info)
+                                                          (:keyboard/key-text-color info))))))
        (m/SizedBox))
      (m/Align .alignment (.center m/Alignment)
               .child

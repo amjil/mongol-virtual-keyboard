@@ -1,5 +1,5 @@
 (ns virtual-keyboard.keyboard-rows
-  (:require 
+  (:require
    ["package:flutter/material.dart" :as m]
    [cljd.flutter :as f]
    [virtual-keyboard.options :as options]))
@@ -15,6 +15,7 @@
       .height (options/keyboard-height info (count rows))
       .width width
       .child (m/Column
+              .mainAxisSize (.min m/MainAxisSize)
               .mainAxisAlignment (.center m/MainAxisAlignment)
               .crossAxisAlignment (.center m/CrossAxisAlignment)
               .children (keyboard-row-keys info rows))))))
@@ -32,10 +33,10 @@
         (.symmetric
          m/EdgeInsets
          .vertical (:keyboard/row-vertical-padding info)
-         .horizontal 1))
+         .horizontal 0))
        .child
        (m/Row
-        .mainAxisAlignment (.spaceAround m/MainAxisAlignment)
+        .mainAxisAlignment (.start m/MainAxisAlignment)
         .crossAxisAlignment (.center m/CrossAxisAlignment)
         .children x)))
 
