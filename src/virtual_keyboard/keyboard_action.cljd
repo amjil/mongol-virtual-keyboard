@@ -238,7 +238,9 @@
                               (remove #(str/starts-with? % (str (char code/Mongol.mvs))))
                               vec)]
           (when (= gen @!candidate-gen)
-            (swap! state/state assoc :keyboard/candidates-list candidates)))))
+            (swap! state/state assoc
+                   :keyboard/candidates-list candidates
+                   :keyboard/pending-suffix-delete? false)))))
 
     :action
     (condp = (:action vkey)
@@ -297,26 +299,27 @@
               start (max 0 (.-start sel))
               back-count 30
               text-before-cursor (subs text (max 0 (- start back-count)) start)
-              candidates (linguistics/get-suffix-candidates text-before-cursor)]
-          (swap! state/state assoc :keyboard/candidates-list candidates)))
+              query-text (str/replace text-before-cursor #"\s+$" "")
+              candidates (linguistics/get-suffix-candidates query-text)]
+          (swap! state/state assoc
+                 :keyboard/candidates-list candidates
+                 :keyboard/pending-suffix-delete? true)))
       nil)
     nil))
 
 (defn ^:async on-candidates-clicked
   [text]
-  (let [text-with-space (str text " ")]
-    (cond 
-      ;; Check against linguistics core suffixes
-      (some #{text} linguistics/all-suffixes)
-      (do 
+  (let [text-with-space (str text " ")
+        suffix-delete? (true? (:keyboard/pending-suffix-delete? @state/state))]
+    (swap! state/state assoc :keyboard/pending-suffix-delete? false)
+    (cond
+      (or suffix-delete?
+          (some #{text} linguistics/all-suffixes)
+          (str/starts-with? text (str (char code/Mongol.mvs))))
+      (do
         (control/delete-text)
         (control/insert-text text-with-space))
-      
-      (str/starts-with? text (str (char code/Mongol.mvs)))
-      (do 
-        (control/delete-text)
-        (control/insert-text text-with-space))
-    
+
       :else
       (control/replace-word text-with-space)))
 
@@ -326,8 +329,12 @@
     (when (= gen @!candidate-gen)
       (if (empty? next-words)
         (swap! state/state assoc :keyboard/candidates-list [])
-        (swap! state/state assoc :keyboard/candidates-list (vec next-words))))))
+        (swap! state/state assoc
+               :keyboard/candidates-list (vec next-words)
+               :keyboard/pending-suffix-delete? false)))))
 
 (defn clear-candidates []
   (swap! !candidate-gen inc)
-  (swap! state/state assoc :keyboard/candidates-list []))
+  (swap! state/state assoc
+         :keyboard/candidates-list []
+         :keyboard/pending-suffix-delete? false))

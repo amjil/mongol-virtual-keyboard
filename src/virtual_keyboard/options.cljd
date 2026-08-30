@@ -125,6 +125,7 @@
    :keyboard/is-special-enabled false
    :keyboard/is-other-special-enabled false
    :keyboard/candidates-list []
+   :keyboard/pending-suffix-delete? false
    :keyboard/entry nil
    :keyboard/layout-index 0
    :keyboard/is-vibrate-on false
