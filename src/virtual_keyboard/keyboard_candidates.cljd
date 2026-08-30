@@ -1,0 +1,180 @@
+(ns virtual-keyboard.keyboard-candidates
+  (:require
+   ["package:flutter/material.dart" :as m]
+   ["package:mongol/mongol.dart" :as mgl]
+   [cljd.flutter :as f]
+   [virtual-keyboard.keyboard-action :as action]
+   [virtual-keyboard.keyboard-state :as state]
+   [virtual-keyboard.input-control :as control]
+   [virtual-keyboard.options :as options]))
+
+(def ^:private bar-radius 14.0)
+(def ^:private item-h-pad 10.0)
+(def ^:private item-v-pad 10.0)
+(def ^:private default-font-size 18.0)
+
+(defn- resolve-info [ctx info]
+  (merge (options/system-style (-> m/Theme (.of ctx)))
+         (or info {})))
+
+(defn- candidate-text-style [style info]
+  (or style
+      (m/TextStyle.
+       .fontSize default-font-size
+       .fontFamily (or (:keyboard/mongol-font-family info) "OyunQaganTig")
+       .fontWeight (.w500 m/FontWeight)
+       .height 1.1
+       .color (or (:keyboard/key-text-color info) (.-shade800 m.Colors/grey)))))
+
+(defn- text-extent [text style ctx]
+  (let [scale (-> m/MediaQuery (.of ctx) .-textScaleFactor)
+        painter (m/TextPainter
+                 .text (m/TextSpan .text text .style style)
+                 .maxLines 1
+                 .textDirection (.ltr m/TextDirection)
+                 .textScaleFactor scale)]
+    (.layout painter .minWidth 0 .maxWidth double/infinity)
+    (-> painter .-size .-width)))
+
+(defn- bar-height [items style ctx]
+  (let [longest (if (seq items)
+                  (apply max (map #(text-extent % style ctx) items))
+                  0.0)]
+    (min (+ longest (* 2 item-v-pad) 4.0)
+         (* (-> m/MediaQuery (.of ctx) .-size .-height) 0.42))))
+
+(defn- on-candidate-tap [word ^m/ScrollController controller]
+  (action/on-candidates-clicked word)
+  (.-value! control/visible true)
+  (when (and (some? controller) (.-hasClients controller))
+    (.animateTo controller
+                0.0
+                .duration (Duration .milliseconds 50)
+                .curve m/Curves.easeOut)))
+
+(defn- candidate-item [word idx ^m/TextStyle style info controller item-height]
+  (let [first? (zero? idx)
+        font-size (or (.-fontSize style) default-font-size)
+        highlight (:keyboard/candidates-highlight-color info)
+        ^m/Color splash (-> ^m/Color (or (:keyboard/key-text-color info) m.Colors/black)
+                            (.withOpacity 0.08))]
+    (m/InkWell
+     .splashColor splash
+     .highlightColor splash
+     .onTap (fn [] (on-candidate-tap word controller))
+     .child
+     (m/SizedBox
+      .height item-height
+      .width (+ font-size (* 2 item-h-pad) 6.0)
+      .child
+      (m/Align
+       .alignment (.topCenter m/Alignment)
+       .child
+       (m/Padding
+        .padding (.symmetric m/EdgeInsets
+                             .horizontal 4.0
+                             .vertical 4.0)
+        .child
+        (m/AnimatedContainer
+         .duration (Duration .milliseconds 160)
+         .curve m/Curves.easeOut
+         .width double/infinity
+         .alignment (.topCenter m/Alignment)
+         .padding (.symmetric m/EdgeInsets
+                              .horizontal (- item-h-pad 4.0)
+                              .vertical (- item-v-pad 4.0))
+         .decoration (m/BoxDecoration
+                      .color (when first? highlight)
+                      .borderRadius (.all m/BorderRadius
+                                          (.circular m/Radius 9.0)))
+         .child
+         (mgl/MongolText
+          word
+          .style (if first?
+                   (.copyWith style .fontWeight (.w600 m/FontWeight))
+                   style)))))))))
+
+(defn- divider [info item-height]
+  (m/Center
+   .child
+   (m/Container
+    .width 0.5
+    .height (* item-height 0.55)
+    .decoration (m/BoxDecoration
+                 .color (:keyboard/candidates-divider-color info)
+                 .borderRadius (.all m/BorderRadius
+                                     (.circular m/Radius 1.0))))))
+
+(defn candidates-bar
+  "Floating, horizontally scrolling bar of vertical Mongolian candidates."
+  [style controller items]
+  (if (empty? items)
+    (m/Container)
+    (f/widget
+     :context ctx
+     :get {:value-of [:info]}
+     :let [info (resolve-info ctx info)
+           text-style (candidate-text-style style info)
+           height (max 48.0 (bar-height items text-style ctx))
+           max-width (* (-> m/MediaQuery (.of ctx) .-size .-width) 0.58)
+           shown (vec (take 60 items))]
+     (m/Container
+      .constraints (m/BoxConstraints
+                    .maxHeight height
+                    .minHeight height
+                    .maxWidth max-width)
+      .clipBehavior (.antiAlias m/Clip)
+      .decoration (m/BoxDecoration
+                   .color (or (:keyboard/candidates-background-color info)
+                              m.Colors/white)
+                   .borderRadius (.all m/BorderRadius
+                                       (.circular m/Radius bar-radius))
+                   .border (m.Border/all
+                            .color (or (:keyboard/candidates-border-color info)
+                                       (-> m.Colors/black (.withOpacity 0.06)))
+                            .width 0.5)
+                   .boxShadow [(m/BoxShadow
+                                .color (or (:keyboard/candidates-shadow-color info)
+                                           (-> m.Colors/black (.withOpacity 0.14)))
+                                .offset (m/Offset. 0.0 4.0)
+                                .blurRadius 16.0
+                                .spreadRadius -2.0)]))
+     (m/Material
+      .color m.Colors/transparent
+      .clipBehavior (.antiAlias m/Clip)
+      .borderRadius (.all m/BorderRadius
+                          (.circular m/Radius bar-radius)))
+     (m.ListView/separated
+      .controller controller
+      .shrinkWrap true
+      .padding (.symmetric m/EdgeInsets .horizontal 4.0 .vertical 0.0)
+      .scrollDirection (.horizontal m/Axis)
+      .physics (m/BouncingScrollPhysics)
+      .separatorBuilder (fn [_ _] (divider info height))
+      .itemCount (count shown)
+      .itemBuilder (fn [_ i]
+                     (candidate-item (nth shown i) i text-style info controller height))))))
+
+(defn candidates [style]
+  (f/widget
+   :context ctx
+   :let [width (-> m/MediaQuery (.of ctx) .-size .-width)]
+   :managed [controller (m/ScrollController)]
+   :watch [{candidates-list :keyboard/candidates-list} state/state]
+   (if (empty? candidates-list)
+     (m/Container)
+     (m/Positioned
+      .bottom 8
+      .right (max 10.0 (/ width 5))
+      .child
+      (m/TextFieldTapRegion
+       .child
+       (candidates-bar style controller candidates-list))))))
+
+(defn candidates-panel [style]
+  (f/widget
+   :managed [controller (m/ScrollController)]
+   :watch [{candidates-list :keyboard/candidates-list} state/state]
+   (m/TextFieldTapRegion
+    .child
+    (candidates-bar style controller candidates-list))))

@@ -2,10 +2,9 @@
   (:require
    ["package:flutter/material.dart" :as m]
    [cljd.flutter :as f]
-   [menu-bar.menu :as menu]
    [virtual-keyboard.keyboard-builder :as builder]
+   [virtual-keyboard.keyboard-candidates :as kb-candidates]
    [virtual-keyboard.keyboard-layouts :as layouts]
-   [virtual-keyboard.keyboard-action :as action]
    [virtual-keyboard.keyboard-rows :as rows]
    [virtual-keyboard.keyboard-state :as state]
    [virtual-keyboard.input-control :as control]
@@ -68,46 +67,11 @@
 (defn get-height [info]
   (options/keyboard-height info))
 
-(defn- candidates-menu [style controller theme]
-  {:bar {:elavation 10
-         :background-color (-> theme .-colorScheme .-secondaryContainer)
-         :scroll controller}
-   :item {:on-tap (fn [x]
-                    (action/on-candidates-clicked x)
-                    (.-value! control/visible true)
-                    (when (.-hasClients controller)
-                      (.animateTo controller
-                                  0.0
-                                  .duration (Duration .milliseconds 50)
-                                  .curve m/Curves.easeOut)))
-          :text-style (or style (m/TextStyle. .fontSize 18 .fontFamily "OyunQaganTig" .color m/Colors.grey.shade400))}})
-
 (defn candidates [style]
-  (f/widget
-   :context ctx
-   :let [width (-> m/MediaQuery (.of ctx) .-size .-width)
-         theme (-> m/Theme (.of ctx))]
-   :managed [controller (m/ScrollController)]
-   :watch [{candidates-list :keyboard/candidates-list} state/state]
-   (m/Positioned
-    .bottom 10
-    .right (/ width 4)
-    .child
-    (m/TextFieldTapRegion
-     .child
-     (menu/menu (candidates-menu style controller theme)
-                (take 60 candidates-list))))))
+  (kb-candidates/candidates style))
 
 (defn candidates-panel [style]
-  (f/widget
-   :context ctx
-   :let [theme (-> m/Theme (.of ctx))]
-   :managed [controller (m/ScrollController)]
-   :watch [{candidates-list :keyboard/candidates-list} state/state]
-   (m/TextFieldTapRegion
-    .child
-    (menu/menu (candidates-menu style controller theme)
-               (take 60 candidates-list)))))
+  (kb-candidates/candidates-panel style))
 
 (defn toolbar [widget]
   (f/widget 

@@ -5,8 +5,7 @@
    [cljd.flutter :as f]
    [virtual-keyboard.keyboard :as keyboard]
    [virtual-keyboard.keyboard-action :as keyboard-action]
-   [virtual-keyboard.options :as options]
-   [menu-bar.menu :as menu]))
+   [virtual-keyboard.options :as options]))
 
 (declare body)
 
@@ -15,10 +14,10 @@
    :key-container-color (-> m/Colors .blueGrey .-shade400)})
 
 (def candidates-style
-  {:text-style (m/TextStyle .fontSize 20
-                            .fontFamily "OnonSoninSans"
-                            .color m.Colors/white
-                            .fontWeight (.w500 m/FontWeight))})
+  (m/TextStyle .fontSize 20
+               .fontFamily "OyunQaganTig"
+               .color (.-shade900 m.Colors/blueGrey)
+               .fontWeight (.w500 m/FontWeight)))
 
 (defn styled []
   (f/widget
@@ -38,12 +37,10 @@
    :context ctx
    :get [:keyboard/text-controller]
    :let [width  (-> m/MediaQuery (.of ctx) .-size .-width)
-         height (-> m/MediaQuery (.of ctx) .-size .-height)
          info (merge options/keyboard-option keyboard-style)
          state (atom (merge options/keyboard-state
                             {:keyboard/text-controller text-controller}))]
    :bind {:info info :state state :context ctx}
-   :watch [{candidates-list :keyboard/candidates-list} state]
    (m/SafeArea)
    .child
    (m/Center)
@@ -59,7 +56,7 @@
         .maxLines 500
         .autofocus true
         .onTap (fn []
-                 (swap! state assoc :keyboard/candidates-list [])
+                 (keyboard-action/clear-candidates)
                  (dart:core/print "onTap TextField"))
         .showCursor true
         .readOnly true
@@ -73,7 +70,4 @@
      .bottom (options/keyboard-height info)
      .right (/ width 4)
      .child
-     (menu/menu {:bar {:elavation 10}
-                 :item (merge {:on-tap (fn [x] (keyboard-action/on-candidates-clicked x))}
-                             candidates-style)}
-                candidates-list))]))
+     (keyboard/candidates-panel candidates-style))]))
