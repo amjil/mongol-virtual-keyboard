@@ -52,10 +52,8 @@
                 .duration (Duration .milliseconds 50)
                 .curve m/Curves.easeOut)))
 
-(defn- candidate-item [word idx ^m/TextStyle style info controller item-height]
-  (let [first? (zero? idx)
-        font-size (or (.-fontSize style) default-font-size)
-        highlight (:keyboard/candidates-highlight-color info)
+(defn- candidate-item [word ^m/TextStyle style info controller item-height]
+  (let [font-size (or (.-fontSize style) default-font-size)
         ^m/Color splash (-> ^m/Color (or (:keyboard/key-text-color info) m.Colors/black)
                             (.withOpacity 0.08))]
     (m/InkWell
@@ -75,24 +73,14 @@
                              .horizontal 4.0
                              .vertical 4.0)
         .child
-        (m/AnimatedContainer
-         .duration (Duration .milliseconds 160)
-         .curve m/Curves.easeOut
+        (m/Container
          .width double/infinity
          .alignment (.topCenter m/Alignment)
          .padding (.symmetric m/EdgeInsets
                               .horizontal (- item-h-pad 4.0)
                               .vertical (- item-v-pad 4.0))
-         .decoration (m/BoxDecoration
-                      .color (when first? highlight)
-                      .borderRadius (.all m/BorderRadius
-                                          (.circular m/Radius 9.0)))
          .child
-         (mgl/MongolText
-          word
-          .style (if first?
-                   (.copyWith style .fontWeight (.w600 m/FontWeight))
-                   style)))))))))
+         (mgl/MongolText word .style style))))))))
 
 (defn- divider [info item-height]
   (m/Center
@@ -153,7 +141,7 @@
       .separatorBuilder (fn [_ _] (divider info height))
       .itemCount (count shown)
       .itemBuilder (fn [_ i]
-                     (candidate-item (nth shown i) i text-style info controller height))))))
+                     (candidate-item (nth shown i) text-style info controller height))))))
 
 (defn candidates [style]
   (f/widget
